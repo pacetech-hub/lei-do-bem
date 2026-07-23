@@ -8,17 +8,17 @@ import {
   FileClock,
   FileCheck2,
   Send,
+  CheckCircle2,
+  XCircle,
   ArrowUpRight,
   Building2,
   Briefcase,
   ChevronLeft,
   ChevronRight,
-  ArrowRight,
 } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -38,7 +38,6 @@ import { useProjectsStore } from "@/lib/store";
 import {
   STATUS_LABEL,
   AREAS,
-  ALL_REQUIRED_QUESTIONS,
   type ProjectStatus,
   type Project,
 } from "@/lib/types";
@@ -61,15 +60,6 @@ export function getFilial(p: Project): string {
   return FILIAIS[Math.abs(h) % FILIAIS.length];
 }
 
-function getProgress(p: Project): number {
-  const total = ALL_REQUIRED_QUESTIONS.length;
-  if (!total) return 0;
-  const filled = ALL_REQUIRED_QUESTIONS.filter(
-    (id) => (p.answers?.[id] ?? "").trim().length >= 40,
-  ).length;
-  return Math.round((filled / total) * 100);
-}
-
 type SummaryCard = {
   key: ProjectStatus;
   label: string;
@@ -90,6 +80,9 @@ const RELATOR_SUMMARY: SummaryCard[] = [
   { key: "revisao", label: "Em revisão", icon: FileClock, accent: "text-status-review-fg" },
   { key: "ajustes", label: "Ajuste solicitado", icon: FileWarning, accent: "text-status-adjust-fg" },
   { key: "pronto", label: "Prontos", icon: FileCheck2, accent: "text-status-ready-fg" },
+  { key: "submetido", label: "Submetidos", icon: Send, accent: "text-status-submitted-fg" },
+  { key: "aprovado", label: "Aprovados", icon: CheckCircle2, accent: "text-status-approved-fg" },
+  { key: "indeferido", label: "Indeferidos", icon: XCircle, accent: "text-status-rejected-fg" },
 ];
 
 type SortKey = "updated_desc" | "updated_asc" | "deadline_asc" | "deadline_desc";
@@ -199,7 +192,7 @@ export function ProjectsList({
     filialFilter !== "all" || setorFilter !== "all" || sortKey !== "updated_desc";
 
   const colCount = isRelator
-    ? 8 // Projeto, Área, Início, Término, Atualização, Progresso, Status, seta
+    ? 7 // Projeto, Área, Início, Término, Atualização, Status, seta
     : 3 + (showFilialColumn ? 1 : 0) + (showSetorColumn ? 1 : 0) + 1;
 
   return (
@@ -234,7 +227,7 @@ export function ProjectsList({
         </div>
       )}
 
-      <div className={`mb-8 grid gap-3 grid-cols-2 ${isRelator ? "md:grid-cols-4" : "md:grid-cols-3 xl:grid-cols-5"}`}>
+      <div className={`mb-8 grid gap-3 grid-cols-2 ${isRelator ? "md:grid-cols-4 xl:grid-cols-7" : "md:grid-cols-3 xl:grid-cols-5"}`}>
         {summaryCards.map((c) => {
           const Icon = c.icon;
           const active = statusFilter === c.key;
@@ -365,7 +358,6 @@ export function ProjectsList({
               {isRelator && <TableHead>Prev. término</TableHead>}
               {!isRelator && <TableHead>Responsável</TableHead>}
               <TableHead>Última atualização</TableHead>
-              {isRelator && <TableHead className="w-[140px]">Progresso</TableHead>}
               <TableHead>Status</TableHead>
               {isRelator && <TableHead className="w-10" />}
             </TableRow>
@@ -379,7 +371,6 @@ export function ProjectsList({
               </TableRow>
             )}
             {pageRows.map((p) => {
-              const progress = getProgress(p);
               return (
                 <TableRow
                   key={p.id}
@@ -417,18 +408,10 @@ export function ProjectsList({
                   <TableCell className="text-sm text-muted-foreground">
                     há {formatDistanceToNow(new Date(p.updatedAt), { locale: ptBR })}
                   </TableCell>
-                  {isRelator && (
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={progress} className="h-1.5 w-20" />
-                        <span className="text-xs tabular-nums text-muted-foreground">{progress}%</span>
-                      </div>
-                    </TableCell>
-                  )}
                   <TableCell><StatusBadge status={p.status} /></TableCell>
                   {isRelator && (
                     <TableCell className="text-right">
-                      <ArrowRight className="ml-auto size-4 text-muted-foreground" />
+                      <ChevronRight className="ml-auto size-4 text-muted-foreground/50" />
                     </TableCell>
                   )}
                 </TableRow>
