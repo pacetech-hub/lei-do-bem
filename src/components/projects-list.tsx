@@ -14,8 +14,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
-  Eye,
-  Wrench,
 } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -201,14 +199,8 @@ export function ProjectsList({
     filialFilter !== "all" || setorFilter !== "all" || sortKey !== "updated_desc";
 
   const colCount = isRelator
-    ? 8 // Projeto, Área, Início, Término, Atualização, Progresso, Status, Ação
+    ? 8 // Projeto, Área, Início, Término, Atualização, Progresso, Status, seta
     : 3 + (showFilialColumn ? 1 : 0) + (showSetorColumn ? 1 : 0) + 1;
-
-  const actionFor = (p: Project) => {
-    if (p.status === "ajustes") return { label: "Corrigir ajustes", icon: Wrench };
-    if (p.status === "rascunho") return { label: "Continuar preenchimento", icon: ArrowRight };
-    return { label: "Visualizar projeto", icon: Eye };
-  };
 
   return (
     <main className="mx-auto max-w-[1440px] px-6 py-8">
@@ -375,7 +367,7 @@ export function ProjectsList({
               <TableHead>Última atualização</TableHead>
               {isRelator && <TableHead className="w-[140px]">Progresso</TableHead>}
               <TableHead>Status</TableHead>
-              {isRelator && <TableHead className="text-right">Ação</TableHead>}
+              {isRelator && <TableHead className="w-10" />}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -388,8 +380,6 @@ export function ProjectsList({
             )}
             {pageRows.map((p) => {
               const progress = getProgress(p);
-              const action = actionFor(p);
-              const ActionIcon = action.icon;
               return (
                 <TableRow
                   key={p.id}
@@ -437,16 +427,8 @@ export function ProjectsList({
                   )}
                   <TableCell><StatusBadge status={p.status} /></TableCell>
                   {isRelator && (
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 gap-1.5 text-primary hover:text-primary"
-                        onClick={() => navigate({ to: "/projetos/$id", params: { id: p.id } })}
-                      >
-                        {action.label}
-                        <ActionIcon className="size-3.5" />
-                      </Button>
+                    <TableCell className="text-right">
+                      <ArrowRight className="ml-auto size-4 text-muted-foreground" />
                     </TableCell>
                   )}
                 </TableRow>
