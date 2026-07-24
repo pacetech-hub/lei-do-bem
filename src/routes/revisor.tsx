@@ -6,7 +6,7 @@ export const Route = createFileRoute("/revisor")({
   head: () => ({
     meta: [
       { title: "Projetos — Revisor | Lei do Bem" },
-      { name: "description", content: "Revisão técnica dos projetos do seu setor." },
+      { name: "description", content: "Central de revisão dos projetos de inovação da empresa." },
     ],
   }),
   component: RevisorPage,
@@ -17,10 +17,9 @@ function RevisorPage() {
     <div className="min-h-screen bg-background">
       <AppHeader current="Revisor" />
       <ProjectsList
-        title="Projetos — Revisor"
-        description="Analise a ficha técnica dos projetos do seu setor."
-        scopedFilial="Filial Campinas/SP"
-        scopedSetor="Engenharia de Produto"
+        title="Revisão de Projetos"
+        description="Acompanhe os projetos de todas as áreas e filiais que aguardam sua análise técnica."
+        variant="revisor"
       />
     </div>
   );

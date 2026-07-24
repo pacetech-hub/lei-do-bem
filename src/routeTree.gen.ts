@@ -16,6 +16,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjetosNovoRouteImport } from './routes/projetos.novo'
 import { Route as ProjetosIdRouteImport } from './routes/projetos.$id'
+import { Route as RevisorProjetosIdRouteImport } from './routes/revisor.projetos.$id'
 
 const RevisorRoute = RevisorRouteImport.update({
   id: '/revisor',
@@ -52,6 +53,11 @@ const ProjetosIdRoute = ProjetosIdRouteImport.update({
   path: '/projetos/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RevisorProjetosIdRoute = RevisorProjetosIdRouteImport.update({
+  id: '/revisor/projetos/$id',
+  path: '/revisor/projetos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/revisor': typeof RevisorRoute
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
+  '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/revisor': typeof RevisorRoute
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
+  '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/revisor': typeof RevisorRoute
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
+  '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/revisor'
     | '/projetos/$id'
     | '/projetos/novo'
+    | '/revisor/projetos/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/revisor'
     | '/projetos/$id'
     | '/projetos/novo'
+    | '/revisor/projetos/$id'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/revisor'
     | '/projetos/$id'
     | '/projetos/novo'
+    | '/revisor/projetos/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   RevisorRoute: typeof RevisorRoute
   ProjetosIdRoute: typeof ProjetosIdRoute
   ProjetosNovoRoute: typeof ProjetosNovoRoute
+  RevisorProjetosIdRoute: typeof RevisorProjetosIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjetosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/revisor/projetos/$id': {
+      id: '/revisor/projetos/$id'
+      path: '/revisor/projetos/$id'
+      fullPath: '/revisor/projetos/$id'
+      preLoaderRoute: typeof RevisorProjetosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   RevisorRoute: RevisorRoute,
   ProjetosIdRoute: ProjetosIdRoute,
   ProjetosNovoRoute: ProjetosNovoRoute,
+  RevisorProjetosIdRoute: RevisorProjetosIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

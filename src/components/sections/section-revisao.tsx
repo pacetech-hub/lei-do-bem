@@ -10,9 +10,17 @@ interface Props {
   onGoToSection: (s: SectionKey) => void;
   canSubmit: boolean;
   onSubmit: () => void;
+  hideSubmitCta?: boolean;
 }
 
-export function SectionRevisao({ project, completion, onGoToSection, canSubmit, onSubmit }: Props) {
+export function SectionRevisao({
+  project,
+  completion,
+  onGoToSection,
+  canSubmit,
+  onSubmit,
+  hideSubmitCta = false,
+}: Props) {
   const totalExpenses =
     project.employees.length + project.thirdParties.length + project.materials.length;
   const totalEvidences = (project.attachments["_evidencias"] ?? []).length;
@@ -42,8 +50,13 @@ export function SectionRevisao({ project, completion, onGoToSection, canSubmit, 
           const pct = completion[s.key];
           const done = pct >= 80;
           return (
-            <div key={s.key} className="flex items-center gap-4 rounded-lg border border-border bg-surface p-4">
-              <div className={`grid size-9 place-items-center rounded-full ${done ? "bg-status-ready-fg/15 text-status-ready-fg" : "bg-status-adjust-fg/15 text-status-adjust-fg"}`}>
+            <div
+              key={s.key}
+              className="flex items-center gap-4 rounded-lg border border-border bg-surface p-4"
+            >
+              <div
+                className={`grid size-9 place-items-center rounded-full ${done ? "bg-status-ready-fg/15 text-status-ready-fg" : "bg-status-adjust-fg/15 text-status-adjust-fg"}`}
+              >
                 {done ? <CheckCircle2 className="size-5" /> : <AlertCircle className="size-5" />}
               </div>
               <div className="flex-1">
@@ -61,25 +74,28 @@ export function SectionRevisao({ project, completion, onGoToSection, canSubmit, 
         })}
       </div>
 
-      <div className="mt-8 rounded-lg border border-primary/20 bg-primary/5 p-5">
-        <div className="flex items-start gap-3">
-          <Send className="mt-0.5 size-5 shrink-0 text-primary" />
-          <div className="flex-1">
-            <div className="text-sm font-semibold">Enviar para revisão</div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Ao enviar, o projeto será avaliado pela equipe responsável. Você poderá continuar editando caso ele retorne com status "Ajuste solicitado".
-            </p>
+      {!hideSubmitCta && (
+        <div className="mt-8 rounded-lg border border-primary/20 bg-primary/5 p-5">
+          <div className="flex items-start gap-3">
+            <Send className="mt-0.5 size-5 shrink-0 text-primary" />
+            <div className="flex-1">
+              <div className="text-sm font-semibold">Enviar para revisão</div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Ao enviar, o projeto será avaliado pela equipe responsável. Você poderá continuar
+                editando caso ele retorne com status "Ajuste solicitado".
+              </p>
+            </div>
+            <Button className="gap-2" disabled={!canSubmit} onClick={onSubmit}>
+              <Send className="size-4" /> Enviar
+            </Button>
           </div>
-          <Button className="gap-2" disabled={!canSubmit} onClick={onSubmit}>
-            <Send className="size-4" /> Enviar
-          </Button>
+          {!canSubmit && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Complete pelo menos 80% das seções de conteúdo obrigatórias antes de enviar.
+            </p>
+          )}
         </div>
-        {!canSubmit && (
-          <p className="mt-3 text-xs text-muted-foreground">
-            Complete pelo menos 80% das seções de conteúdo obrigatórias antes de enviar.
-          </p>
-        )}
-      </div>
+      )}
     </div>
   );
 }

@@ -84,6 +84,9 @@ export interface Project {
   status: ProjectStatus;
   projectType: ProjectType;
   masterProjectId?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  lastAdjustmentNote?: string;
   createdAt: string;
   updatedAt: string;
   // Answers keyed by question id

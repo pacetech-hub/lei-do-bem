@@ -21,10 +21,17 @@ import { STATUS_LABEL, type Project } from "@/lib/types";
 interface MasterProjectViewProps {
   project: Project;
   dependents: Project[];
+  mode?: "relator" | "revisor";
 }
 
-export function MasterProjectView({ project, dependents }: MasterProjectViewProps) {
+export function MasterProjectView({
+  project,
+  dependents,
+  mode = "relator",
+}: MasterProjectViewProps) {
   const navigate = useNavigate();
+  const isRevisor = mode === "revisor";
+  const fichaRoute = isRevisor ? "/revisor/projetos/$id" : "/projetos/$id";
 
   const statusSummary = summarizeDependentStatuses(dependents);
   const overallProgress = dependents.length
@@ -55,11 +62,13 @@ export function MasterProjectView({ project, dependents }: MasterProjectViewProp
               {project.area} · Responsável: {project.responsible}
             </p>
           </div>
-          <Button asChild size="default" className="gap-2">
-            <a href={`/projetos/novo?master=${project.id}`}>
-              <Plus className="size-4" /> Novo Projeto Dependente
-            </a>
-          </Button>
+          {!isRevisor && (
+            <Button asChild size="default" className="gap-2">
+              <a href={`/projetos/novo?master=${project.id}`}>
+                <Plus className="size-4" /> Novo Projeto Dependente
+              </a>
+            </Button>
+          )}
         </div>
 
         {/* Informações do Projeto Mestre */}
@@ -145,7 +154,7 @@ export function MasterProjectView({ project, dependents }: MasterProjectViewProp
                   <TableRow
                     key={d.id}
                     className="group cursor-pointer"
-                    onClick={() => navigate({ to: "/projetos/$id", params: { id: d.id } })}
+                    onClick={() => navigate({ to: fichaRoute, params: { id: d.id } })}
                   >
                     <TableCell className="py-4 text-sm text-muted-foreground tabular-nums">
                       {quarterLabel(d.updatedAt)}
@@ -174,7 +183,9 @@ export function MasterProjectView({ project, dependents }: MasterProjectViewProp
 
         <div className="mt-6">
           <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-            <Link to="/dashboard">Voltar para Meus Projetos</Link>
+            <Link to={isRevisor ? "/revisor" : "/dashboard"}>
+              {isRevisor ? "Voltar para Revisão de Projetos" : "Voltar para Meus Projetos"}
+            </Link>
           </Button>
         </div>
       </main>

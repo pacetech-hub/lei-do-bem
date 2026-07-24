@@ -6,7 +6,10 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Dashboards — Lei do Bem" },
-      { name: "description", content: "Selecione o perfil para acessar os projetos da Lei do Bem." },
+      {
+        name: "description",
+        content: "Selecione o perfil para acessar os projetos da Lei do Bem.",
+      },
       { property: "og:title", content: "Dashboards — Lei do Bem" },
       { property: "og:description", content: "Escolha o perfil para visualizar os projetos." },
     ],
@@ -33,14 +36,13 @@ const CARDS = [
     to: "/revisor" as const,
     title: "Revisor",
     description:
-      "Revise a ficha técnica dos projetos por filial e setor, aprovando ou solicitando ajustes.",
+      "Analise os projetos de todas as áreas e filiais que aguardam revisão, aprovando ou solicitando ajustes.",
     icon: ShieldCheck,
   },
   {
     to: "/juridico" as const,
     title: "Jurídico",
-    description:
-      "Analise a conformidade regulatória dos projetos antes da submissão ao MCTI.",
+    description: "Analise a conformidade regulatória dos projetos antes da submissão ao MCTI.",
     icon: Scale,
   },
 ];
@@ -53,7 +55,8 @@ function DashboardsHub() {
         <div className="mb-8">
           <h1 className="text-2xl font-semibold tracking-tight">Dashboards</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Selecione o perfil de acesso para visualizar os projetos com as personalizações correspondentes.
+            Selecione o perfil de acesso para visualizar os projetos com as personalizações
+            correspondentes.
           </p>
         </div>
 

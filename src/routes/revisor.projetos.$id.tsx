@@ -5,18 +5,18 @@ import { MasterProjectView } from "@/components/master-project-view";
 import { ProjectFicha } from "@/components/project-ficha";
 import { useProjectsStore } from "@/lib/store";
 
-export const Route = createFileRoute("/projetos/$id")({
+export const Route = createFileRoute("/revisor/projetos/$id")({
   head: ({ params }) => ({
     meta: [
-      { title: `Projeto ${params.id.slice(0, 6)} — Lei do Bem` },
-      { name: "description", content: "Ficha técnica do projeto de inovação." },
+      { title: `Revisão — Projeto ${params.id.slice(0, 6)} — Lei do Bem` },
+      { name: "description", content: "Revisão técnica da ficha do projeto de inovação." },
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: ProjetoPage,
+  component: RevisorProjetoPage,
 });
 
-function ProjetoPage() {
+function RevisorProjetoPage() {
   const { id } = Route.useParams();
   const project = useProjectsStore((s) => s.projects.find((p) => p.id === id));
   const allProjects = useProjectsStore((s) => s.projects);
@@ -34,8 +34,8 @@ function ProjetoPage() {
     : undefined;
 
   if (project.projectType === "mestre") {
-    return <MasterProjectView project={project} dependents={dependents} mode="relator" />;
+    return <MasterProjectView project={project} dependents={dependents} mode="revisor" />;
   }
 
-  return <ProjectFicha project={project} mode="relator" masterProject={masterProject} />;
+  return <ProjectFicha project={project} mode="revisor" masterProject={masterProject} />;
 }
