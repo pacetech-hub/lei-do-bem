@@ -15,7 +15,7 @@ export const Route = createFileRoute("/juridico")({
 function JuridicoPage() {
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
+      <AppHeader current="Jurídico" />
       <ProjectsList
         title="Projetos — Jurídico"
         description="Analise a conformidade regulatória e contratual dos projetos de todas as filiais e setores."

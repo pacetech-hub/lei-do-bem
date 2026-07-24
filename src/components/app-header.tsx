@@ -1,6 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ChevronDown, LifeBuoy, LogOut, Settings, User } from "lucide-react";
+import { ChevronDown, LifeBuoy, LogOut, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,10 +19,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CURRENT_USER } from "@/lib/types";
 
-export function AppHeader() {
+interface AppHeaderProps {
+  current?: string;
+}
+
+export function AppHeader({ current }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 h-14 border-b border-border bg-surface">
-      <div className="mx-auto flex h-full max-w-[1440px] items-center gap-6 px-6">
+    <header className="sticky top-0 z-40 border-b border-border bg-surface">
+      <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-6 px-6">
         <Link to="/" className="flex items-center gap-2.5">
           <div className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground font-bold text-sm">
             LB
@@ -26,17 +38,6 @@ export function AppHeader() {
             </div>
           </div>
         </Link>
-
-        <nav className="ml-4 hidden items-center gap-1 md:flex">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" />
-            Voltar para Dashboards
-          </Link>
-        </nav>
-
 
         <div className="ml-auto flex items-center gap-3">
           <div className="hidden text-right leading-tight sm:block">
@@ -74,6 +75,24 @@ export function AppHeader() {
           </DropdownMenu>
         </div>
       </div>
+
+      {current && (
+        <div className="mx-auto max-w-[1440px] px-6 pb-2.5">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Dashboards</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{current}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      )}
     </header>
   );
 }

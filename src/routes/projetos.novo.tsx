@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ChevronRight, FileText, Layers, Calendar as CalendarIcon, ShieldCheck } from "lucide-react";
+import { FileText, Layers, Calendar as CalendarIcon, ShieldCheck } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -134,15 +134,8 @@ function NovoProjetoPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
+      <AppHeader current="Novo Projeto" />
       <main className="mx-auto max-w-4xl px-6 py-8">
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
-          <ChevronRight className="size-3.5" />
-          <span className="text-foreground">Novo Projeto</span>
-        </nav>
-
         <header className="mb-6">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Novo Projeto</h1>
           <p className="mt-1.5 text-sm text-muted-foreground">

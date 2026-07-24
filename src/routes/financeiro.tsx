@@ -15,7 +15,7 @@ export const Route = createFileRoute("/financeiro")({
 function FinanceiroPage() {
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
+      <AppHeader current="Financeiro" />
       <ProjectsList
         title="Projetos — Responsável Financeiro"
         description="Acompanhe as despesas dos projetos do seu setor."

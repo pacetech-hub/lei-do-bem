@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, Save, Send, CloudUpload } from "lucide-react";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+import { CheckCircle2, Save, Send, CloudUpload } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -96,7 +96,7 @@ function ProjetoPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
+      <AppHeader current={project.name} />
 
       <div className="mx-auto flex max-w-[1440px]">
         <ProjectSidebar
@@ -110,17 +110,6 @@ function ProjetoPage() {
           {/* Ficha header */}
           <div className="border-b border-border bg-surface">
             <div className="px-6 py-5 lg:px-10">
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="mb-3 -ml-2 gap-1.5 text-muted-foreground"
-              >
-                <Link to="/dashboard">
-                  <ArrowLeft className="size-4" /> Voltar
-                </Link>
-              </Button>
-
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
