@@ -77,12 +77,12 @@ export function getProgress(p: Project): number {
   return Math.round((filled / total) * 100);
 }
 
-function quarterOf(dateIso: string): 1 | 2 | 3 | 4 {
+export function quarterOf(dateIso: string): 1 | 2 | 3 | 4 {
   const m = new Date(dateIso).getMonth();
   return (Math.floor(m / 3) + 1) as 1 | 2 | 3 | 4;
 }
 
-function yearOf(dateIso: string): number {
+export function yearOf(dateIso: string): number {
   return new Date(dateIso).getFullYear();
 }
 

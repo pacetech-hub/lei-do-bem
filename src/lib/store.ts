@@ -4,18 +4,38 @@ import type {
   Attachment,
   EmployeeExpense,
   MaterialExpense,
+  MctiParecer,
+  MctiParecerResult,
   Project,
   ProjectStatus,
   ThirdPartyExpense,
 } from "./types";
-import { INITIAL_PROJECTS } from "./mock";
+import { INITIAL_PROJECTS, INITIAL_PARECERES } from "./mock";
 
 interface ProjectsState {
   projects: Project[];
+  pareceres: MctiParecer[];
   createProject: (
-    p: Omit<Project, "id" | "createdAt" | "updatedAt" | "status" | "answers" | "attachments" | "employees" | "thirdParties" | "materials">,
+    p: Omit<
+      Project,
+      | "id"
+      | "createdAt"
+      | "updatedAt"
+      | "status"
+      | "answers"
+      | "attachments"
+      | "employees"
+      | "thirdParties"
+      | "materials"
+    >,
   ) => string;
   updateProject: (id: string, patch: Partial<Project>) => void;
+  addParecer: (p: MctiParecer) => void;
+  updateParecerResult: (
+    parecerId: string,
+    projectId: string,
+    patch: Partial<MctiParecerResult>,
+  ) => void;
   setAnswer: (id: string, questionId: string, value: string) => void;
   addAttachment: (id: string, bucket: string, att: Attachment) => void;
   removeAttachment: (id: string, bucket: string, attId: string) => void;
@@ -34,6 +54,21 @@ export const useProjectsStore = create<ProjectsState>()(
   persist(
     (set) => ({
       projects: INITIAL_PROJECTS,
+      pareceres: INITIAL_PARECERES,
+      addParecer: (p) => set((s) => ({ pareceres: [p, ...s.pareceres] })),
+      updateParecerResult: (parecerId, projectId, patch) =>
+        set((s) => ({
+          pareceres: s.pareceres.map((parecer) =>
+            parecer.id === parecerId
+              ? {
+                  ...parecer,
+                  results: parecer.results.map((r) =>
+                    r.projectId === projectId ? { ...r, ...patch } : r,
+                  ),
+                }
+              : parecer,
+          ),
+        })),
       createProject: (p) => {
         const id = crypto.randomUUID();
         const project: Project = {
@@ -119,7 +154,11 @@ export const useProjectsStore = create<ProjectsState>()(
         set((s) => ({
           projects: s.projects.map((p) =>
             p.id === id
-              ? { ...p, thirdParties: p.thirdParties.filter((x) => x.id !== eid), updatedAt: nowIso() }
+              ? {
+                  ...p,
+                  thirdParties: p.thirdParties.filter((x) => x.id !== eid),
+                  updatedAt: nowIso(),
+                }
               : p,
           ),
         })),

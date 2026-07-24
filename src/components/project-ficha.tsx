@@ -142,6 +142,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const handleApprove = () => {
     updateProject(project.id, {
       status: "pronto",
+      legalStatus: "aguardando_juridico",
       reviewedBy: CURRENT_USER.name,
       reviewedAt: new Date().toISOString(),
     });

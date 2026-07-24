@@ -42,7 +42,8 @@ const CARDS = [
   {
     to: "/juridico" as const,
     title: "Jurídico",
-    description: "Analise a conformidade regulatória dos projetos antes da submissão ao MCTI.",
+    description:
+      "Gerencie o portfólio, controle submissões ao MCTI e conduza pareceres, ajustes e defesas.",
     icon: Scale,
   },
 ];

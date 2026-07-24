@@ -1,4 +1,4 @@
-import { AREAS, type Project } from "./types";
+import { AREAS, type MctiParecer, type Project } from "./types";
 
 export interface MockEmployee {
   code: string;
@@ -269,6 +269,8 @@ const STATUSES: Array<Project["status"]> = [
   "aprovado",
   "indeferido",
 ];
+const RELATOR_NAMES = ["Ana Souza", "João Silva", "Carlos Silva", "Mariana Costa", "Beatriz Lima"];
+const REVISOR_NAMES = ["Fernanda Ramos", "Ricardo Alves", "Patrícia Gomes"];
 
 for (let i = 0; i < EXTRA_NAMES.length; i++) {
   const upd = 1 + ((i * 3) % 90);
@@ -276,6 +278,7 @@ for (let i = 0; i < EXTRA_NAMES.length; i++) {
     emptyProject({
       name: EXTRA_NAMES[i],
       area: AREAS[i % AREAS.length],
+      responsible: RELATOR_NAMES[i % RELATOR_NAMES.length],
       status: STATUSES[i % STATUSES.length],
       natureza: NATUREZAS[i % NATUREZAS.length],
       atividade: ATIVIDADES[i % ATIVIDADES.length],
@@ -287,3 +290,68 @@ for (let i = 0; i < EXTRA_NAMES.length; i++) {
     }),
   );
 }
+
+// --- Ciclo do Jurídico ---------------------------------------------------
+// A partir do momento em que o Revisor aprova e encaminha (status "pronto"),
+// o projeto passa a ter também um legalStatus, que segue o próprio ciclo do
+// Jurídico (aguardando análise > pronto para submissão > submetido > parecer
+// do MCTI). Projetos "aprovado"/"indeferido" já representam o desfecho final.
+let legalCounter = 0;
+INITIAL_PROJECTS.forEach((p) => {
+  if (p.status === "aprovado") {
+    p.legalStatus = "aprovado";
+  } else if (p.status === "indeferido") {
+    p.legalStatus = "indeferido";
+  } else if (p.status === "submetido") {
+    legalCounter++;
+    p.legalStatus = legalCounter % 4 === 0 ? "ajustes_mcti" : "submetido";
+    if (p.legalStatus === "ajustes_mcti") {
+      p.mctiReason = "Complementar informações sobre os testes realizados.";
+    }
+  } else if (p.status === "pronto") {
+    legalCounter++;
+    p.legalStatus = legalCounter % 2 === 0 ? "pronto_submissao" : "aguardando_juridico";
+  }
+
+  if (p.legalStatus) {
+    p.reviewedBy = p.reviewedBy ?? REVISOR_NAMES[legalCounter % REVISOR_NAMES.length];
+    p.reviewedAt = p.reviewedAt ?? p.updatedAt;
+  }
+  if (
+    p.legalStatus &&
+    p.legalStatus !== "aguardando_juridico" &&
+    p.legalStatus !== "pronto_submissao"
+  ) {
+    p.submissionDate = p.submissionDate ?? p.updatedAt;
+    p.submissionDoc = p.submissionDoc ?? "comprovante-submissao-mcti.pdf";
+  }
+});
+
+// --- Parecer do MCTI (exemplo) -------------------------------------------
+const seedParecerId = crypto.randomUUID();
+const seedParecerCandidates = INITIAL_PROJECTS.filter(
+  (p) => p.legalStatus === "aprovado" || p.legalStatus === "ajustes_mcti",
+).slice(0, 10);
+
+seedParecerCandidates.forEach((p) => {
+  p.mctiParecerId = seedParecerId;
+  p.mctiResult = p.legalStatus as "aprovado" | "ajustes_mcti";
+});
+
+export const INITIAL_PARECERES: MctiParecer[] = [
+  {
+    id: seedParecerId,
+    year: today.getFullYear(),
+    quarter: (Math.floor(today.getMonth() / 3) + 1) as 1 | 2 | 3 | 4,
+    fileName: "parecer-mcti-trimestre.pdf",
+    uploadedAt: daysAgo(15),
+    uploadedBy: "Ana Souza",
+    results: seedParecerCandidates.map((p) => ({
+      projectId: p.id,
+      projectName: p.name,
+      suggested: p.mctiResult as "aprovado" | "ajustes_mcti",
+      reason: p.mctiReason,
+      confirmed: true,
+    })),
+  },
+];

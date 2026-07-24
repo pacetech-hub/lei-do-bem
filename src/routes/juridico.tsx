@@ -1,27 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppHeader } from "@/components/app-header";
-import { ProjectsList } from "@/components/projects-list";
+import { JuridicoDashboard } from "@/components/juridico-dashboard";
 
 export const Route = createFileRoute("/juridico")({
   head: () => ({
     meta: [
-      { title: "Projetos — Jurídico | Lei do Bem" },
-      { name: "description", content: "Análise jurídica dos projetos de todas as áreas da empresa." },
+      { title: "Central Jurídica — Lei do Bem" },
+      {
+        name: "description",
+        content:
+          "Gerencie o portfólio de projetos, controle submissões ao MCTI e conduza ajustes e defesas.",
+      },
     ],
   }),
-  component: JuridicoPage,
+  component: JuridicoDashboard,
 });
-
-function JuridicoPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      <AppHeader current="Jurídico" />
-      <ProjectsList
-        title="Projetos — Jurídico"
-        description="Analise a conformidade regulatória e contratual dos projetos de todas as filiais e setores."
-        paginated
-        pageSize={10}
-      />
-    </div>
-  );
-}

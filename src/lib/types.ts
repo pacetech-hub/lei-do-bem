@@ -28,6 +28,64 @@ export const PROJECT_TYPE_LABEL: Record<ProjectType, string> = {
   dependente: "Projeto Dependente",
 };
 
+// Estágio do projeto dentro do ciclo do Jurídico, independente do ProjectStatus
+// usado pelo Relator/Revisor. Só existe a partir do momento em que o Revisor
+// aprova e encaminha o projeto (ProjectStatus "pronto").
+export type LegalStatus =
+  | "aguardando_juridico"
+  | "pronto_submissao"
+  | "submetido"
+  | "ajustes_mcti"
+  | "aprovado"
+  | "indeferido";
+
+export const LEGAL_STATUS_LABEL: Record<LegalStatus, string> = {
+  aguardando_juridico: "Aguardando análise jurídica",
+  pronto_submissao: "Pronto para submissão",
+  submetido: "Em análise pelo MCTI",
+  ajustes_mcti: "Ajuste solicitado (MCTI)",
+  aprovado: "Aprovado",
+  indeferido: "Indeferido",
+};
+
+// Reaproveita a paleta de cores dos status já existentes (bg/fg suaves).
+export const LEGAL_STATUS_BADGE_CLASS: Record<LegalStatus, string> = {
+  aguardando_juridico: "bg-status-review text-status-review-fg",
+  pronto_submissao: "bg-status-ready text-status-ready-fg",
+  submetido: "bg-status-submitted text-status-submitted-fg",
+  ajustes_mcti: "bg-status-adjust text-status-adjust-fg",
+  aprovado: "bg-status-approved text-status-approved-fg",
+  indeferido: "bg-status-rejected text-status-rejected-fg",
+};
+
+// Projetos nesses estágios exigem alguma ação do Jurídico.
+export const LEGAL_STATUS_ACTIONABLE: LegalStatus[] = [
+  "aguardando_juridico",
+  "pronto_submissao",
+  "ajustes_mcti",
+];
+
+// Projetos nesses estágios estão concluídos e ficam no histórico.
+export const LEGAL_STATUS_FINALIZED: LegalStatus[] = ["aprovado", "indeferido"];
+
+export interface MctiParecerResult {
+  projectId: string;
+  projectName: string;
+  suggested: "aprovado" | "ajustes_mcti";
+  reason?: string;
+  confirmed: boolean;
+}
+
+export interface MctiParecer {
+  id: string;
+  year: number;
+  quarter: 1 | 2 | 3 | 4;
+  fileName: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  results: MctiParecerResult[];
+}
+
 export interface Attachment {
   id: string;
   name: string;
@@ -87,6 +145,15 @@ export interface Project {
   reviewedBy?: string;
   reviewedAt?: string;
   lastAdjustmentNote?: string;
+  // Ciclo do Jurídico (ver LegalStatus)
+  legalStatus?: LegalStatus;
+  legalAnalysisNote?: string;
+  submissionDate?: string;
+  submissionDoc?: string;
+  submissionNote?: string;
+  mctiParecerId?: string;
+  mctiResult?: "aprovado" | "ajustes_mcti";
+  mctiReason?: string;
   createdAt: string;
   updatedAt: string;
   // Answers keyed by question id
