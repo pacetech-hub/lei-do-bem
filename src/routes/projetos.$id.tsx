@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, Save, Send, CloudUpload } from "lucide-react";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { CheckCircle2, Save, Send, CloudUpload, ArrowLeft, GitFork } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { ProjectSidebar } from "@/components/project-sidebar";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { MasterProjectView } from "@/components/master-project-view";
 
 import { useProjectsStore } from "@/lib/store";
 import {
@@ -42,6 +43,7 @@ function ProjetoPage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const project = useProjectsStore((s) => s.projects.find((p) => p.id === id));
+  const allProjects = useProjectsStore((s) => s.projects);
   const setStatus = useProjectsStore((s) => s.setStatus);
   const [section, setSection] = useState<SectionKey>("gerais");
 
@@ -49,21 +51,40 @@ function ProjetoPage() {
     throw notFound();
   }
 
+  const dependents = useMemo(
+    () => allProjects.filter((p) => p.masterProjectId === project.id),
+    [allProjects, project],
+  );
+  const masterProject = project.masterProjectId
+    ? allProjects.find((p) => p.id === project.masterProjectId)
+    : undefined;
+
   const completion = useMemo(() => {
     const answered = (ids: string[]) =>
       ids.filter((q) => (project.answers[q] ?? "").trim().length >= 40).length;
 
-    const inovPct = Math.round((answered(QUESTIONS_INOVADOR.map((q) => q.id)) / QUESTIONS_INOVADOR.length) * 100);
-    const barrPct = Math.round((answered(QUESTIONS_BARREIRAS.map((q) => q.id)) / QUESTIONS_BARREIRAS.length) * 100);
-    const metPct = Math.round((answered(QUESTIONS_METODOLOGIA.map((q) => q.id)) / QUESTIONS_METODOLOGIA.length) * 100);
+    const inovPct = Math.round(
+      (answered(QUESTIONS_INOVADOR.map((q) => q.id)) / QUESTIONS_INOVADOR.length) * 100,
+    );
+    const barrPct = Math.round(
+      (answered(QUESTIONS_BARREIRAS.map((q) => q.id)) / QUESTIONS_BARREIRAS.length) * 100,
+    );
+    const metPct = Math.round(
+      (answered(QUESTIONS_METODOLOGIA.map((q) => q.id)) / QUESTIONS_METODOLOGIA.length) * 100,
+    );
 
     const evidenceCount = (project.attachments["_evidencias"] ?? []).length;
     const evPct = Math.min(100, evidenceCount * 25);
 
-    const despCount = project.employees.length + project.thirdParties.length + project.materials.length;
+    const despCount =
+      project.employees.length + project.thirdParties.length + project.materials.length;
     const despPct = Math.min(100, despCount * 33);
 
-    const revPct = ALL_REQUIRED_QUESTIONS.every((q) => (project.answers[q] ?? "").trim().length >= 40) ? 100 : 0;
+    const revPct = ALL_REQUIRED_QUESTIONS.every(
+      (q) => (project.answers[q] ?? "").trim().length >= 40,
+    )
+      ? 100
+      : 0;
 
     return {
       gerais: 100,
@@ -77,10 +98,11 @@ function ProjetoPage() {
   }, [project]);
 
   const overall = Math.round(
-    (Object.values(completion).reduce((a, b) => a + b, 0)) / SECTIONS.length,
+    Object.values(completion).reduce((a, b) => a + b, 0) / SECTIONS.length,
   );
 
-  const canSubmit = completion.inovador >= 80 && completion.barreiras >= 80 && completion.metodologia >= 80;
+  const canSubmit =
+    completion.inovador >= 80 && completion.barreiras >= 80 && completion.metodologia >= 80;
 
   const handleSaveDraft = () => {
     toast.success("Rascunho salvo", { description: "As alterações foram registradas." });
@@ -93,6 +115,10 @@ function ProjetoPage() {
     setStatus(project.id, "revisao");
     toast.success("Projeto enviado para revisão");
   };
+
+  if (project.projectType === "mestre") {
+    return <MasterProjectView project={project} dependents={dependents} />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -110,12 +136,35 @@ function ProjetoPage() {
           {/* Ficha header */}
           <div className="border-b border-border bg-surface">
             <div className="px-6 py-5 lg:px-10">
+              {project.projectType === "dependente" && (
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                    <GitFork className="size-3.5" /> Projeto Dependente
+                  </span>
+                  {masterProject && (
+                    <>
+                      <span className="text-xs text-muted-foreground">
+                        Projeto Mestre:{" "}
+                        <span className="font-medium text-foreground">{masterProject.name}</span>
+                      </span>
+                      <Link
+                        to="/projetos/$id"
+                        params={{ id: masterProject.id }}
+                        className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <ArrowLeft className="size-3.5" /> Voltar para Projeto Mestre
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <StatusBadge status={project.status} />
                     <span className="text-xs text-muted-foreground">
-                      Atualizado há {formatDistanceToNow(new Date(project.updatedAt), { locale: ptBR })}
+                      Atualizado há{" "}
+                      {formatDistanceToNow(new Date(project.updatedAt), { locale: ptBR })}
                     </span>
                     <span className="flex items-center gap-1 text-xs text-status-ready-fg">
                       <CloudUpload className="size-3.5" /> Salvo automaticamente
@@ -213,7 +262,8 @@ function ProjetoPage() {
             <div className="mx-auto flex max-w-[1440px] items-center gap-3 px-6 py-3 lg:pl-[calc(16rem+2.5rem)]">
               <div className="hidden text-xs text-muted-foreground sm:block">
                 <span className="mr-3">
-                  Status: <span className="font-medium text-foreground">
+                  Status:{" "}
+                  <span className="font-medium text-foreground">
                     {project.status === "rascunho" ? "Rascunho" : project.status}
                   </span>
                 </span>

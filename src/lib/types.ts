@@ -20,6 +20,14 @@ export const STATUS_LABEL: Record<ProjectStatus, string> = {
 export type Natureza = "produto" | "processo" | "servico";
 export type Atividade = "basica" | "aplicada" | "experimental";
 
+export type ProjectType = "independente" | "mestre" | "dependente";
+
+export const PROJECT_TYPE_LABEL: Record<ProjectType, string> = {
+  independente: "Projeto independente",
+  mestre: "Projeto Mestre",
+  dependente: "Projeto Dependente",
+};
+
 export interface Attachment {
   id: string;
   name: string;
@@ -74,6 +82,8 @@ export interface Project {
   natureza: Natureza;
   atividade: Atividade;
   status: ProjectStatus;
+  projectType: ProjectType;
+  masterProjectId?: string;
   createdAt: string;
   updatedAt: string;
   // Answers keyed by question id
@@ -117,10 +127,16 @@ export interface Question {
 }
 
 export const QUESTIONS_INOVADOR: Question[] = [
-  { id: "inov_1", label: "O projeto trata de desenvolvimento totalmente novo para a empresa ou para o mercado?" },
+  {
+    id: "inov_1",
+    label: "O projeto trata de desenvolvimento totalmente novo para a empresa ou para o mercado?",
+  },
   { id: "inov_2", label: "Por quais motivos?" },
   { id: "inov_3", label: "Qual o objetivo do projeto?" },
-  { id: "inov_4", label: "Comparativo entre a tecnologia anterior e a nova tecnologia desenvolvida." },
+  {
+    id: "inov_4",
+    label: "Comparativo entre a tecnologia anterior e a nova tecnologia desenvolvida.",
+  },
   { id: "inov_5", label: "Foi realizada pesquisa ou avaliação de mercado?" },
   { id: "inov_6", label: "Quais funcionalidades e ganhos são esperados?" },
   { id: "inov_7", label: "Qual cenário motivou o desenvolvimento?" },

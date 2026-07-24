@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { STATUS_LABEL, type ProjectStatus } from "@/lib/types";
 
-const STYLES: Record<ProjectStatus, string> = {
+export const STATUS_BADGE_CLASS: Record<ProjectStatus, string> = {
   rascunho: "bg-status-draft text-status-draft-fg",
   ajustes: "bg-status-adjust text-status-adjust-fg",
   revisao: "bg-status-review text-status-review-fg",
@@ -16,7 +16,7 @@ export function StatusBadge({ status, className }: { status: ProjectStatus; clas
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
-        STYLES[status],
+        STATUS_BADGE_CLASS[status],
         className,
       )}
     >

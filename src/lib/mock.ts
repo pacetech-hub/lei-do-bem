@@ -45,6 +45,7 @@ function emptyProject(over: Partial<Project>): Project {
     natureza: "produto",
     atividade: "experimental",
     status: "rascunho",
+    projectType: "independente",
     createdAt: daysAgo(120),
     updatedAt: daysAgo(2),
     answers: {},
@@ -164,6 +165,55 @@ export const INITIAL_PROJECTS: Project[] = [
   }),
 ];
 
+const masterProjectId = crypto.randomUUID();
+
+INITIAL_PROJECTS.push(
+  emptyProject({
+    id: masterProjectId,
+    name: "Desenvolvimento de Nova Tecnologia",
+    filial: RELATOR_FILIAL,
+    area: RELATOR_SETOR,
+    projectType: "mestre",
+    status: "revisao",
+    updatedAt: daysAgo(3),
+    startDate: daysAgo(150),
+    endDate: daysFromNow(90),
+  }),
+  emptyProject({
+    name: "Projeto A — Novo Sistema de Controle",
+    filial: RELATOR_FILIAL,
+    area: RELATOR_SETOR,
+    projectType: "dependente",
+    masterProjectId,
+    status: "revisao",
+    updatedAt: daysAgo(3),
+    startDate: daysAgo(140),
+    endDate: daysFromNow(80),
+  }),
+  emptyProject({
+    name: "Projeto B — Novo Processo Produtivo",
+    filial: RELATOR_FILIAL,
+    area: RELATOR_SETOR,
+    projectType: "dependente",
+    masterProjectId,
+    status: "rascunho",
+    updatedAt: daysAgo(1),
+    startDate: daysAgo(120),
+    endDate: daysFromNow(100),
+  }),
+  emptyProject({
+    name: "Projeto C — Nova Solução Tecnológica",
+    filial: RELATOR_FILIAL,
+    area: RELATOR_SETOR,
+    projectType: "dependente",
+    masterProjectId,
+    status: "pronto",
+    updatedAt: daysAgo(8),
+    startDate: daysAgo(130),
+    endDate: daysFromNow(40),
+  }),
+);
+
 const EXTRA_NAMES = [
   "Redes Neurais para Detecção de Fraudes",
   "Biopolímero Biodegradável para Embalagens",
@@ -210,11 +260,17 @@ const EXTRA_NAMES = [
 const NATUREZAS: Array<Project["natureza"]> = ["produto", "processo", "servico"];
 const ATIVIDADES: Array<Project["atividade"]> = ["basica", "aplicada", "experimental"];
 const STATUSES: Array<Project["status"]> = [
-  "rascunho", "ajustes", "revisao", "pronto", "submetido", "aprovado", "indeferido",
+  "rascunho",
+  "ajustes",
+  "revisao",
+  "pronto",
+  "submetido",
+  "aprovado",
+  "indeferido",
 ];
 
 for (let i = 0; i < EXTRA_NAMES.length; i++) {
-  const upd = 1 + (i * 3) % 90;
+  const upd = 1 + ((i * 3) % 90);
   INITIAL_PROJECTS.push(
     emptyProject({
       name: EXTRA_NAMES[i],
@@ -224,7 +280,7 @@ for (let i = 0; i < EXTRA_NAMES.length; i++) {
       atividade: ATIVIDADES[i % ATIVIDADES.length],
       updatedAt: daysAgo(upd),
       startDate: daysAgo(120 + i * 4),
-      endDate: daysFromNow(30 + (i * 7) % 200),
+      endDate: daysFromNow(30 + ((i * 7) % 200)),
       hasPatent: i % 5 === 0,
       patentNumber: i % 5 === 0 ? `BR10202400${1000 + i}-${i % 10}` : undefined,
     }),
