@@ -125,17 +125,16 @@ export function MasterProjectView({ project, dependents }: MasterProjectViewProp
           <Table>
             <TableHeader>
               <TableRow className="bg-surface-muted hover:bg-surface-muted">
-                <TableHead className="w-[90px]">Trimestre</TableHead>
-                <TableHead className="w-[40%]">Projeto</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Atualizado em</TableHead>
+                <TableHead className="w-[130px]">Trimestre</TableHead>
+                <TableHead className="w-[160px] text-left">Status</TableHead>
+                <TableHead className="w-[38%]">Projeto</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {dependents.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={4} className="h-24 text-center text-sm text-muted-foreground">
                     Nenhum projeto dependente ainda.
                   </TableCell>
                 </TableRow>
@@ -148,25 +147,22 @@ export function MasterProjectView({ project, dependents }: MasterProjectViewProp
                     className="group cursor-pointer"
                     onClick={() => navigate({ to: "/projetos/$id", params: { id: d.id } })}
                   >
-                    <TableCell className="text-sm text-muted-foreground tabular-nums">
+                    <TableCell className="py-4 text-sm text-muted-foreground tabular-nums">
                       {quarterLabel(d.updatedAt)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-4 text-left align-top">
+                      <StatusBadge status={d.status} />
+                    </TableCell>
+                    <TableCell className="py-4">
                       <div className="font-medium text-foreground">{d.name}</div>
-                      <div className="mt-1 flex items-center gap-2">
+                      <div className="mt-1.5 flex items-center gap-2">
                         <Progress value={progress} className="h-1 w-20" />
                         <span className="text-[11px] tabular-nums text-muted-foreground">
                           {progress}% preenchido
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <StatusBadge status={d.status} />
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      há {formatDistanceToNow(new Date(d.updatedAt), { locale: ptBR })}
-                    </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="py-4 text-right">
                       <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
                     </TableCell>
                   </TableRow>

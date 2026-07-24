@@ -14,6 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  ArrowUp,
+  ArrowDown,
   FolderTree,
   CornerDownRight,
   AlertTriangle,
@@ -79,8 +81,12 @@ function quarterOf(dateIso: string): 1 | 2 | 3 | 4 {
   return (Math.floor(m / 3) + 1) as 1 | 2 | 3 | 4;
 }
 
+function yearOf(dateIso: string): number {
+  return new Date(dateIso).getFullYear();
+}
+
 export function quarterLabel(dateIso: string): string {
-  return `${quarterOf(dateIso)}º Tri`;
+  return `${quarterOf(dateIso)}º Tri/${yearOf(dateIso)}`;
 }
 
 type SortKey = "updated_desc" | "updated_asc" | "deadline_asc" | "deadline_desc";
@@ -176,6 +182,7 @@ export function ProjectsList({
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">("all");
   const [periodFilter, setPeriodFilter] = useState<"all" | "7" | "30" | "90">("all");
   const [quarterFilter, setQuarterFilter] = useState<QuarterKey>("all");
+  const [yearFilter, setYearFilter] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("updated_desc");
   const [filialFilter, setFilialFilter] = useState<string>("all");
   const [setorFilter, setSetorFilter] = useState<string>("all");
@@ -243,27 +250,58 @@ export function ProjectsList({
     return list.sort((a, b) => compareProjects(a, b, sortKey));
   }, [scopedProjects, q, statusFilter, periodFilter, filialFilter, setorFilter, sortKey]);
 
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    scopedProjects.forEach((p) => years.add(yearOf(p.updatedAt)));
+    return Array.from(years).sort((a, b) => b - a);
+  }, [scopedProjects]);
+
   const relatorRows = useMemo(() => {
     if (!isRelator) return [];
     const matchesQuery = (p: Project) => !q || p.name.toLowerCase().includes(q.toLowerCase());
     const matchesQuarter = (p: Project) =>
       quarterFilter === "all" || `Q${quarterOf(p.updatedAt)}` === quarterFilter;
+    const matchesYear = (p: Project) =>
+      yearFilter === "all" || yearOf(p.updatedAt).toString() === yearFilter;
     const matchesStatus = (p: Project) => statusFilter === "all" || p.status === statusFilter;
 
     const rows: Array<{ project: Project; dependents: Project[] }> = [];
     topLevelScoped.forEach((p) => {
       const deps = p.projectType === "mestre" ? (dependentsByMaster.get(p.id) ?? []) : [];
-      const selfMatches = matchesQuery(p) && matchesQuarter(p) && matchesStatus(p);
+      const selfMatches =
+        matchesQuery(p) && matchesQuarter(p) && matchesYear(p) && matchesStatus(p);
       const someDependentMatches = deps.some((d) => matchesQuery(d) && matchesStatus(d));
       if (!selfMatches && !someDependentMatches) return;
       rows.push({ project: p, dependents: deps });
     });
     return rows.sort((a, b) => compareProjects(a.project, b.project, sortKey));
-  }, [isRelator, topLevelScoped, dependentsByMaster, q, statusFilter, quarterFilter, sortKey]);
+  }, [
+    isRelator,
+    topLevelScoped,
+    dependentsByMaster,
+    q,
+    statusFilter,
+    quarterFilter,
+    yearFilter,
+    sortKey,
+  ]);
+
+  const toggleQuarterSort = () => {
+    setSortKey((prev) => (prev === "updated_desc" ? "updated_asc" : "updated_desc"));
+  };
 
   useEffect(() => {
     setPage(1);
-  }, [q, statusFilter, periodFilter, quarterFilter, filialFilter, setorFilter, sortKey]);
+  }, [
+    q,
+    statusFilter,
+    periodFilter,
+    quarterFilter,
+    yearFilter,
+    filialFilter,
+    setorFilter,
+    sortKey,
+  ]);
 
   const totalPages = paginated ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1;
   const pageRows = paginated ? filtered.slice((page - 1) * pageSize, page * pageSize) : filtered;
@@ -273,12 +311,13 @@ export function ProjectsList({
     statusFilter !== "all" ||
     periodFilter !== "all" ||
     quarterFilter !== "all" ||
+    yearFilter !== "all" ||
     filialFilter !== "all" ||
     setorFilter !== "all" ||
     sortKey !== "updated_desc";
 
   const colCount = isRelator
-    ? 4 // Trimestre, Projeto, Atualizado em, seta
+    ? 4 // Trimestre, Status, Projeto, seta
     : 3 + (showFilialColumn ? 1 : 0) + (showSetorColumn ? 1 : 0) + 1;
 
   const shownCount = isRelator ? relatorRows.length : filtered.length;
@@ -478,6 +517,19 @@ export function ProjectsList({
                 <SelectItem value="Q4">4º trimestre</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={yearFilter} onValueChange={setYearFilter}>
+              <SelectTrigger className="h-9 w-[140px]">
+                <SelectValue placeholder="Ano" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os anos</SelectItem>
+                {availableYears.map((y) => (
+                  <SelectItem key={y} value={y.toString()}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
               <SelectTrigger className="h-9 w-[220px]">
                 <SelectValue placeholder="Ordenar" />
@@ -516,6 +568,7 @@ export function ProjectsList({
               setStatusFilter("all");
               setPeriodFilter("all");
               setQuarterFilter("all");
+              setYearFilter("all");
               setSortKey("updated_desc");
               setFilialFilter("all");
               setSetorFilter("all");
@@ -533,13 +586,31 @@ export function ProjectsList({
         <Table>
           <TableHeader>
             <TableRow className="bg-surface-muted hover:bg-surface-muted">
-              {isRelator && <TableHead className="w-[90px]">Trimestre</TableHead>}
-              <TableHead className={isRelator ? "w-[40%]" : "w-[30%]"}>Projeto</TableHead>
+              {isRelator && (
+                <TableHead className="w-[130px]">
+                  <button
+                    type="button"
+                    onClick={toggleQuarterSort}
+                    className="inline-flex items-center gap-1 font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Trimestre
+                    {sortKey === "updated_asc" ? (
+                      <ArrowUp className="size-3.5" />
+                    ) : (
+                      <ArrowDown
+                        className={cn("size-3.5", sortKey !== "updated_desc" && "opacity-30")}
+                      />
+                    )}
+                  </button>
+                </TableHead>
+              )}
+              {isRelator && <TableHead className="w-[160px] text-left">Status</TableHead>}
+              <TableHead className={isRelator ? "w-[38%]" : "w-[30%]"}>Projeto</TableHead>
               {showFilialColumn && <TableHead>Filial</TableHead>}
               {showSetorColumn && <TableHead>Setor</TableHead>}
               {!isRelator && <TableHead>Responsável</TableHead>}
-              <TableHead>{isRelator ? "Atualizado em" : "Última atualização"}</TableHead>
-              {!isRelator && <TableHead>Status</TableHead>}
+              {!isRelator && <TableHead>Última atualização</TableHead>}
+              {!isRelator && <TableHead className="text-left">Status</TableHead>}
               {isRelator && <TableHead className="w-10" />}
             </TableRow>
           </TableHeader>
@@ -574,13 +645,28 @@ export function ProjectsList({
                         className={cn("group cursor-pointer", isMaster && "bg-surface-muted/40")}
                         onClick={() => (isMaster ? toggleExpanded(p.id) : openProject(p.id))}
                       >
-                        <TableCell className="text-sm text-muted-foreground tabular-nums">
+                        <TableCell className="py-4 text-sm text-muted-foreground tabular-nums">
                           {quarterLabel(p.updatedAt)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-4 text-left align-top">
+                          {isMaster ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {statusSummary.length === 0 ? (
+                                <span className="text-xs text-muted-foreground">—</span>
+                              ) : (
+                                statusSummary.map((seg) => (
+                                  <StatusBadge key={seg.status} status={seg.status} />
+                                ))
+                              )}
+                            </div>
+                          ) : (
+                            <StatusBadge status={p.status} />
+                          )}
+                        </TableCell>
+                        <TableCell className="py-4">
                           {isMaster ? (
                             <>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2.5">
                                 {isExpanded ? (
                                   <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
                                 ) : (
@@ -589,45 +675,27 @@ export function ProjectsList({
                                 <FolderTree className="size-4 shrink-0 text-primary" />
                                 <span className="font-medium text-foreground">{p.name}</span>
                               </div>
-                              <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 pl-6 text-xs text-muted-foreground">
+                              <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 pl-6 text-xs text-muted-foreground">
                                 <span className="font-medium text-foreground/80">Mestre</span>
                                 <span>
                                   · {dependents.length} projeto{dependents.length === 1 ? "" : "s"}{" "}
                                   dependente{dependents.length === 1 ? "" : "s"}
                                 </span>
-                                {statusSummary.map((seg) => (
-                                  <span
-                                    key={seg.status}
-                                    className={
-                                      seg.status === "ajustes"
-                                        ? "font-semibold text-status-adjust-fg"
-                                        : ""
-                                    }
-                                  >
-                                    · {seg.count} {STATUS_LABEL[seg.status].toLowerCase()}
-                                  </span>
-                                ))}
                                 {avgProgress !== null && <span>· {avgProgress}% preenchido</span>}
                               </div>
                             </>
                           ) : (
                             <>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-medium text-foreground">{p.name}</span>
-                                <StatusBadge status={p.status} />
-                              </div>
-                              <div className="mt-0.5 text-xs text-muted-foreground">
+                              <span className="font-medium text-foreground">{p.name}</span>
+                              <div className="mt-1 text-xs text-muted-foreground">
                                 Criado em{" "}
                                 {format(new Date(p.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                               </div>
                             </>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          há {formatDistanceToNow(new Date(p.updatedAt), { locale: ptBR })}
-                        </TableCell>
                         <TableCell
-                          className="text-right"
+                          className="py-4 text-right"
                           onClick={(e) => {
                             if (isMaster) {
                               e.stopPropagation();
@@ -649,15 +717,11 @@ export function ProjectsList({
                               className="group cursor-pointer bg-background hover:bg-surface-muted/50"
                               onClick={() => openProject(d.id)}
                             >
-                              <TableCell className="text-sm text-muted-foreground tabular-nums">
+                              <TableCell className="py-3.5 text-sm text-muted-foreground tabular-nums">
                                 {quarterLabel(d.updatedAt)}
                               </TableCell>
-                              <TableCell>
-                                <div className="ml-2 flex items-center gap-2 border-l-2 border-border pl-4">
-                                  <CornerDownRight className="size-3.5 shrink-0 text-muted-foreground/60" />
-                                  <span className="text-sm font-medium text-foreground">
-                                    {d.name}
-                                  </span>
+                              <TableCell className="py-3.5 text-left align-top">
+                                <div className="flex flex-col items-start gap-1">
                                   <StatusBadge status={d.status} />
                                   {d.status === "ajustes" && (
                                     <span className="inline-flex items-center gap-1 text-[11px] font-medium text-status-adjust-fg">
@@ -665,17 +729,22 @@ export function ProjectsList({
                                     </span>
                                   )}
                                 </div>
-                                <div className="ml-2 mt-1.5 flex items-center gap-2 border-l-2 border-transparent pl-4">
+                              </TableCell>
+                              <TableCell className="py-3.5">
+                                <div className="flex items-center gap-2.5 border-l-2 border-border pl-4">
+                                  <CornerDownRight className="size-3.5 shrink-0 text-muted-foreground/60" />
+                                  <span className="text-sm font-medium text-foreground">
+                                    {d.name}
+                                  </span>
+                                </div>
+                                <div className="mt-1.5 flex items-center gap-2 border-l-2 border-transparent pl-4">
                                   <Progress value={dProgress} className="h-1 w-20" />
                                   <span className="text-[11px] tabular-nums text-muted-foreground">
                                     {dProgress}% preenchido
                                   </span>
                                 </div>
                               </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">
-                                há {formatDistanceToNow(new Date(d.updatedAt), { locale: ptBR })}
-                              </TableCell>
-                              <TableCell className="text-right">
+                              <TableCell className="py-3.5 text-right">
                                 <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
                               </TableCell>
                             </TableRow>
