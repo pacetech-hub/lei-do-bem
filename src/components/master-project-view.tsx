@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { AppHeader } from "@/components/app-header";
+import { EditGroupingDialog } from "@/components/create-grouping-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -77,6 +78,7 @@ export function MasterProjectView({
               </a>
             </Button>
           )}
+          {(isRevisor || isJuridico) && <EditGroupingDialog master={project} />}
         </div>
 
         {/* Informações do Projeto Mestre */}
