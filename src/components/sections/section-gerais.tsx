@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Pencil, Save, X } from "lucide-react";
+import { AlertTriangle, Pencil, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { useProjectsStore } from "@/lib/store";
-import { AREAS, STATUS_LABEL, type Project } from "@/lib/types";
+import { AREAS, STATUS_LABEL, type AdjustmentItem, type Project } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const NATUREZA = { produto: "Produto", processo: "Processo", servico: "Serviço" } as const;
 const ATIVIDADE = {
@@ -22,11 +27,39 @@ const ATIVIDADE = {
   experimental: "Desenvolvimento experimental",
 } as const;
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
+function Row({
+  label,
+  value,
+  flag,
+}: {
+  label: string;
+  value: React.ReactNode;
+  flag?: AdjustmentItem;
+}) {
   return (
-    <div className="grid grid-cols-1 gap-1 border-b border-border py-3 last:border-0 sm:grid-cols-[240px_1fr] sm:gap-4">
-      <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</dt>
-      <dd className="text-sm text-foreground">{value}</dd>
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-1 border-b border-border py-3 last:border-0 sm:grid-cols-[240px_1fr] sm:gap-4",
+        flag && "-mx-3 rounded-md border border-status-adjust-fg/40 bg-status-adjust/5 px-3",
+      )}
+    >
+      <dt
+        className={cn(
+          "flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+          flag && "text-status-adjust-fg",
+        )}
+      >
+        {flag && <AlertTriangle className="size-3 shrink-0" />}
+        {label}
+      </dt>
+      <dd className="text-sm text-foreground">
+        {value}
+        {flag && (
+          <p className="mt-1 text-xs font-medium text-status-adjust-fg">
+            Ajuste solicitado: {flag.comment}
+          </p>
+        )}
+      </dd>
     </div>
   );
 }
@@ -57,10 +90,18 @@ function toFormState(p: Project): FormState {
   };
 }
 
-export function SectionGerais({ project }: { project: Project }) {
+export function SectionGerais({
+  project,
+  pendingItems,
+}: {
+  project: Project;
+  pendingItems?: AdjustmentItem[];
+}) {
   const updateProject = useProjectsStore((s) => s.updateProject);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => toFormState(project));
+
+  const flagFor = (fieldId: string) => pendingItems?.find((i) => i.fieldId === fieldId);
 
   const startEdit = () => {
     setForm(toFormState(project));
@@ -137,29 +178,34 @@ export function SectionGerais({ project }: { project: Project }) {
 
       {!editing ? (
         <dl className="rounded-lg border border-border bg-surface px-5">
-          <Row label="Nome do projeto" value={project.name} />
-          <Row label="Área" value={project.area} />
-          <Row label="Responsável" value={project.responsible} />
+          <Row label="Nome do projeto" value={project.name} flag={flagFor("name")} />
+          <Row label="Área" value={project.area} flag={flagFor("area")} />
+          <Row label="Responsável" value={project.responsible} flag={flagFor("responsible")} />
           <Row
             label="Data de início"
             value={format(new Date(project.startDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+            flag={flagFor("startDate")}
           />
           <Row
             label="Data prevista de término"
             value={format(new Date(project.endDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+            flag={flagFor("endDate")}
           />
           <Row
             label="Registro de patente"
             value={project.hasPatent ? `Sim — ${project.patentNumber ?? "não informado"}` : "Não"}
+            flag={flagFor("hasPatent")}
           />
-          <Row label="Natureza" value={NATUREZA[project.natureza]} />
-          <Row label="Atividade" value={ATIVIDADE[project.atividade]} />
+          <Row label="Natureza" value={NATUREZA[project.natureza]} flag={flagFor("natureza")} />
+          <Row label="Atividade" value={ATIVIDADE[project.atividade]} flag={flagFor("atividade")} />
           <Row label="Status atual" value={STATUS_LABEL[project.status]} />
         </dl>
       ) : (
         <div className="space-y-5 rounded-lg border border-border bg-surface p-5">
           <div className="space-y-1.5">
-            <Label htmlFor="ge-name">Nome do projeto <span className="text-primary">*</span></Label>
+            <Label htmlFor="ge-name">
+              Nome do projeto <span className="text-primary">*</span>
+            </Label>
             <Input
               id="ge-name"
               value={form.name}
@@ -169,11 +215,19 @@ export function SectionGerais({ project }: { project: Project }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Área <span className="text-primary">*</span></Label>
+              <Label>
+                Área <span className="text-primary">*</span>
+              </Label>
               <Select value={form.area} onValueChange={(v) => setForm({ ...form, area: v })}>
-                <SelectTrigger><SelectValue placeholder="Selecione a área" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a área" />
+                </SelectTrigger>
                 <SelectContent>
-                  {AREAS.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                  {AREAS.map((a) => (
+                    <SelectItem key={a} value={a}>
+                      {a}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -189,7 +243,9 @@ export function SectionGerais({ project }: { project: Project }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="ge-start">Data de início <span className="text-primary">*</span></Label>
+              <Label htmlFor="ge-start">
+                Data de início <span className="text-primary">*</span>
+              </Label>
               <Input
                 id="ge-start"
                 type="date"
@@ -198,7 +254,9 @@ export function SectionGerais({ project }: { project: Project }) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="ge-end">Data prevista de término <span className="text-primary">*</span></Label>
+              <Label htmlFor="ge-end">
+                Data prevista de término <span className="text-primary">*</span>
+              </Label>
               <Input
                 id="ge-end"
                 type="date"
@@ -209,7 +267,9 @@ export function SectionGerais({ project }: { project: Project }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Natureza <span className="text-primary">*</span></Label>
+            <Label>
+              Natureza <span className="text-primary">*</span>
+            </Label>
             <RadioGroup
               value={form.natureza}
               onValueChange={(v) => setForm({ ...form, natureza: v as Project["natureza"] })}
@@ -231,12 +291,16 @@ export function SectionGerais({ project }: { project: Project }) {
           </div>
 
           <div className="space-y-1.5 sm:max-w-md">
-            <Label>Atividade <span className="text-primary">*</span></Label>
+            <Label>
+              Atividade <span className="text-primary">*</span>
+            </Label>
             <Select
               value={form.atividade}
               onValueChange={(v) => setForm({ ...form, atividade: v as Project["atividade"] })}
             >
-              <SelectTrigger><SelectValue placeholder="Selecione a atividade" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a atividade" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="basica">Pesquisa básica dirigida</SelectItem>
                 <SelectItem value="aplicada">Pesquisa aplicada</SelectItem>
@@ -247,7 +311,9 @@ export function SectionGerais({ project }: { project: Project }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Registro de patente <span className="text-primary">*</span></Label>
+              <Label>
+                Registro de patente <span className="text-primary">*</span>
+              </Label>
               <RadioGroup
                 value={form.hasPatent}
                 onValueChange={(v) => setForm({ ...form, hasPatent: v as "sim" | "nao" })}
@@ -268,7 +334,9 @@ export function SectionGerais({ project }: { project: Project }) {
             </div>
             {form.hasPatent === "sim" && (
               <div className="space-y-1.5">
-                <Label htmlFor="ge-patent">Número da patente <span className="text-primary">*</span></Label>
+                <Label htmlFor="ge-patent">
+                  Número da patente <span className="text-primary">*</span>
+                </Label>
                 <Input
                   id="ge-patent"
                   value={form.patentNumber}

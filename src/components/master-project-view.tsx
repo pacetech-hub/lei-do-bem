@@ -135,8 +135,8 @@ export function MasterProjectView({
             <TableHeader>
               <TableRow className="bg-surface-muted hover:bg-surface-muted">
                 <TableHead className="w-[130px]">Trimestre</TableHead>
+                <TableHead className="w-[80%]">Projeto</TableHead>
                 <TableHead className="w-[160px] text-left">Status</TableHead>
-                <TableHead className="w-[38%]">Projeto</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
@@ -159,9 +159,6 @@ export function MasterProjectView({
                     <TableCell className="py-4 text-sm text-muted-foreground tabular-nums">
                       {quarterLabel(d.updatedAt)}
                     </TableCell>
-                    <TableCell className="py-4 text-left align-top">
-                      <StatusBadge status={d.status} />
-                    </TableCell>
                     <TableCell className="py-4">
                       <div className="font-medium text-foreground">{d.name}</div>
                       <div className="mt-1.5 flex items-center gap-2">
@@ -170,6 +167,9 @@ export function MasterProjectView({
                           {progress}% preenchido
                         </span>
                       </div>
+                    </TableCell>
+                    <TableCell className="py-4 text-left align-top">
+                      <StatusBadge status={d.status} />
                     </TableCell>
                     <TableCell className="py-4 text-right">
                       <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />

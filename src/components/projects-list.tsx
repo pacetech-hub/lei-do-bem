@@ -20,6 +20,7 @@ import {
   CornerDownRight,
   AlertTriangle,
   ListChecks,
+  Share2,
 } from "lucide-react";
 import { StatusBadge, STATUS_BADGE_CLASS } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -122,6 +123,16 @@ export function summarizeDependentStatuses(deps: Project[]) {
     c[d.status] = (c[d.status] ?? 0) + 1;
   });
   return STATUS_ORDER.filter((s) => c[s]).map((s) => ({ status: s, count: c[s] as number }));
+}
+
+// Tag de projeto (não é status): indica que o projeto foi compartilhado com a
+// área do Revisor, mesmo sem ele ser o revisor titular.
+function SharedWithAreaTag() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+      <Share2 className="size-3" /> Compartilhado com a sua área
+    </span>
+  );
 }
 
 type SummaryCard = {
@@ -384,25 +395,10 @@ export function ProjectsList({
           <TableCell className="py-4 text-sm text-muted-foreground tabular-nums">
             {quarterLabel(p.updatedAt)}
           </TableCell>
-          {isRelator && (
-            <TableCell className="py-4 text-left align-top">
-              {isMaster ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {statusSummary.length === 0 ? (
-                    <span className="text-xs text-muted-foreground">—</span>
-                  ) : (
-                    statusSummary.map((seg) => <StatusBadge key={seg.status} status={seg.status} />)
-                  )}
-                </div>
-              ) : (
-                <StatusBadge status={p.status} />
-              )}
-            </TableCell>
-          )}
           <TableCell className="py-4">
             {isMaster ? (
               <>
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
                   {isExpanded ? (
                     <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
                   ) : (
@@ -410,7 +406,7 @@ export function ProjectsList({
                   )}
                   <FolderTree className="size-4 shrink-0 text-primary" />
                   <span className="font-medium text-foreground">{p.name}</span>
-                  {isRevisor && <StatusBadge status={p.status} />}
+                  {isRevisor && p.sharedWithArea && <SharedWithAreaTag />}
                 </div>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 pl-6 text-xs text-muted-foreground">
                   <span className="font-medium text-foreground/80">Mestre</span>
@@ -436,23 +432,53 @@ export function ProjectsList({
               <>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-foreground">{p.name}</span>
-                  {isRevisor && <StatusBadge status={p.status} />}
+                  {isRevisor && p.sharedWithArea && <SharedWithAreaTag />}
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  Criado em {format(new Date(p.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                  {isRevisor ? "Solicitado em" : "Criado em"}{" "}
+                  {format(new Date(isRevisor ? p.updatedAt : p.createdAt), "dd/MM/yyyy", {
+                    locale: ptBR,
+                  })}
                 </div>
               </>
             )}
           </TableCell>
           {isRevisor && (
+            <TableCell className="py-4 text-left align-top">
+              {isMaster ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {statusSummary.length === 0 ? (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  ) : (
+                    statusSummary.map((seg) => <StatusBadge key={seg.status} status={seg.status} />)
+                  )}
+                </div>
+              ) : (
+                <StatusBadge status={p.status} />
+              )}
+            </TableCell>
+          )}
+          {isRevisor && (
             <>
               <TableCell className="py-4 text-sm text-muted-foreground">{p.responsible}</TableCell>
               <TableCell className="py-4 text-sm text-muted-foreground">{p.area}</TableCell>
               <TableCell className="py-4 text-sm text-muted-foreground">{getFilial(p)}</TableCell>
-              <TableCell className="py-4 text-sm text-muted-foreground tabular-nums">
-                {format(new Date(p.updatedAt), "dd/MM/yyyy")}
-              </TableCell>
             </>
+          )}
+          {isRelator && (
+            <TableCell className="py-4 text-left align-top">
+              {isMaster ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {statusSummary.length === 0 ? (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  ) : (
+                    statusSummary.map((seg) => <StatusBadge key={seg.status} status={seg.status} />)
+                  )}
+                </div>
+              ) : (
+                <StatusBadge status={p.status} />
+              )}
+            </TableCell>
           )}
           <TableCell
             className="py-4 text-right"
@@ -480,7 +506,20 @@ export function ProjectsList({
                 <TableCell className="py-3.5 text-sm text-muted-foreground tabular-nums">
                   {quarterLabel(d.updatedAt)}
                 </TableCell>
-                {isRelator && (
+                <TableCell className="py-3.5">
+                  <div className="flex items-center gap-2.5 border-l-2 border-border pl-4">
+                    <CornerDownRight className="size-3.5 shrink-0 text-muted-foreground/60" />
+                    <span className="text-sm font-medium text-foreground">{d.name}</span>
+                    {isRevisor && d.sharedWithArea && <SharedWithAreaTag />}
+                  </div>
+                  <div className="ml-2 mt-1.5 flex items-center gap-2 border-l-2 border-transparent pl-4">
+                    <Progress value={dProgress} className="h-1 w-20" />
+                    <span className="text-[11px] tabular-nums text-muted-foreground">
+                      {dProgress}% preenchido
+                    </span>
+                  </div>
+                </TableCell>
+                {isRevisor && (
                   <TableCell className="py-3.5 text-left align-top">
                     <div className="flex flex-col items-start gap-1">
                       <StatusBadge status={d.status} />
@@ -492,24 +531,6 @@ export function ProjectsList({
                     </div>
                   </TableCell>
                 )}
-                <TableCell className="py-3.5">
-                  <div className="flex items-center gap-2.5 border-l-2 border-border pl-4">
-                    <CornerDownRight className="size-3.5 shrink-0 text-muted-foreground/60" />
-                    <span className="text-sm font-medium text-foreground">{d.name}</span>
-                    {isRevisor && <StatusBadge status={d.status} />}
-                    {isRevisor && d.status === "ajustes" && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-status-adjust-fg">
-                        <AlertTriangle className="size-3" /> Pendência
-                      </span>
-                    )}
-                  </div>
-                  <div className="ml-2 mt-1.5 flex items-center gap-2 border-l-2 border-transparent pl-4">
-                    <Progress value={dProgress} className="h-1 w-20" />
-                    <span className="text-[11px] tabular-nums text-muted-foreground">
-                      {dProgress}% preenchido
-                    </span>
-                  </div>
-                </TableCell>
                 {isRevisor && (
                   <>
                     <TableCell className="py-3.5 text-sm text-muted-foreground">
@@ -519,10 +540,19 @@ export function ProjectsList({
                     <TableCell className="py-3.5 text-sm text-muted-foreground">
                       {getFilial(d)}
                     </TableCell>
-                    <TableCell className="py-3.5 text-sm text-muted-foreground tabular-nums">
-                      {format(new Date(d.updatedAt), "dd/MM/yyyy")}
-                    </TableCell>
                   </>
+                )}
+                {isRelator && (
+                  <TableCell className="py-3.5 text-left align-top">
+                    <div className="flex flex-col items-start gap-1">
+                      <StatusBadge status={d.status} />
+                      {d.status === "ajustes" && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-status-adjust-fg">
+                          <AlertTriangle className="size-3" /> Pendência
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
                 )}
                 <TableCell className="py-3.5 text-right">
                   <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
@@ -829,8 +859,10 @@ export function ProjectsList({
                   </button>
                 </TableHead>
               )}
-              {isRelator && <TableHead className="w-[160px] text-left">Status</TableHead>}
-              <TableHead className={isHierarchical ? "w-[26%]" : "w-[30%]"}>Projeto</TableHead>
+              <TableHead className={isRelator ? "w-[80%]" : isHierarchical ? "w-[22%]" : "w-[30%]"}>
+                Projeto
+              </TableHead>
+              {isRevisor && <TableHead className="w-[130px] text-left">Status</TableHead>}
               {isRevisor && <TableHead className="w-[14%]">Relator</TableHead>}
               {isRevisor && <TableHead className="w-[16%]">Área</TableHead>}
               {isRevisor && <TableHead className="w-[16%]">Filial</TableHead>}
@@ -838,7 +870,7 @@ export function ProjectsList({
               {showSetorColumn && <TableHead>Setor</TableHead>}
               {!isHierarchical && <TableHead>Responsável</TableHead>}
               {!isHierarchical && <TableHead>Última atualização</TableHead>}
-              {isRevisor && <TableHead className="w-[120px]">Atualizado em</TableHead>}
+              {isRelator && <TableHead className="w-[160px] text-left">Status</TableHead>}
               {!isHierarchical && <TableHead className="text-left">Status</TableHead>}
               <TableHead className="w-10" />
             </TableRow>

@@ -1,12 +1,19 @@
 import { useState } from "react";
-import { Paperclip, Sparkles, ScanSearch, X, FileText } from "lucide-react";
+import { AlertTriangle, Paperclip, Sparkles, ScanSearch, X, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { CURRENT_USER } from "@/lib/types";
 import type { Attachment } from "@/lib/types";
 import { useProjectsStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
 
 interface Props {
   projectId: string;
@@ -16,6 +23,7 @@ interface Props {
   onChange: (v: string) => void;
   attachments: Attachment[];
   minChars?: number;
+  flagComment?: string;
 }
 
 export function QuestionField({
@@ -26,6 +34,7 @@ export function QuestionField({
   onChange,
   attachments,
   minChars = 200,
+  flagComment,
 }: Props) {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiMode, setAiMode] = useState<"improve" | "analyze">("improve");
@@ -53,7 +62,18 @@ export function QuestionField({
   };
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
+    <div
+      className={cn(
+        "rounded-lg border border-border bg-surface p-4",
+        flagComment && "border-status-adjust-fg/40 bg-status-adjust/5",
+      )}
+    >
+      {flagComment && (
+        <div className="mb-3 flex items-start gap-1.5 rounded-md bg-background/70 p-2.5 text-xs font-medium text-status-adjust-fg">
+          <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+          <span>Ajuste solicitado: {flagComment}</span>
+        </div>
+      )}
       <div className="mb-2 flex items-start justify-between gap-4">
         <Label htmlFor={questionId} className="text-[13px] font-semibold text-foreground">
           {label}
@@ -172,7 +192,11 @@ export function QuestionField({
                   <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                     Completude
                   </div>
-                  <p>{meetsMin ? "A resposta atende ao tamanho mínimo sugerido." : `Está abaixo do mínimo recomendado de ${minChars} caracteres.`}</p>
+                  <p>
+                    {meetsMin
+                      ? "A resposta atende ao tamanho mínimo sugerido."
+                      : `Está abaixo do mínimo recomendado de ${minChars} caracteres.`}
+                  </p>
                 </div>
                 <div className="rounded-md border border-border p-3">
                   <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">

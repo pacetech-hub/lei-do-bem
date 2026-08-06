@@ -68,6 +68,7 @@ export const INITIAL_PROJECTS: Project[] = [
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
     status: "revisao",
+    sharedWithArea: true,
     updatedAt: daysAgo(0),
     startDate: daysAgo(90),
     endDate: daysFromNow(180),
@@ -80,12 +81,31 @@ export const INITIAL_PROJECTS: Project[] = [
     updatedAt: daysAgo(3),
     startDate: daysAgo(200),
     endDate: daysFromNow(60),
+    adjustmentItems: [
+      {
+        id: crypto.randomUUID(),
+        sectionKey: "inovador",
+        fieldId: "inov_4",
+        fieldLabel: "Comparativo entre a tecnologia anterior e a nova tecnologia desenvolvida.",
+        comment:
+          "Detalhar melhor o comparativo tecnológico, incluindo métricas objetivas de desempenho.",
+      },
+      {
+        id: crypto.randomUUID(),
+        sectionKey: "despesas",
+        fieldLabel: "Despesas",
+        comment: "Faltam notas fiscais dos materiais utilizados no ano base.",
+      },
+    ],
+    lastAdjustmentNote:
+      "Elemento Tecnologicamente Novo ou Inovador — Comparativo entre a tecnologia anterior e a nova tecnologia desenvolvida.: Detalhar melhor o comparativo tecnológico, incluindo métricas objetivas de desempenho.\nDespesas — Despesas: Faltam notas fiscais dos materiais utilizados no ano base.",
   }),
   emptyProject({
     name: "Otimização de Processo de Injeção Plástica",
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
     status: "revisao",
+    sharedWithArea: true,
     updatedAt: daysAgo(5),
     endDate: daysFromNow(30),
   }),
@@ -162,6 +182,18 @@ export const INITIAL_PROJECTS: Project[] = [
     status: "ajustes",
     updatedAt: daysAgo(6),
     endDate: daysFromNow(75),
+    adjustmentItems: [
+      {
+        id: crypto.randomUUID(),
+        sectionKey: "barreiras",
+        fieldId: "barr_7",
+        fieldLabel: "Testes realizados.",
+        comment:
+          "Descreva os protocolos de teste utilizados e os resultados quantitativos obtidos.",
+      },
+    ],
+    lastAdjustmentNote:
+      "Barreiras e Desafios Tecnológicos — Testes realizados.: Descreva os protocolos de teste utilizados e os resultados quantitativos obtidos.",
   }),
 ];
 

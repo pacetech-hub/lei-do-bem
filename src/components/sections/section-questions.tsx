@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { QuestionField } from "@/components/question-field";
-import type { Project, Question } from "@/lib/types";
+import type { AdjustmentItem, Project, Question } from "@/lib/types";
 import { useProjectsStore } from "@/lib/store";
 
 interface Props {
@@ -9,9 +9,17 @@ interface Props {
   description: string;
   questions: Question[];
   extras?: ReactNode;
+  pendingItems?: AdjustmentItem[];
 }
 
-export function SectionQuestions({ project, title, description, questions, extras }: Props) {
+export function SectionQuestions({
+  project,
+  title,
+  description,
+  questions,
+  extras,
+  pendingItems,
+}: Props) {
   const setAnswer = useProjectsStore((s) => s.setAnswer);
   return (
     <div className="max-w-3xl">
@@ -30,6 +38,7 @@ export function SectionQuestions({ project, title, description, questions, extra
             value={project.answers[q.id] ?? ""}
             onChange={(v) => setAnswer(project.id, q.id, v)}
             attachments={project.attachments[q.id] ?? []}
+            flagComment={pendingItems?.find((i) => i.fieldId === q.id)?.comment}
           />
         ))}
         {extras}

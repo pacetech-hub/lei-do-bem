@@ -1,7 +1,7 @@
-import { CheckCircle2, AlertCircle, Send } from "lucide-react";
+import { CheckCircle2, AlertCircle, AlertTriangle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import type { Project, SectionKey } from "@/lib/types";
+import type { AdjustmentItem, Project, SectionKey } from "@/lib/types";
 import { SECTIONS } from "@/lib/types";
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
   canSubmit: boolean;
   onSubmit: () => void;
   hideSubmitCta?: boolean;
+  pendingItems?: AdjustmentItem[];
 }
 
 export function SectionRevisao({
@@ -20,6 +21,7 @@ export function SectionRevisao({
   canSubmit,
   onSubmit,
   hideSubmitCta = false,
+  pendingItems,
 }: Props) {
   const totalExpenses =
     project.employees.length + project.thirdParties.length + project.materials.length;
@@ -33,6 +35,17 @@ export function SectionRevisao({
           Confira o preenchimento de cada seção antes de enviar o projeto para revisão.
         </p>
       </header>
+
+      {pendingItems && pendingItems.length > 0 && (
+        <div className="mb-6 flex items-start gap-2 rounded-lg border border-status-adjust-fg/40 bg-status-adjust/5 p-4 text-sm text-status-adjust-fg">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <div className="space-y-1">
+            {pendingItems.map((item) => (
+              <p key={item.id}>Ajuste solicitado: {item.comment}</p>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mb-6 rounded-lg border border-border bg-surface p-5">
         <div className="grid gap-4 sm:grid-cols-3">

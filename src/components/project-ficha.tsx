@@ -1,6 +1,17 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, Save, Send, CloudUpload, ArrowLeft, GitFork, Wrench } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Plus,
+  Save,
+  Send,
+  CloudUpload,
+  ArrowLeft,
+  GitFork,
+  Trash2,
+  Wrench,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -12,6 +23,13 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -40,7 +58,9 @@ import {
   QUESTIONS_INOVADOR,
   QUESTIONS_METODOLOGIA,
   SECTIONS,
+  SECTION_FIELD_OPTIONS,
   STATUS_LABEL,
+  type AdjustmentItem,
   type Project,
   type SectionKey,
 } from "@/lib/types";
@@ -59,16 +79,33 @@ interface ProjectFichaProps {
 
 export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps) {
   const navigate = useNavigate();
-  const setStatus = useProjectsStore((s) => s.setStatus);
   const updateProject = useProjectsStore((s) => s.updateProject);
   const [section, setSection] = useState<SectionKey>("gerais");
   const [adjustOpen, setAdjustOpen] = useState(false);
-  const [adjustNote, setAdjustNote] = useState("");
+  const [adjustSection, setAdjustSection] = useState<SectionKey>("gerais");
+  const [adjustFieldId, setAdjustFieldId] = useState<string>("");
+  const [adjustComment, setAdjustComment] = useState("");
+  const [draftItems, setDraftItems] = useState<AdjustmentItem[]>([]);
   const [approveOpen, setApproveOpen] = useState(false);
 
   const isRevisor = mode === "revisor";
   const fichaRoute = isRevisor ? "/revisor/projetos/$id" : "/projetos/$id";
   const canReview = isRevisor && project.status === "revisao";
+
+  const pendingItems = useMemo(() => project.adjustmentItems ?? [], [project.adjustmentItems]);
+  const pendingBySection = useMemo(() => {
+    const map = new Map<SectionKey, AdjustmentItem[]>();
+    pendingItems.forEach((item) => {
+      const list = map.get(item.sectionKey) ?? [];
+      list.push(item);
+      map.set(item.sectionKey, list);
+    });
+    return map;
+  }, [pendingItems]);
+  const generalPendingItems = (key: SectionKey) =>
+    pendingBySection.get(key)?.filter((i) => !i.fieldId);
+
+  const adjustFieldOptions = SECTION_FIELD_OPTIONS[adjustSection] ?? [];
 
   const completion = useMemo(() => {
     const answered = (ids: string[]) =>
@@ -123,19 +160,64 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       toast.warning("Complete as seções obrigatórias antes de enviar para revisão.");
       return;
     }
-    setStatus(project.id, "revisao");
+    updateProject(project.id, {
+      status: "revisao",
+      adjustmentItems: [],
+      lastAdjustmentNote: undefined,
+    });
     toast.success("Projeto enviado para revisão");
   };
 
-  const handleRequestAdjustment = () => {
-    if (!adjustNote.trim()) {
+  const resetAdjustDraft = () => {
+    setDraftItems([]);
+    setAdjustSection("gerais");
+    setAdjustFieldId("");
+    setAdjustComment("");
+  };
+
+  const addAdjustItem = () => {
+    if (!adjustComment.trim()) {
       toast.error("Descreva o que precisa ser corrigido.");
       return;
     }
-    updateProject(project.id, { status: "ajustes", lastAdjustmentNote: adjustNote.trim() });
+    const sectionLabel = SECTIONS.find((s) => s.key === adjustSection)?.label ?? adjustSection;
+    const field = adjustFieldOptions.find((q) => q.id === adjustFieldId);
+    setDraftItems((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        sectionKey: adjustSection,
+        fieldId: field?.id,
+        fieldLabel: field?.label ?? sectionLabel,
+        comment: adjustComment.trim(),
+      },
+    ]);
+    setAdjustFieldId("");
+    setAdjustComment("");
+  };
+
+  const removeAdjustItem = (id: string) => {
+    setDraftItems((prev) => prev.filter((i) => i.id !== id));
+  };
+
+  const handleRequestAdjustment = () => {
+    if (draftItems.length === 0) {
+      toast.error("Adicione ao menos um item ao pedido de ajuste.");
+      return;
+    }
+    updateProject(project.id, {
+      status: "ajustes",
+      adjustmentItems: draftItems,
+      lastAdjustmentNote: draftItems
+        .map(
+          (i) =>
+            `${SECTIONS.find((s) => s.key === i.sectionKey)?.label} — ${i.fieldLabel}: ${i.comment}`,
+        )
+        .join("\n"),
+    });
     toast.success("Ajustes solicitados", { description: "O projeto foi devolvido ao Relator." });
     setAdjustOpen(false);
-    setAdjustNote("");
+    resetAdjustDraft();
     navigate({ to: "/revisor" });
   };
 
@@ -290,13 +372,58 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
           {/* Section body */}
           <div className="px-6 py-8 lg:px-10">
-            {section === "gerais" && <SectionGerais project={project} />}
+            {!isRevisor && pendingItems.length > 0 && (
+              <div className="mb-8 rounded-lg border border-status-adjust-fg/30 bg-status-adjust/10 p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <AlertTriangle className="size-4 text-status-adjust-fg" />
+                  <h2 className="text-sm font-semibold text-status-adjust-fg">
+                    Ajustes solicitados
+                  </h2>
+                  <span className="rounded-full bg-background/70 px-2 py-0.5 text-xs font-semibold tabular-nums text-status-adjust-fg">
+                    {pendingItems.length}
+                  </span>
+                </div>
+                <div className="space-y-2.5">
+                  {pendingItems.map((item) => {
+                    const sectionLabel =
+                      SECTIONS.find((s) => s.key === item.sectionKey)?.label ?? item.sectionKey;
+                    return (
+                      <div
+                        key={item.id}
+                        className="rounded-md border border-border bg-surface p-3.5"
+                      >
+                        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                          <div className="text-xs font-medium text-muted-foreground">
+                            {sectionLabel} <span className="text-foreground/40">·</span>{" "}
+                            <span className="text-foreground">{item.fieldLabel}</span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs text-primary hover:bg-primary/5 hover:text-primary"
+                            onClick={() => setSection(item.sectionKey)}
+                          >
+                            Ir para a seção
+                          </Button>
+                        </div>
+                        <p className="text-sm text-foreground">{item.comment}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {section === "gerais" && (
+              <SectionGerais project={project} pendingItems={pendingBySection.get("gerais")} />
+            )}
             {section === "inovador" && (
               <SectionQuestions
                 project={project}
                 title="Elemento Tecnologicamente Novo ou Inovador"
                 description="Descreva com riqueza de detalhes a novidade tecnológica do projeto, seus objetivos e o cenário que motivou o desenvolvimento."
                 questions={QUESTIONS_INOVADOR}
+                pendingItems={pendingBySection.get("inovador")}
               />
             )}
             {section === "barreiras" && (
@@ -305,6 +432,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 title="Barreiras e Desafios Tecnológicos"
                 description="Documente os desafios enfrentados, competências mobilizadas e estratégias adotadas para superá-los."
                 questions={QUESTIONS_BARREIRAS}
+                pendingItems={pendingBySection.get("barreiras")}
               />
             )}
             {section === "metodologia" && (
@@ -313,6 +441,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 title="Metodologia e Métodos Utilizados"
                 description="Detalhe a metodologia empregada, o passo a passo e os resultados esperados e alcançados."
                 questions={QUESTIONS_METODOLOGIA}
+                pendingItems={pendingBySection.get("metodologia")}
                 extras={
                   <div className="rounded-lg border border-dashed border-border bg-surface p-4">
                     <div className="mb-2 flex items-center gap-2 text-sm font-medium">
@@ -325,8 +454,15 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 }
               />
             )}
-            {section === "evidencias" && <SectionEvidencias project={project} />}
-            {section === "despesas" && <SectionDespesas project={project} />}
+            {section === "evidencias" && (
+              <SectionEvidencias
+                project={project}
+                pendingItems={generalPendingItems("evidencias")}
+              />
+            )}
+            {section === "despesas" && (
+              <SectionDespesas project={project} pendingItems={generalPendingItems("despesas")} />
+            )}
             {section === "revisao" && (
               <SectionRevisao
                 project={project}
@@ -335,6 +471,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 canSubmit={canSubmit}
                 onSubmit={handleSubmit}
                 hideSubmitCta={isRevisor}
+                pendingItems={generalPendingItems("revisao")}
               />
             )}
 
@@ -411,30 +548,124 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       </div>
 
       {isRevisor && (
-        <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
-          <DialogContent>
+        <Dialog
+          open={adjustOpen}
+          onOpenChange={(open) => {
+            setAdjustOpen(open);
+            if (!open) resetAdjustDraft();
+          }}
+        >
+          <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Solicitar ajustes</DialogTitle>
               <DialogDescription>
-                Descreva o que precisa ser corrigido. O projeto voltará para o Relator com o status
-                "Ajuste solicitado".
+                Aponte a etapa e, quando houver, o campo específico que precisa ser corrigido. O
+                projeto voltará para o Relator com o status "Ajuste solicitado".
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-1.5">
-              <Label htmlFor="adjust-note">O que precisa ser corrigido?</Label>
-              <Textarea
-                id="adjust-note"
-                value={adjustNote}
-                onChange={(e) => setAdjustNote(e.target.value)}
-                placeholder="Ex.: Detalhar melhor o comparativo tecnológico na seção Inovador."
-                rows={4}
-              />
+
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>Etapa</Label>
+                  <Select
+                    value={adjustSection}
+                    onValueChange={(v) => {
+                      setAdjustSection(v as SectionKey);
+                      setAdjustFieldId("");
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SECTIONS.map((s) => (
+                        <SelectItem key={s.key} value={s.key}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {adjustFieldOptions.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label>Campo</Label>
+                    <Select value={adjustFieldId} onValueChange={setAdjustFieldId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o campo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {adjustFieldOptions.map((f) => (
+                          <SelectItem key={f.id} value={f.id}>
+                            {f.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="adjust-note">O que precisa ser corrigido?</Label>
+                <Textarea
+                  id="adjust-note"
+                  value={adjustComment}
+                  onChange={(e) => setAdjustComment(e.target.value)}
+                  placeholder="Ex.: Detalhar melhor o comparativo tecnológico."
+                  rows={3}
+                />
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={addAdjustItem}
+              >
+                <Plus className="size-3.5" /> Adicionar item ao pedido
+              </Button>
+
+              {draftItems.length > 0 && (
+                <div className="space-y-2 rounded-md border border-border bg-surface-muted/50 p-3">
+                  {draftItems.map((item) => {
+                    const sectionLabel =
+                      SECTIONS.find((s) => s.key === item.sectionKey)?.label ?? item.sectionKey;
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-start justify-between gap-2 rounded-md border border-border bg-surface p-2.5"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-medium text-muted-foreground">
+                            {sectionLabel} ·{" "}
+                            <span className="text-foreground">{item.fieldLabel}</span>
+                          </div>
+                          <p className="mt-0.5 text-sm text-foreground">{item.comment}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeAdjustItem(item.id)}
+                          className="shrink-0 text-muted-foreground hover:text-primary"
+                          aria-label="Remover item"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
+
             <DialogFooter>
               <Button variant="outline" onClick={() => setAdjustOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleRequestAdjustment}>Solicitar ajustes</Button>
+              <Button disabled={draftItems.length === 0} onClick={handleRequestAdjustment}>
+                Solicitar ajustes
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

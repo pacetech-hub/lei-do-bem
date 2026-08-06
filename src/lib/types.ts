@@ -86,6 +86,16 @@ export interface MctiParecer {
   results: MctiParecerResult[];
 }
 
+// Item estruturado de um pedido de ajuste do Revisor: aponta para a etapa e,
+// quando aplicável, o campo/pergunta específico dentro dela.
+export interface AdjustmentItem {
+  id: string;
+  sectionKey: SectionKey;
+  fieldId?: string;
+  fieldLabel: string;
+  comment: string;
+}
+
 export interface Attachment {
   id: string;
   name: string;
@@ -145,6 +155,8 @@ export interface Project {
   reviewedBy?: string;
   reviewedAt?: string;
   lastAdjustmentNote?: string;
+  adjustmentItems?: AdjustmentItem[];
+  sharedWithArea?: boolean;
   // Ciclo do Jurídico (ver LegalStatus)
   legalStatus?: LegalStatus;
   legalAnalysisNote?: string;
@@ -243,6 +255,29 @@ export const ALL_REQUIRED_QUESTIONS = [
   ...QUESTIONS_BARREIRAS,
   ...QUESTIONS_METODOLOGIA,
 ].map((q) => q.id);
+
+// Campos editáveis da seção "Informações Gerais", usados para que o Revisor
+// aponte um campo específico ao solicitar ajustes.
+export const GERAIS_FIELDS: Question[] = [
+  { id: "name", label: "Nome do projeto" },
+  { id: "area", label: "Área" },
+  { id: "responsible", label: "Responsável" },
+  { id: "startDate", label: "Data de início" },
+  { id: "endDate", label: "Data prevista de término" },
+  { id: "hasPatent", label: "Registro de patente" },
+  { id: "natureza", label: "Natureza" },
+  { id: "atividade", label: "Atividade" },
+];
+
+// Perguntas/campos disponíveis por etapa, para o seletor de "campo" no pedido
+// de ajuste do Revisor. Etapas sem campos individuais (evidências, despesas,
+// revisão) ficam de fora e o ajuste se aplica à etapa como um todo.
+export const SECTION_FIELD_OPTIONS: Partial<Record<SectionKey, Question[]>> = {
+  gerais: GERAIS_FIELDS,
+  inovador: QUESTIONS_INOVADOR,
+  barreiras: QUESTIONS_BARREIRAS,
+  metodologia: QUESTIONS_METODOLOGIA,
+};
 
 export const AREAS = [
   "Pesquisa & Desenvolvimento",

@@ -6,10 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { MOCK_EMPLOYEES, MOCK_SUPPLIERS } from "@/lib/mock";
-import type { Project } from "@/lib/types";
+import type { AdjustmentItem, Project } from "@/lib/types";
 import { useProjectsStore } from "@/lib/store";
 import { toast } from "sonner";
 
@@ -54,7 +59,11 @@ function EmployeesTab({ project }: { project: Project }) {
       totalHours: total,
       eligibleHours: eligible,
     });
-    setBadge(""); setFound(null); setActivity(""); setTotalHours(""); setEligibleHours("");
+    setBadge("");
+    setFound(null);
+    setActivity("");
+    setTotalHours("");
+    setEligibleHours("");
     toast.success("Colaborador adicionado.");
   };
 
@@ -64,7 +73,8 @@ function EmployeesTab({ project }: { project: Project }) {
         <AlertTriangle className="size-4" />
         <AlertTitle>Atenção às horas elegíveis</AlertTitle>
         <AlertDescription>
-          Nem todas as horas do colaborador podem ser consideradas. Apenas as horas dedicadas a atividades de inovação devem ser contabilizadas.
+          Nem todas as horas do colaborador podem ser consideradas. Apenas as horas dedicadas a
+          atividades de inovação devem ser contabilizadas.
         </AlertDescription>
       </Alert>
 
@@ -74,8 +84,14 @@ function EmployeesTab({ project }: { project: Project }) {
           <div className="space-y-1.5">
             <Label>Crachá</Label>
             <div className="flex gap-2">
-              <Input value={badge} onChange={(e) => setBadge(e.target.value)} placeholder="Ex.: 10234" />
-              <Button variant="outline" size="icon" onClick={search}><Search className="size-4" /></Button>
+              <Input
+                value={badge}
+                onChange={(e) => setBadge(e.target.value)}
+                placeholder="Ex.: 10234"
+              />
+              <Button variant="outline" size="icon" onClick={search}>
+                <Search className="size-4" />
+              </Button>
             </div>
           </div>
           <div className="space-y-1.5">
@@ -92,18 +108,34 @@ function EmployeesTab({ project }: { project: Project }) {
           <div className="mt-3 grid gap-3 md:grid-cols-3">
             <div className="space-y-1.5 md:col-span-3">
               <Label>Atividade realizada</Label>
-              <Input value={activity} onChange={(e) => setActivity(e.target.value)} placeholder="Descreva a atividade de inovação executada" />
+              <Input
+                value={activity}
+                onChange={(e) => setActivity(e.target.value)}
+                placeholder="Descreva a atividade de inovação executada"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Horas totais no ano</Label>
-              <Input type="number" min="0" value={totalHours} onChange={(e) => setTotalHours(e.target.value)} />
+              <Input
+                type="number"
+                min="0"
+                value={totalHours}
+                onChange={(e) => setTotalHours(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Horas elegíveis</Label>
-              <Input type="number" min="0" value={eligibleHours} onChange={(e) => setEligibleHours(e.target.value)} />
+              <Input
+                type="number"
+                min="0"
+                value={eligibleHours}
+                onChange={(e) => setEligibleHours(e.target.value)}
+              />
             </div>
             <div className="flex items-end">
-              <Button className="w-full gap-2" onClick={submit}><Plus className="size-4" /> Adicionar</Button>
+              <Button className="w-full gap-2" onClick={submit}>
+                <Plus className="size-4" /> Adicionar
+              </Button>
             </div>
           </div>
         )}
@@ -137,9 +169,16 @@ function EmployeesTab({ project }: { project: Project }) {
                 <TableCell className="text-sm text-muted-foreground">{e.role}</TableCell>
                 <TableCell className="text-sm">{e.activity}</TableCell>
                 <TableCell className="text-right tabular-nums">{e.totalHours}h</TableCell>
-                <TableCell className="text-right tabular-nums font-medium">{e.eligibleHours}h</TableCell>
+                <TableCell className="text-right tabular-nums font-medium">
+                  {e.eligibleHours}h
+                </TableCell>
                 <TableCell>
-                  <Button size="icon" variant="ghost" className="size-8" onClick={() => removeEmployee(project.id, e.id)}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-8"
+                    onClick={() => removeEmployee(project.id, e.id)}
+                  >
                     <Trash2 className="size-4" />
                   </Button>
                 </TableCell>
@@ -164,8 +203,13 @@ function ThirdPartyTab({ project }: { project: Project }) {
   const supplier = MOCK_SUPPLIERS.find((s) => s.name === company)!;
 
   const submit = () => {
-    const t = Number(total); const u = Number(used); const a = Number(allocatedElsewhere || 0);
-    if (!invoice || !t || !u) { toast.warning("Preencha nota fiscal, valor total e valor utilizado."); return; }
+    const t = Number(total);
+    const u = Number(used);
+    const a = Number(allocatedElsewhere || 0);
+    if (!invoice || !t || !u) {
+      toast.warning("Preencha nota fiscal, valor total e valor utilizado.");
+      return;
+    }
     if (u + a > t) {
       toast.error("Valor excede o total da nota", {
         description: `Utilizado (${brl(u)}) + já alocado em outros projetos (${brl(a)}) ultrapassa o total (${brl(t)}).`,
@@ -181,7 +225,10 @@ function ThirdPartyTab({ project }: { project: Project }) {
       usedInProject: u,
       allocatedElsewhere: a,
     });
-    setInvoice(""); setTotal(""); setUsed(""); setAllocatedElsewhere("");
+    setInvoice("");
+    setTotal("");
+    setUsed("");
+    setAllocatedElsewhere("");
     toast.success("Serviço adicionado.");
   };
 
@@ -197,7 +244,11 @@ function ThirdPartyTab({ project }: { project: Project }) {
               onChange={(e) => setCompany(e.target.value)}
               className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
-              {MOCK_SUPPLIERS.map((s) => <option key={s.cnpj} value={s.name}>{s.name}</option>)}
+              {MOCK_SUPPLIERS.map((s) => (
+                <option key={s.cnpj} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="space-y-1.5">
@@ -206,26 +257,48 @@ function ThirdPartyTab({ project }: { project: Project }) {
           </div>
           <div className="space-y-1.5">
             <Label>Nota fiscal</Label>
-            <Input value={invoice} onChange={(e) => setInvoice(e.target.value)} placeholder="Ex.: NF 12345" />
+            <Input
+              value={invoice}
+              onChange={(e) => setInvoice(e.target.value)}
+              placeholder="Ex.: NF 12345"
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Valor total da nota (R$)</Label>
-            <Input type="number" step="0.01" value={total} onChange={(e) => setTotal(e.target.value)} />
+            <Input
+              type="number"
+              step="0.01"
+              value={total}
+              onChange={(e) => setTotal(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Valor utilizado neste projeto (R$)</Label>
-            <Input type="number" step="0.01" value={used} onChange={(e) => setUsed(e.target.value)} />
+            <Input
+              type="number"
+              step="0.01"
+              value={used}
+              onChange={(e) => setUsed(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
               Já alocado em outros projetos (R$)
               <Info className="size-3.5 text-muted-foreground" />
             </Label>
-            <Input type="number" step="0.01" value={allocatedElsewhere} onChange={(e) => setAllocatedElsewhere(e.target.value)} placeholder="0,00" />
+            <Input
+              type="number"
+              step="0.01"
+              value={allocatedElsewhere}
+              onChange={(e) => setAllocatedElsewhere(e.target.value)}
+              placeholder="0,00"
+            />
           </div>
         </div>
         <div className="mt-3 flex justify-end">
-          <Button className="gap-2" onClick={submit}><Plus className="size-4" /> Adicionar</Button>
+          <Button className="gap-2" onClick={submit}>
+            <Plus className="size-4" /> Adicionar
+          </Button>
         </div>
       </div>
 
@@ -256,10 +329,19 @@ function ThirdPartyTab({ project }: { project: Project }) {
                 <TableCell className="font-mono text-xs">{e.cnpj}</TableCell>
                 <TableCell className="text-sm">{e.invoice}</TableCell>
                 <TableCell className="text-right tabular-nums">{brl(e.invoiceTotal)}</TableCell>
-                <TableCell className="text-right tabular-nums font-medium">{brl(e.usedInProject)}</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">{brl(e.allocatedElsewhere ?? 0)}</TableCell>
+                <TableCell className="text-right tabular-nums font-medium">
+                  {brl(e.usedInProject)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">
+                  {brl(e.allocatedElsewhere ?? 0)}
+                </TableCell>
                 <TableCell>
-                  <Button size="icon" variant="ghost" className="size-8" onClick={() => removeThirdParty(project.id, e.id)}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-8"
+                    onClick={() => removeThirdParty(project.id, e.id)}
+                  >
                     <Trash2 className="size-4" />
                   </Button>
                 </TableCell>
@@ -284,7 +366,10 @@ function MaterialsTab({ project }: { project: Project }) {
   const s = MOCK_SUPPLIERS.find((x) => x.name === supplier)!;
 
   const submit = () => {
-    if (!invoice || !gross || !desc) { toast.warning("Preencha os campos obrigatórios."); return; }
+    if (!invoice || !gross || !desc) {
+      toast.warning("Preencha os campos obrigatórios.");
+      return;
+    }
     addMaterial(project.id, {
       id: crypto.randomUUID(),
       supplier: s.name,
@@ -295,7 +380,11 @@ function MaterialsTab({ project }: { project: Project }) {
       materialDescription: desc,
       usageDescription: usage,
     });
-    setInvoice(""); setGross(""); setNet(""); setDesc(""); setUsage("");
+    setInvoice("");
+    setGross("");
+    setNet("");
+    setDesc("");
+    setUsage("");
     toast.success("Material adicionado.");
   };
 
@@ -311,7 +400,11 @@ function MaterialsTab({ project }: { project: Project }) {
               onChange={(e) => setSupplier(e.target.value)}
               className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
-              {MOCK_SUPPLIERS.map((x) => <option key={x.cnpj} value={x.name}>{x.name}</option>)}
+              {MOCK_SUPPLIERS.map((x) => (
+                <option key={x.cnpj} value={x.name}>
+                  {x.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="space-y-1.5">
@@ -324,7 +417,12 @@ function MaterialsTab({ project }: { project: Project }) {
           </div>
           <div className="space-y-1.5 md:col-span-1">
             <Label>Valor bruto (R$)</Label>
-            <Input type="number" step="0.01" value={gross} onChange={(e) => setGross(e.target.value)} />
+            <Input
+              type="number"
+              step="0.01"
+              value={gross}
+              onChange={(e) => setGross(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Valor líquido (R$)</Label>
@@ -332,15 +430,25 @@ function MaterialsTab({ project }: { project: Project }) {
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <Label>Descrição do material</Label>
-            <Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Ex.: Placa FPGA modelo XYZ" />
+            <Input
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              placeholder="Ex.: Placa FPGA modelo XYZ"
+            />
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <Label>Descrição da utilização no projeto</Label>
-            <Input value={usage} onChange={(e) => setUsage(e.target.value)} placeholder="Ex.: Prototipagem de módulo de aquisição de dados" />
+            <Input
+              value={usage}
+              onChange={(e) => setUsage(e.target.value)}
+              placeholder="Ex.: Prototipagem de módulo de aquisição de dados"
+            />
           </div>
         </div>
         <div className="mt-3 flex justify-end">
-          <Button className="gap-2" onClick={submit}><Plus className="size-4" /> Adicionar</Button>
+          <Button className="gap-2" onClick={submit}>
+            <Plus className="size-4" /> Adicionar
+          </Button>
         </div>
       </div>
 
@@ -370,9 +478,16 @@ function MaterialsTab({ project }: { project: Project }) {
                 <TableCell className="text-sm">{m.invoice}</TableCell>
                 <TableCell className="text-sm">{m.materialDescription}</TableCell>
                 <TableCell className="text-right tabular-nums">{brl(m.grossValue)}</TableCell>
-                <TableCell className="text-right tabular-nums font-medium">{brl(m.netValue)}</TableCell>
+                <TableCell className="text-right tabular-nums font-medium">
+                  {brl(m.netValue)}
+                </TableCell>
                 <TableCell>
-                  <Button size="icon" variant="ghost" className="size-8" onClick={() => removeMaterial(project.id, m.id)}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-8"
+                    onClick={() => removeMaterial(project.id, m.id)}
+                  >
                     <Trash2 className="size-4" />
                   </Button>
                 </TableCell>
@@ -385,15 +500,33 @@ function MaterialsTab({ project }: { project: Project }) {
   );
 }
 
-export function SectionDespesas({ project }: { project: Project }) {
+export function SectionDespesas({
+  project,
+  pendingItems,
+}: {
+  project: Project;
+  pendingItems?: AdjustmentItem[];
+}) {
   return (
     <div className="max-w-5xl">
       <header className="mb-6">
         <h2 className="text-lg font-semibold tracking-tight">Despesas</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Registre as despesas elegíveis vinculadas ao projeto: horas de funcionários, serviços de terceiros e materiais.
+          Registre as despesas elegíveis vinculadas ao projeto: horas de funcionários, serviços de
+          terceiros e materiais.
         </p>
       </header>
+
+      {pendingItems && pendingItems.length > 0 && (
+        <div className="mb-6 flex items-start gap-2 rounded-lg border border-status-adjust-fg/40 bg-status-adjust/5 p-4 text-sm text-status-adjust-fg">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <div className="space-y-1">
+            {pendingItems.map((item) => (
+              <p key={item.id}>Ajuste solicitado: {item.comment}</p>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Tabs defaultValue="funcionarios">
         <TabsList>
@@ -401,9 +534,15 @@ export function SectionDespesas({ project }: { project: Project }) {
           <TabsTrigger value="terceiros">Serviços de Terceiros</TabsTrigger>
           <TabsTrigger value="materiais">Materiais</TabsTrigger>
         </TabsList>
-        <TabsContent value="funcionarios" className="mt-4"><EmployeesTab project={project} /></TabsContent>
-        <TabsContent value="terceiros" className="mt-4"><ThirdPartyTab project={project} /></TabsContent>
-        <TabsContent value="materiais" className="mt-4"><MaterialsTab project={project} /></TabsContent>
+        <TabsContent value="funcionarios" className="mt-4">
+          <EmployeesTab project={project} />
+        </TabsContent>
+        <TabsContent value="terceiros" className="mt-4">
+          <ThirdPartyTab project={project} />
+        </TabsContent>
+        <TabsContent value="materiais" className="mt-4">
+          <MaterialsTab project={project} />
+        </TabsContent>
       </Tabs>
     </div>
   );
