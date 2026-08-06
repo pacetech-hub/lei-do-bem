@@ -17,10 +17,11 @@ function FinanceiroPage() {
     <div className="min-h-screen bg-background">
       <AppHeader current="Financeiro" />
       <ProjectsList
-        title="Projetos — Responsável Financeiro"
+        title="Meus Projetos"
         description="Acompanhe as despesas dos projetos do seu setor."
         scopedFilial="Matriz — São Paulo/SP"
         scopedSetor="Pesquisa & Desenvolvimento"
+        variant="financeiro"
       />
     </div>
   );

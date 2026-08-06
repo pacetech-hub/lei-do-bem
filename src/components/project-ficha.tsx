@@ -77,7 +77,7 @@ import { SectionRevisao } from "@/components/sections/section-revisao";
 
 interface ProjectFichaProps {
   project: Project;
-  mode: "relator" | "revisor";
+  mode: "relator" | "revisor" | "financeiro";
   masterProject?: Project;
 }
 
@@ -97,7 +97,12 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const [shareReviewer, setShareReviewer] = useState("");
 
   const isRevisor = mode === "revisor";
-  const fichaRoute = isRevisor ? "/revisor/projetos/$id" : "/projetos/$id";
+  const isFinanceiro = mode === "financeiro";
+  const fichaRoute = isRevisor
+    ? "/revisor/projetos/$id"
+    : isFinanceiro
+      ? "/financeiro/projetos/$id"
+      : "/projetos/$id";
   const canReview = isRevisor && project.status === "revisao";
 
   const pendingItems = useMemo(() => project.adjustmentItems ?? [], [project.adjustmentItems]);
@@ -410,27 +415,6 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                     <span className="font-semibold text-foreground">{overall}%</span>
                   </div>
                   <Progress value={overall} className="h-1.5 w-[220px]" />
-                  {isRevisor && (
-                    <div className="mt-1.5 flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5"
-                        disabled={!canReview}
-                        onClick={() => setAdjustOpen(true)}
-                      >
-                        <Wrench className="size-3.5" /> Enviar para ajustes
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="gap-1.5"
-                        disabled={!canReview}
-                        onClick={() => setApproveOpen(true)}
-                      >
-                        <CheckCircle2 className="size-3.5" /> Aprovar e enviar para o Jurídico
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -457,7 +441,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
           {/* Section body */}
           <div className="px-6 py-8 lg:px-10">
-            {!isRevisor && pendingItems.length > 0 && (
+            {mode === "relator" && pendingItems.length > 0 && (
               <div className="mb-8 rounded-lg border border-status-adjust-fg/30 bg-status-adjust/10 p-5">
                 <div className="mb-3 flex items-center gap-2">
                   <AlertTriangle className="size-4 text-status-adjust-fg" />
@@ -500,7 +484,11 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             )}
 
             {section === "gerais" && (
-              <SectionGerais project={project} pendingItems={pendingBySection.get("gerais")} />
+              <SectionGerais
+                project={project}
+                pendingItems={pendingBySection.get("gerais")}
+                readOnly={isFinanceiro}
+              />
             )}
             {section === "inovador" && (
               <SectionQuestions
@@ -509,6 +497,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 description="Descreva com riqueza de detalhes a novidade tecnológica do projeto, seus objetivos e o cenário que motivou o desenvolvimento."
                 questions={QUESTIONS_INOVADOR}
                 pendingItems={pendingBySection.get("inovador")}
+                readOnly={isFinanceiro}
               />
             )}
             {section === "barreiras" && (
@@ -518,6 +507,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 description="Documente os desafios enfrentados, competências mobilizadas e estratégias adotadas para superá-los."
                 questions={QUESTIONS_BARREIRAS}
                 pendingItems={pendingBySection.get("barreiras")}
+                readOnly={isFinanceiro}
               />
             )}
             {section === "metodologia" && (
@@ -527,15 +517,18 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 description="Detalhe a metodologia empregada, o passo a passo e os resultados esperados e alcançados."
                 questions={QUESTIONS_METODOLOGIA}
                 pendingItems={pendingBySection.get("metodologia")}
+                readOnly={isFinanceiro}
                 extras={
-                  <div className="rounded-lg border border-dashed border-border bg-surface p-4">
-                    <div className="mb-2 flex items-center gap-2 text-sm font-medium">
-                      <CloudUpload className="size-4 text-primary" /> Upload de cronograma
+                  isFinanceiro ? undefined : (
+                    <div className="rounded-lg border border-dashed border-border bg-surface p-4">
+                      <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+                        <CloudUpload className="size-4 text-primary" /> Upload de cronograma
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Anexe o cronograma consolidado do projeto (PDF, XLSX ou imagem).
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Anexe o cronograma consolidado do projeto (PDF, XLSX ou imagem).
-                    </p>
-                  </div>
+                  )
                 }
               />
             )}
@@ -543,6 +536,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
               <SectionEvidencias
                 project={project}
                 pendingItems={generalPendingItems("evidencias")}
+                readOnly={isFinanceiro}
               />
             )}
             {section === "despesas" && (
@@ -554,31 +548,9 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 completion={completion}
                 onGoToSection={setSection}
                 canSubmit={canSubmit}
-                hideSubmitCta={isRevisor}
+                hideSubmitCta={isRevisor || isFinanceiro}
                 pendingItems={generalPendingItems("revisao")}
               />
-            )}
-
-            {isRevisor && (
-              <div className="mt-8 flex flex-col items-end gap-2 border-t border-border pt-6">
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    disabled={!canReview}
-                    onClick={() => setAdjustOpen(true)}
-                  >
-                    <Wrench className="size-4" /> Enviar para ajustes
-                  </Button>
-                  <Button
-                    className="gap-2"
-                    disabled={!canReview}
-                    onClick={() => setApproveOpen(true)}
-                  >
-                    <CheckCircle2 className="size-4" /> Aprovar e enviar para o Jurídico
-                  </Button>
-                </div>
-              </div>
             )}
           </div>
 
@@ -615,6 +587,10 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                       <CheckCircle2 className="size-4" /> Aprovar e enviar para o Jurídico
                     </Button>
                   </>
+                ) : isFinanceiro ? (
+                  <span className="text-xs text-muted-foreground">
+                    Somente a etapa de Despesas pode ser editada.
+                  </span>
                 ) : (
                   <>
                     <Button variant="outline" className="gap-2" onClick={handleSaveDraft}>

@@ -21,7 +21,7 @@ import { STATUS_LABEL, type Project } from "@/lib/types";
 interface MasterProjectViewProps {
   project: Project;
   dependents: Project[];
-  mode?: "relator" | "revisor";
+  mode?: "relator" | "revisor" | "financeiro";
 }
 
 export function MasterProjectView({
@@ -31,7 +31,12 @@ export function MasterProjectView({
 }: MasterProjectViewProps) {
   const navigate = useNavigate();
   const isRevisor = mode === "revisor";
-  const fichaRoute = isRevisor ? "/revisor/projetos/$id" : "/projetos/$id";
+  const isFinanceiro = mode === "financeiro";
+  const fichaRoute = isRevisor
+    ? "/revisor/projetos/$id"
+    : isFinanceiro
+      ? "/financeiro/projetos/$id"
+      : "/projetos/$id";
 
   const statusSummary = summarizeDependentStatuses(dependents);
   const overallProgress = dependents.length
@@ -62,7 +67,7 @@ export function MasterProjectView({
               {project.area} · Responsável: {project.responsible}
             </p>
           </div>
-          {!isRevisor && (
+          {mode === "relator" && (
             <Button asChild size="default" className="gap-2">
               <a href={`/projetos/novo?master=${project.id}`}>
                 <Plus className="size-4" /> Novo Projeto Dependente
@@ -183,7 +188,7 @@ export function MasterProjectView({
 
         <div className="mt-6">
           <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-            <Link to={isRevisor ? "/revisor" : "/dashboard"}>
+            <Link to={isRevisor ? "/revisor" : isFinanceiro ? "/financeiro" : "/dashboard"}>
               {isRevisor ? "Voltar para Revisão de Projetos" : "Voltar para Meus Projetos"}
             </Link>
           </Button>

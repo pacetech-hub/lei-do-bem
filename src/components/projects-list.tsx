@@ -189,7 +189,7 @@ interface ProjectsListProps {
   infoSetor?: string;
   paginated?: boolean;
   pageSize?: number;
-  variant?: "default" | "relator" | "revisor";
+  variant?: "default" | "relator" | "revisor" | "financeiro";
 }
 
 export function ProjectsList({
@@ -219,7 +219,8 @@ export function ProjectsList({
 
   const isRelator = variant === "relator";
   const isRevisor = variant === "revisor";
-  const isHierarchical = isRelator || isRevisor;
+  const isFinanceiro = variant === "financeiro";
+  const isHierarchical = isRelator || isRevisor || isFinanceiro;
   const isScoped = Boolean(scopedFilial && scopedSetor);
   const showFilialSetorFilters = !isScoped && variant === "default";
   const showFilialColumn = !isScoped && !isHierarchical;
@@ -365,10 +366,12 @@ export function ProjectsList({
     sortKey !== "updated_desc";
 
   const colCount = isRevisor
-    ? 7 // Trimestre, Projeto, Relator, Área, Filial, Atualizado em, seta
+    ? 7 // Trimestre, Projeto, Status, Relator, Área, Filial, seta
     : isRelator
-      ? 4 // Trimestre, Status, Projeto, seta
-      : 4 + (showFilialColumn ? 1 : 0) + (showSetorColumn ? 1 : 0) + 1; // + seta
+      ? 4 // Trimestre, Projeto, Status, seta
+      : isFinanceiro
+        ? 5 // Trimestre, Projeto, Responsável, Status, seta
+        : 4 + (showFilialColumn ? 1 : 0) + (showSetorColumn ? 1 : 0) + 1; // + seta
 
   const shownCount = isHierarchical ? hierarchicalRows.length : filtered.length;
   const totalCount = isHierarchical ? topLevelScoped.length : scopedProjects.length;
@@ -383,7 +386,14 @@ export function ProjectsList({
   };
 
   const openProject = (id: string) =>
-    navigate({ to: isRevisor ? "/revisor/projetos/$id" : "/projetos/$id", params: { id } });
+    navigate({
+      to: isRevisor
+        ? "/revisor/projetos/$id"
+        : isFinanceiro
+          ? "/financeiro/projetos/$id"
+          : "/projetos/$id",
+      params: { id },
+    });
 
   const renderHierarchicalRow = (entry: { project: Project; dependents: Project[] }) => {
     const { project: p, dependents } = entry;
@@ -484,7 +494,10 @@ export function ProjectsList({
               <TableCell className="py-4 text-sm text-muted-foreground">{getFilial(p)}</TableCell>
             </>
           )}
-          {isRelator && (
+          {isFinanceiro && (
+            <TableCell className="py-4 text-sm text-muted-foreground">{p.responsible}</TableCell>
+          )}
+          {(isRelator || isFinanceiro) && (
             <TableCell className="py-4 text-left align-top">
               {isMaster ? (
                 <div className="flex flex-wrap gap-1.5">
@@ -565,7 +578,12 @@ export function ProjectsList({
                     </TableCell>
                   </>
                 )}
-                {isRelator && (
+                {isFinanceiro && (
+                  <TableCell className="py-3.5 text-sm text-muted-foreground">
+                    {d.responsible}
+                  </TableCell>
+                )}
+                {(isRelator || isFinanceiro) && (
                   <TableCell className="py-3.5 text-left align-top">
                     <div className="flex flex-col items-start gap-1">
                       <StatusBadge status={d.status} />
@@ -873,7 +891,7 @@ export function ProjectsList({
           <TableHeader>
             <TableRow className="bg-surface-muted hover:bg-surface-muted">
               {isHierarchical && (
-                <TableHead className={isRelator ? "w-[15%]" : "w-[130px]"}>
+                <TableHead className={isRelator || isFinanceiro ? "w-[15%]" : "w-[130px]"}>
                   <button
                     type="button"
                     onClick={toggleQuarterSort}
@@ -890,18 +908,25 @@ export function ProjectsList({
                   </button>
                 </TableHead>
               )}
-              <TableHead className={isRelator ? "w-[80%]" : isHierarchical ? "w-[22%]" : "w-[30%]"}>
+              <TableHead
+                className={
+                  isRelator || isFinanceiro ? "w-[65%]" : isHierarchical ? "w-[22%]" : "w-[30%]"
+                }
+              >
                 Projeto
               </TableHead>
               {isRevisor && <TableHead className="w-[130px] text-left">Status</TableHead>}
               {isRevisor && <TableHead className="w-[14%]">Relator</TableHead>}
               {isRevisor && <TableHead className="w-[16%]">Área</TableHead>}
               {isRevisor && <TableHead className="w-[16%]">Filial</TableHead>}
+              {isFinanceiro && <TableHead className="w-[15%]">Responsável</TableHead>}
               {showFilialColumn && <TableHead>Filial</TableHead>}
               {showSetorColumn && <TableHead>Setor</TableHead>}
               {!isHierarchical && <TableHead>Responsável</TableHead>}
               {!isHierarchical && <TableHead>Última atualização</TableHead>}
-              {isRelator && <TableHead className="w-[20%] text-left">Status</TableHead>}
+              {(isRelator || isFinanceiro) && (
+                <TableHead className="w-[20%] text-left">Status</TableHead>
+              )}
               {!isHierarchical && <TableHead className="text-left">Status</TableHead>}
               <TableHead className="w-10" />
             </TableRow>

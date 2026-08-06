@@ -10,6 +10,7 @@ interface Props {
   questions: Question[];
   extras?: ReactNode;
   pendingItems?: AdjustmentItem[];
+  readOnly?: boolean;
 }
 
 export function SectionQuestions({
@@ -19,6 +20,7 @@ export function SectionQuestions({
   questions,
   extras,
   pendingItems,
+  readOnly = false,
 }: Props) {
   const setAnswer = useProjectsStore((s) => s.setAnswer);
   return (
@@ -39,6 +41,7 @@ export function SectionQuestions({
             onChange={(v) => setAnswer(project.id, q.id, v)}
             attachments={project.attachments[q.id] ?? []}
             flagComment={pendingItems?.find((i) => i.fieldId === q.id)?.comment}
+            readOnly={readOnly}
           />
         ))}
         {extras}

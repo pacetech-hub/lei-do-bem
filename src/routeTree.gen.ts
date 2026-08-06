@@ -18,6 +18,7 @@ import { Route as ProjetosNovoRouteImport } from './routes/projetos.novo'
 import { Route as ProjetosIdRouteImport } from './routes/projetos.$id'
 import { Route as RevisorProjetosIdRouteImport } from './routes/revisor.projetos.$id'
 import { Route as JuridicoFinalizadosRouteImport } from './routes/juridico.finalizados'
+import { Route as FinanceiroProjetosIdRouteImport } from './routes/financeiro.projetos.$id'
 import { Route as JuridicoProjetosIdRouteImport } from './routes/juridico.projetos.$id'
 
 const RevisorRoute = RevisorRouteImport.update({
@@ -65,6 +66,11 @@ const JuridicoFinalizadosRoute = JuridicoFinalizadosRouteImport.update({
   path: '/juridico/finalizados',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FinanceiroProjetosIdRoute = FinanceiroProjetosIdRouteImport.update({
+  id: '/financeiro/projetos/$id',
+  path: '/financeiro/projetos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JuridicoProjetosIdRoute = JuridicoProjetosIdRouteImport.update({
   id: '/juridico/projetos/$id',
   path: '/juridico/projetos/$id',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/projetos/novo': typeof ProjetosNovoRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
   '/juridico/finalizados': typeof JuridicoFinalizadosRoute
+  '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/projetos/novo': typeof ProjetosNovoRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
   '/juridico/finalizados': typeof JuridicoFinalizadosRoute
+  '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/projetos/novo': typeof ProjetosNovoRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
   '/juridico/finalizados': typeof JuridicoFinalizadosRoute
+  '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/projetos/novo'
     | '/revisor/projetos/$id'
     | '/juridico/finalizados'
+    | '/financeiro/projetos/$id'
     | '/juridico/projetos/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/projetos/novo'
     | '/revisor/projetos/$id'
     | '/juridico/finalizados'
+    | '/financeiro/projetos/$id'
     | '/juridico/projetos/$id'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/projetos/novo'
     | '/revisor/projetos/$id'
     | '/juridico/finalizados'
+    | '/financeiro/projetos/$id'
     | '/juridico/projetos/$id'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +169,7 @@ export interface RootRouteChildren {
   ProjetosNovoRoute: typeof ProjetosNovoRoute
   RevisorProjetosIdRoute: typeof RevisorProjetosIdRoute
   JuridicoFinalizadosRoute: typeof JuridicoFinalizadosRoute
+  FinanceiroProjetosIdRoute: typeof FinanceiroProjetosIdRoute
   JuridicoProjetosIdRoute: typeof JuridicoProjetosIdRoute
 }
 
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JuridicoFinalizadosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/financeiro/projetos/$id': {
+      id: '/financeiro/projetos/$id'
+      path: '/financeiro/projetos/$id'
+      fullPath: '/financeiro/projetos/$id'
+      preLoaderRoute: typeof FinanceiroProjetosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/juridico/projetos/$id': {
       id: '/juridico/projetos/$id'
       path: '/juridico/projetos/$id'
@@ -245,6 +265,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjetosNovoRoute: ProjetosNovoRoute,
   RevisorProjetosIdRoute: RevisorProjetosIdRoute,
   JuridicoFinalizadosRoute: JuridicoFinalizadosRoute,
+  FinanceiroProjetosIdRoute: FinanceiroProjetosIdRoute,
   JuridicoProjetosIdRoute: JuridicoProjetosIdRoute,
 }
 export const routeTree = rootRouteImport

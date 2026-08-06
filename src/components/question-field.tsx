@@ -24,6 +24,7 @@ interface Props {
   attachments: Attachment[];
   minChars?: number;
   flagComment?: string;
+  readOnly?: boolean;
 }
 
 export function QuestionField({
@@ -35,6 +36,7 @@ export function QuestionField({
   attachments,
   minChars = 200,
   flagComment,
+  readOnly = false,
 }: Props) {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiMode, setAiMode] = useState<"improve" | "analyze">("improve");
@@ -78,35 +80,41 @@ export function QuestionField({
         <Label htmlFor={questionId} className="text-[13px] font-semibold text-foreground">
           {label}
         </Label>
-        <div className="flex shrink-0 gap-1.5">
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 gap-1.5 px-2 text-xs text-primary hover:bg-primary/5 hover:text-primary"
-            onClick={() => openAi("improve")}
-          >
-            <Sparkles className="size-3.5" /> Melhorar com IA
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => openAi("analyze")}
-          >
-            <ScanSearch className="size-3.5" /> Analisar
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="flex shrink-0 gap-1.5">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-7 gap-1.5 px-2 text-xs text-primary hover:bg-primary/5 hover:text-primary"
+              onClick={() => openAi("improve")}
+            >
+              <Sparkles className="size-3.5" /> Melhorar com IA
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => openAi("analyze")}
+            >
+              <ScanSearch className="size-3.5" /> Analisar
+            </Button>
+          </div>
+        )}
       </div>
 
       <Textarea
         id={questionId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        readOnly={readOnly}
         rows={5}
         placeholder="Escreva a resposta com o maior nível de detalhe possível…"
-        className="resize-y bg-background text-sm leading-relaxed"
+        className={cn(
+          "resize-y bg-background text-sm leading-relaxed",
+          readOnly && "cursor-default resize-none bg-surface-muted/50",
+        )}
       />
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
@@ -116,15 +124,17 @@ export function QuestionField({
             {!meetsMin && ` · sugerido: ${minChars}+`}
           </span>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="h-7 gap-1.5 text-xs"
-          onClick={handleAttach}
-        >
-          <Paperclip className="size-3.5" /> Anexar documento
-        </Button>
+        {!readOnly && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1.5 text-xs"
+            onClick={handleAttach}
+          >
+            <Paperclip className="size-3.5" /> Anexar documento
+          </Button>
+        )}
       </div>
 
       {attachments.length > 0 && (
@@ -139,14 +149,16 @@ export function QuestionField({
               <span className="text-muted-foreground">
                 {new Date(a.uploadedAt).toLocaleDateString("pt-BR")}
               </span>
-              <button
-                type="button"
-                onClick={() => removeAttachment(projectId, questionId, a.id)}
-                className="text-muted-foreground hover:text-primary"
-                aria-label="Remover anexo"
-              >
-                <X className="size-3.5" />
-              </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  onClick={() => removeAttachment(projectId, questionId, a.id)}
+                  className="text-muted-foreground hover:text-primary"
+                  aria-label="Remover anexo"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
             </li>
           ))}
         </ul>

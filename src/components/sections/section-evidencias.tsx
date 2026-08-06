@@ -45,9 +45,11 @@ const CATEGORIES: {
 export function SectionEvidencias({
   project,
   pendingItems,
+  readOnly = false,
 }: {
   project: Project;
   pendingItems?: AdjustmentItem[];
+  readOnly?: boolean;
 }) {
   const addAttachment = useProjectsStore((s) => s.addAttachment);
   const removeAttachment = useProjectsStore((s) => s.removeAttachment);
@@ -98,32 +100,34 @@ export function SectionEvidencias({
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-border bg-surface p-5">
-        <div className="grid size-10 place-items-center rounded-md bg-primary/10 text-primary">
-          <CloudUpload className="size-5" />
-        </div>
-        <div className="flex-1">
-          <div className="text-sm font-medium">Anexar nova evidência</div>
-          <div className="text-xs text-muted-foreground">
-            Arquivos até 20MB. PDF, imagens, planilhas e apresentações.
+      {!readOnly && (
+        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-border bg-surface p-5">
+          <div className="grid size-10 place-items-center rounded-md bg-primary/10 text-primary">
+            <CloudUpload className="size-5" />
           </div>
+          <div className="flex-1">
+            <div className="text-sm font-medium">Anexar nova evidência</div>
+            <div className="text-xs text-muted-foreground">
+              Arquivos até 20MB. PDF, imagens, planilhas e apresentações.
+            </div>
+          </div>
+          <Select value={category} onValueChange={(v) => setCategory(v as typeof category)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c.key} value={c.key}>
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={handleUpload} className="gap-2">
+            <CloudUpload className="size-4" /> Anexar
+          </Button>
         </div>
-        <Select value={category} onValueChange={(v) => setCategory(v as typeof category)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {CATEGORIES.map((c) => (
-              <SelectItem key={c.key} value={c.key}>
-                {c.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={handleUpload} className="gap-2">
-          <CloudUpload className="size-4" /> Anexar
-        </Button>
-      </div>
+      )}
 
       <div className="space-y-6">
         {CATEGORIES.map((c) => {
@@ -167,14 +171,16 @@ export function SectionEvidencias({
                           {a.uploadedBy}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="size-8 text-muted-foreground hover:text-primary"
-                            onClick={() => removeAttachment(project.id, "_evidencias", a.id)}
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
+                          {!readOnly && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="size-8 text-muted-foreground hover:text-primary"
+                              onClick={() => removeAttachment(project.id, "_evidencias", a.id)}
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

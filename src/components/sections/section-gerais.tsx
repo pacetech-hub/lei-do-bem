@@ -93,9 +93,11 @@ function toFormState(p: Project): FormState {
 export function SectionGerais({
   project,
   pendingItems,
+  readOnly = false,
 }: {
   project: Project;
   pendingItems?: AdjustmentItem[];
+  readOnly?: boolean;
 }) {
   const updateProject = useProjectsStore((s) => s.updateProject);
   const [editing, setEditing] = useState(false);
@@ -160,7 +162,7 @@ export function SectionGerais({
             Dados de identificação do projeto informados na criação.
           </p>
         </div>
-        {!editing ? (
+        {readOnly ? null : !editing ? (
           <Button variant="outline" size="sm" className="gap-2" onClick={startEdit}>
             <Pencil className="size-4" /> Editar
           </Button>
