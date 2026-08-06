@@ -9,8 +9,10 @@ import {
   CloudUpload,
   ArrowLeft,
   GitFork,
+  Share2,
   Trash2,
   Wrench,
+  XCircle,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -50,9 +52,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useProjectsStore } from "@/lib/store";
-import { getFilial, quarterLabel } from "@/components/projects-list";
+import { FILIAIS, getFilial, quarterLabel } from "@/components/projects-list";
+import { REVISOR_NAMES } from "@/lib/mock";
 import {
   ALL_REQUIRED_QUESTIONS,
+  AREAS,
   CURRENT_USER,
   QUESTIONS_BARREIRAS,
   QUESTIONS_INOVADOR,
@@ -87,6 +91,10 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const [adjustComment, setAdjustComment] = useState("");
   const [draftItems, setDraftItems] = useState<AdjustmentItem[]>([]);
   const [approveOpen, setApproveOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareFilial, setShareFilial] = useState("");
+  const [shareSetor, setShareSetor] = useState("");
+  const [shareReviewer, setShareReviewer] = useState("");
 
   const isRevisor = mode === "revisor";
   const fichaRoute = isRevisor ? "/revisor/projetos/$id" : "/projetos/$id";
@@ -233,6 +241,46 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
     navigate({ to: "/revisor" });
   };
 
+  const handleShare = () => {
+    if (!shareFilial || !shareSetor || !shareReviewer) {
+      toast.error("Selecione a filial, a área e o revisor responsável.");
+      return;
+    }
+    updateProject(project.id, {
+      sharedWithArea: true,
+      sharedFilial: shareFilial,
+      sharedSetor: shareSetor,
+      sharedReviewer: shareReviewer,
+      sharedStatus: "pendente",
+    });
+    toast.success("Projeto compartilhado", {
+      description: `Compartilhado com ${shareSetor} — ${shareReviewer}.`,
+    });
+    setShareOpen(false);
+    setShareFilial("");
+    setShareSetor("");
+    setShareReviewer("");
+  };
+
+  const handleAcceptShare = () => {
+    updateProject(project.id, { sharedStatus: "aceito" });
+    toast.success("Compartilhamento aceito", {
+      description: "O projeto continua na sua fila de revisão.",
+    });
+  };
+
+  const handleDeclineShare = () => {
+    updateProject(project.id, {
+      sharedWithArea: false,
+      sharedFilial: undefined,
+      sharedSetor: undefined,
+      sharedReviewer: undefined,
+      sharedStatus: undefined,
+    });
+    toast.success("Compartilhamento recusado");
+    navigate({ to: "/revisor" });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader current={project.name} />
@@ -250,30 +298,67 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
           <div className="border-b border-border bg-surface">
             <div className="px-6 py-5 lg:px-10">
               {isRevisor && (
-                <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg border border-border bg-surface-muted/60 px-4 py-3 text-xs text-muted-foreground">
-                  <span>
-                    Status:{" "}
-                    <span className="font-medium text-foreground">
-                      {STATUS_LABEL[project.status]}
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface-muted/60 px-4 py-3 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                    <span>
+                      Status:{" "}
+                      <span className="font-medium text-foreground">
+                        {STATUS_LABEL[project.status]}
+                      </span>
                     </span>
-                  </span>
-                  <span>
-                    Relator:{" "}
-                    <span className="font-medium text-foreground">{project.responsible}</span>
-                  </span>
-                  <span>
-                    Área: <span className="font-medium text-foreground">{project.area}</span>
-                  </span>
-                  <span>
-                    Filial:{" "}
-                    <span className="font-medium text-foreground">{getFilial(project)}</span>
-                  </span>
-                  <span>
-                    Trimestre:{" "}
-                    <span className="font-medium text-foreground">
-                      {quarterLabel(project.updatedAt)}
+                    <span>
+                      Relator:{" "}
+                      <span className="font-medium text-foreground">{project.responsible}</span>
                     </span>
-                  </span>
+                    <span>
+                      Área: <span className="font-medium text-foreground">{project.area}</span>
+                    </span>
+                    <span>
+                      Filial:{" "}
+                      <span className="font-medium text-foreground">{getFilial(project)}</span>
+                    </span>
+                    <span>
+                      Trimestre:{" "}
+                      <span className="font-medium text-foreground">
+                        {quarterLabel(project.updatedAt)}
+                      </span>
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 shrink-0 gap-1.5 text-xs"
+                    onClick={() => setShareOpen(true)}
+                  >
+                    <Share2 className="size-3.5" /> Compartilhar projeto
+                  </Button>
+                </div>
+              )}
+
+              {isRevisor && project.sharedWithArea && project.sharedStatus === "pendente" && (
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
+                  <div className="flex items-start gap-2 text-sm text-foreground">
+                    <Share2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <span>
+                      Este projeto foi compartilhado com{" "}
+                      <span className="font-medium">{project.sharedSetor}</span>
+                      {project.sharedFilial && <> · {project.sharedFilial}</>}. Você pode aceitar ou
+                      recusar a revisão.
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={handleDeclineShare}
+                    >
+                      <XCircle className="size-3.5" /> Recusar
+                    </Button>
+                    <Button size="sm" className="gap-1.5" onClick={handleAcceptShare}>
+                      <CheckCircle2 className="size-3.5" /> Aceitar
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -334,7 +419,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                         disabled={!canReview}
                         onClick={() => setAdjustOpen(true)}
                       >
-                        <Wrench className="size-3.5" /> Solicitar ajustes
+                        <Wrench className="size-3.5" /> Enviar para ajustes
                       </Button>
                       <Button
                         size="sm"
@@ -342,7 +427,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                         disabled={!canReview}
                         onClick={() => setApproveOpen(true)}
                       >
-                        <CheckCircle2 className="size-3.5" /> Aprovar e encaminhar
+                        <CheckCircle2 className="size-3.5" /> Aprovar e enviar para o Jurídico
                       </Button>
                     </div>
                   )}
@@ -483,14 +568,14 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                     disabled={!canReview}
                     onClick={() => setAdjustOpen(true)}
                   >
-                    <Wrench className="size-4" /> Solicitar ajustes
+                    <Wrench className="size-4" /> Enviar para ajustes
                   </Button>
                   <Button
                     className="gap-2"
                     disabled={!canReview}
                     onClick={() => setApproveOpen(true)}
                   >
-                    <CheckCircle2 className="size-4" /> Aprovar e encaminhar ao Jurídico
+                    <CheckCircle2 className="size-4" /> Aprovar e enviar para o Jurídico
                   </Button>
                 </div>
               </div>
@@ -520,14 +605,14 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                       disabled={!canReview}
                       onClick={() => setAdjustOpen(true)}
                     >
-                      <Wrench className="size-4" /> Solicitar ajustes
+                      <Wrench className="size-4" /> Enviar para ajustes
                     </Button>
                     <Button
                       className="gap-2"
                       disabled={!canReview}
                       onClick={() => setApproveOpen(true)}
                     >
-                      <CheckCircle2 className="size-4" /> Aprovar e encaminhar
+                      <CheckCircle2 className="size-4" /> Aprovar e enviar para o Jurídico
                     </Button>
                   </>
                 ) : (
@@ -556,7 +641,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
         >
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Solicitar ajustes</DialogTitle>
+              <DialogTitle>Enviar para ajustes</DialogTitle>
               <DialogDescription>
                 Aponte a etapa e, quando houver, o campo específico que precisa ser corrigido. O
                 projeto voltará para o Relator com o status "Ajuste solicitado".
@@ -663,7 +748,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 Cancelar
               </Button>
               <Button disabled={draftItems.length === 0} onClick={handleRequestAdjustment}>
-                Solicitar ajustes
+                Enviar para ajustes
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -683,10 +768,81 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleApprove}>Aprovar e encaminhar</AlertDialogAction>
+              <AlertDialogAction onClick={handleApprove}>
+                Aprovar e enviar para o Jurídico
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      )}
+
+      {isRevisor && (
+        <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Compartilhar projeto</DialogTitle>
+              <DialogDescription>
+                Selecione a filial, a área e o revisor responsável para compartilhar este projeto.
+                Quem receber poderá aceitar ou recusar a revisão.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label>Filial</Label>
+                <Select value={shareFilial} onValueChange={setShareFilial}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a filial" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FILIAIS.map((f) => (
+                      <SelectItem key={f} value={f}>
+                        {f}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Área</Label>
+                <Select value={shareSetor} onValueChange={setShareSetor}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a área" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AREAS.map((a) => (
+                      <SelectItem key={a} value={a}>
+                        {a}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Revisor responsável</Label>
+                <Select value={shareReviewer} onValueChange={setShareReviewer}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o revisor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REVISOR_NAMES.map((r) => (
+                      <SelectItem key={r} value={r}>
+                        {r}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShareOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleShare}>Compartilhar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

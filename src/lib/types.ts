@@ -156,7 +156,13 @@ export interface Project {
   reviewedAt?: string;
   lastAdjustmentNote?: string;
   adjustmentItems?: AdjustmentItem[];
+  // Compartilhamento do projeto com outra filial/área/revisor (tag "Compartilhado
+  // com a sua área"). sharedStatus controla o aceite/recusa por quem recebeu.
   sharedWithArea?: boolean;
+  sharedFilial?: string;
+  sharedSetor?: string;
+  sharedReviewer?: string;
+  sharedStatus?: "pendente" | "aceito" | "recusado";
   // Ciclo do Jurídico (ver LegalStatus)
   legalStatus?: LegalStatus;
   legalAnalysisNote?: string;

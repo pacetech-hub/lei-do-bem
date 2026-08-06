@@ -75,6 +75,10 @@ export const INITIAL_PROJECTS: Project[] = [
     area: RELATOR_SETOR,
     status: "revisao",
     sharedWithArea: true,
+    sharedFilial: "Filial Rio de Janeiro/RJ",
+    sharedSetor: "Engenharia de Produto",
+    sharedReviewer: "Ricardo Alves",
+    sharedStatus: "pendente",
     updatedAt: daysAgo(0),
     startDate: daysAgo(90),
     endDate: daysFromNow(180),
@@ -112,6 +116,10 @@ export const INITIAL_PROJECTS: Project[] = [
     area: RELATOR_SETOR,
     status: "revisao",
     sharedWithArea: true,
+    sharedFilial: "Filial Campinas/SP",
+    sharedSetor: "Automação",
+    sharedReviewer: "Patrícia Gomes",
+    sharedStatus: "pendente",
     updatedAt: daysAgo(5),
     endDate: daysFromNow(30),
   }),
@@ -391,7 +399,7 @@ const STATUSES: Array<Project["status"]> = [
   "indeferido",
 ];
 const RELATOR_NAMES = ["Ana Souza", "João Silva", "Carlos Silva", "Mariana Costa", "Beatriz Lima"];
-const REVISOR_NAMES = ["Fernanda Ramos", "Ricardo Alves", "Patrícia Gomes"];
+export const REVISOR_NAMES = ["Fernanda Ramos", "Ricardo Alves", "Patrícia Gomes"];
 
 for (let i = 0; i < EXTRA_NAMES.length; i++) {
   const upd = 1 + ((i * 3) % 90);

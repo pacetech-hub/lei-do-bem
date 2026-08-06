@@ -325,6 +325,8 @@ export function ProjectsList({
     return rows.sort((a, b) => compareProjects(a.project, b.project, "updated_desc"));
   }, [isRevisor, topLevelScoped, dependentsByMaster]);
 
+  const priorityRowsShown = priorityRows.slice(0, 5);
+
   const toggleQuarterSort = () => {
     setSortKey((prev) => (prev === "updated_desc" ? "updated_asc" : "updated_desc"));
   };
@@ -398,6 +400,11 @@ export function ProjectsList({
           <TableCell className="py-4">
             {isMaster ? (
               <>
+                {isRevisor && p.sharedWithArea && (
+                  <div className="mb-1.5 pl-6">
+                    <SharedWithAreaTag />
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-2.5">
                   {isExpanded ? (
                     <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
@@ -406,7 +413,6 @@ export function ProjectsList({
                   )}
                   <FolderTree className="size-4 shrink-0 text-primary" />
                   <span className="font-medium text-foreground">{p.name}</span>
-                  {isRevisor && p.sharedWithArea && <SharedWithAreaTag />}
                 </div>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 pl-6 text-xs text-muted-foreground">
                   <span className="font-medium text-foreground/80">Mestre</span>
@@ -430,15 +436,21 @@ export function ProjectsList({
               </>
             ) : (
               <>
+                {isRevisor && p.sharedWithArea && (
+                  <div className="mb-1.5">
+                    <SharedWithAreaTag />
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-foreground">{p.name}</span>
-                  {isRevisor && p.sharedWithArea && <SharedWithAreaTag />}
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {isRevisor ? "Solicitado em" : "Criado em"}{" "}
-                  {format(new Date(isRevisor ? p.updatedAt : p.createdAt), "dd/MM/yyyy", {
-                    locale: ptBR,
-                  })}
+                  {isRevisor && p.status === "revisao" ? "Solicitado em" : "Criado em"}{" "}
+                  {format(
+                    new Date(isRevisor && p.status === "revisao" ? p.updatedAt : p.createdAt),
+                    "dd/MM/yyyy",
+                    { locale: ptBR },
+                  )}
                 </div>
               </>
             )}
@@ -507,10 +519,14 @@ export function ProjectsList({
                   {quarterLabel(d.updatedAt)}
                 </TableCell>
                 <TableCell className="py-3.5">
+                  {isRevisor && d.sharedWithArea && (
+                    <div className="mb-1.5 pl-4">
+                      <SharedWithAreaTag />
+                    </div>
+                  )}
                   <div className="flex items-center gap-2.5 border-l-2 border-border pl-4">
                     <CornerDownRight className="size-3.5 shrink-0 text-muted-foreground/60" />
                     <span className="text-sm font-medium text-foreground">{d.name}</span>
-                    {isRevisor && d.sharedWithArea && <SharedWithAreaTag />}
                   </div>
                   <div className="ml-2 mt-1.5 flex items-center gap-2 border-l-2 border-transparent pl-4">
                     <Progress value={dProgress} className="h-1 w-20" />
@@ -612,11 +628,19 @@ export function ProjectsList({
               Nenhum projeto aguardando sua revisão no momento.
             </p>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-border bg-surface">
-              <Table>
-                <TableBody>{priorityRows.map(renderHierarchicalRow)}</TableBody>
-              </Table>
-            </div>
+            <>
+              <div className="overflow-hidden rounded-lg border border-border bg-surface">
+                <Table>
+                  <TableBody>{priorityRowsShown.map(renderHierarchicalRow)}</TableBody>
+                </Table>
+              </div>
+              {priorityRows.length > priorityRowsShown.length && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Mostrando {priorityRowsShown.length} de {priorityRows.length} projetos. Use a
+                  tabela abaixo para ver os demais.
+                </p>
+              )}
+            </>
           )}
         </div>
       )}
