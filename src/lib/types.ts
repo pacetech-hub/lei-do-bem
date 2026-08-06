@@ -163,6 +163,7 @@ export interface Project {
   sharedSetor?: string;
   sharedReviewer?: string;
   sharedStatus?: "pendente" | "aceito" | "recusado";
+  sharedDeclineReason?: string;
   // Ciclo do Jurídico (ver LegalStatus)
   legalStatus?: LegalStatus;
   legalAnalysisNote?: string;

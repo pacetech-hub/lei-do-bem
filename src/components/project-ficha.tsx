@@ -95,6 +95,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const [shareFilial, setShareFilial] = useState("");
   const [shareSetor, setShareSetor] = useState("");
   const [shareReviewer, setShareReviewer] = useState("");
+  const [declineShareOpen, setDeclineShareOpen] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
 
   const isRevisor = mode === "revisor";
   const isFinanceiro = mode === "financeiro";
@@ -268,22 +270,47 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   };
 
   const handleAcceptShare = () => {
-    updateProject(project.id, { sharedStatus: "aceito" });
-    toast.success("Compartilhamento aceito", {
-      description: "O projeto continua na sua fila de revisão.",
-    });
-  };
-
-  const handleDeclineShare = () => {
     updateProject(project.id, {
+      area: project.sharedSetor ?? project.area,
+      filial: project.sharedFilial ?? project.filial,
       sharedWithArea: false,
       sharedFilial: undefined,
       sharedSetor: undefined,
       sharedReviewer: undefined,
       sharedStatus: undefined,
+      sharedDeclineReason: undefined,
     });
-    toast.success("Compartilhamento recusado");
+    toast.success("Compartilhamento aceito", {
+      description: "O projeto agora faz parte da sua área e segue o fluxo normal de revisão.",
+    });
+  };
+
+  const confirmDeclineShare = () => {
+    if (!declineReason.trim()) {
+      toast.error("Descreva o motivo da recusa para a área de origem.");
+      return;
+    }
+    updateProject(project.id, {
+      sharedWithArea: false,
+      sharedStatus: "recusado",
+      sharedDeclineReason: declineReason.trim(),
+    });
+    toast.success("Compartilhamento recusado", {
+      description: "O projeto foi devolvido à área de origem com a justificativa informada.",
+    });
+    setDeclineShareOpen(false);
+    setDeclineReason("");
     navigate({ to: "/revisor" });
+  };
+
+  const dismissDeclineNotice = () => {
+    updateProject(project.id, {
+      sharedStatus: undefined,
+      sharedDeclineReason: undefined,
+      sharedFilial: undefined,
+      sharedSetor: undefined,
+      sharedReviewer: undefined,
+    });
   };
 
   return (
@@ -356,7 +383,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                       variant="outline"
                       size="sm"
                       className="gap-1.5"
-                      onClick={handleDeclineShare}
+                      onClick={() => setDeclineShareOpen(true)}
                     >
                       <XCircle className="size-3.5" /> Recusar
                     </Button>
@@ -364,6 +391,31 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                       <CheckCircle2 className="size-3.5" /> Aceitar
                     </Button>
                   </div>
+                </div>
+              )}
+
+              {isRevisor && project.sharedStatus === "recusado" && project.sharedDeclineReason && (
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-lg border border-status-adjust-fg/30 bg-status-adjust/10 px-4 py-3">
+                  <div className="flex items-start gap-2 text-sm text-foreground">
+                    <XCircle className="mt-0.5 size-4 shrink-0 text-status-adjust-fg" />
+                    <span>
+                      {project.sharedSetor && (
+                        <>
+                          <span className="font-medium">{project.sharedSetor}</span> recusou a
+                          revisão deste projeto.{" "}
+                        </>
+                      )}
+                      Motivo: {project.sharedDeclineReason}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 shrink-0 text-xs text-muted-foreground"
+                    onClick={dismissDeclineNotice}
+                  >
+                    Entendido
+                  </Button>
                 </div>
               )}
 
@@ -816,6 +868,44 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 Cancelar
               </Button>
               <Button onClick={handleShare}>Compartilhar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {isRevisor && (
+        <Dialog
+          open={declineShareOpen}
+          onOpenChange={(open) => {
+            setDeclineShareOpen(open);
+            if (!open) setDeclineReason("");
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Recusar compartilhamento</DialogTitle>
+              <DialogDescription>
+                O projeto será devolvido à área de origem. Descreva o motivo para que ela entenda o
+                que precisa ser ajustado antes de encaminhar novamente.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-1.5">
+              <Label htmlFor="decline-reason">Motivo da recusa</Label>
+              <Textarea
+                id="decline-reason"
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                placeholder="Ex.: Este projeto não é da nossa área; encaminhar para Automação."
+                rows={4}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeclineShareOpen(false)}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={confirmDeclineShare}>
+                Confirmar recusa
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
