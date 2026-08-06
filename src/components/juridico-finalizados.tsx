@@ -252,21 +252,21 @@ export function JuridicoFinalizados() {
                   className="group cursor-pointer"
                   onClick={() => navigate({ to: "/juridico/projetos/$id", params: { id: p.id } })}
                 >
-                  <TableCell className="py-3 text-sm tabular-nums text-muted-foreground">
+                  <TableCell className="py-4 text-sm tabular-nums text-muted-foreground">
                     {quarterLabel(p.updatedAt)}
                   </TableCell>
-                  <TableCell className="py-3">
+                  <TableCell className="py-4">
                     <div className="font-medium text-foreground">{p.name}</div>
                     <div className="mt-0.5 text-xs text-muted-foreground">Finalizado</div>
                   </TableCell>
-                  <TableCell className="py-3 text-sm text-muted-foreground">{p.area}</TableCell>
-                  <TableCell className="py-3 text-sm text-muted-foreground">
+                  <TableCell className="py-4 text-sm text-muted-foreground">{p.area}</TableCell>
+                  <TableCell className="py-4 text-sm text-muted-foreground">
                     {p.responsible}
                   </TableCell>
-                  <TableCell className="py-3 text-sm text-muted-foreground">
+                  <TableCell className="py-4 text-sm text-muted-foreground">
                     {p.reviewedBy ?? "—"}
                   </TableCell>
-                  <TableCell className="py-3">
+                  <TableCell className="py-4">
                     <span
                       className={cn(
                         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
@@ -276,7 +276,7 @@ export function JuridicoFinalizados() {
                       {LEGAL_STATUS_LABEL[p.legalStatus!]}
                     </span>
                   </TableCell>
-                  <TableCell className="py-3 text-right">
+                  <TableCell className="py-4 text-right">
                     <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
                   </TableCell>
                 </TableRow>

@@ -781,8 +781,8 @@ function RelatedTable({
         <TableBody>
           {projects.map((p) => (
             <TableRow key={p.id} className="group cursor-pointer" onClick={() => onOpen(p.id)}>
-              <TableCell className="py-3 font-medium text-foreground">{p.name}</TableCell>
-              <TableCell className="py-3">
+              <TableCell className="py-4 font-medium text-foreground">{p.name}</TableCell>
+              <TableCell className="py-4">
                 {p.legalStatus ? (
                   <span
                     className={cn(
@@ -796,7 +796,7 @@ function RelatedTable({
                   <StatusBadge status={p.status} />
                 )}
               </TableCell>
-              <TableCell className="py-3 text-right">
+              <TableCell className="py-4 text-right">
                 <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
               </TableCell>
             </TableRow>

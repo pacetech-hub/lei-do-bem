@@ -190,7 +190,6 @@ export function ProjectsList({
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">("all");
-  const [areaFilter, setAreaFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<"all" | "7" | "30" | "90">("all");
   const [quarterFilter, setQuarterFilter] = useState<QuarterKey>("all");
   const [yearFilter, setYearFilter] = useState<string>("all");
@@ -250,14 +249,6 @@ export function ProjectsList({
     return c;
   }, [isHierarchical, topLevelScoped, scopedProjects]);
 
-  const areaCounts = useMemo(() => {
-    const c: Record<string, number> = {};
-    topLevelScoped.forEach((p) => {
-      c[p.area] = (c[p.area] ?? 0) + 1;
-    });
-    return c;
-  }, [topLevelScoped]);
-
   const filtered = useMemo(() => {
     const now = Date.now();
     const periodMs = periodFilter === "all" ? Infinity : parseInt(periodFilter, 10) * 86400000;
@@ -286,20 +277,13 @@ export function ProjectsList({
     const matchesYear = (p: Project) =>
       yearFilter === "all" || yearOf(p.updatedAt).toString() === yearFilter;
     const matchesStatus = (p: Project) => statusFilter === "all" || p.status === statusFilter;
-    const matchesArea = (p: Project) => areaFilter === "all" || p.area === areaFilter;
 
     const rows: Array<{ project: Project; dependents: Project[] }> = [];
     topLevelScoped.forEach((p) => {
       const deps = p.projectType === "mestre" ? (dependentsByMaster.get(p.id) ?? []) : [];
       const selfMatches =
-        matchesQuery(p) &&
-        matchesQuarter(p) &&
-        matchesYear(p) &&
-        matchesStatus(p) &&
-        matchesArea(p);
-      const someDependentMatches = deps.some(
-        (d) => matchesQuery(d) && matchesStatus(d) && matchesArea(d),
-      );
+        matchesQuery(p) && matchesQuarter(p) && matchesYear(p) && matchesStatus(p);
+      const someDependentMatches = deps.some((d) => matchesQuery(d) && matchesStatus(d));
       if (!selfMatches && !someDependentMatches) return;
       rows.push({ project: p, dependents: deps });
     });
@@ -310,7 +294,6 @@ export function ProjectsList({
     dependentsByMaster,
     q,
     statusFilter,
-    areaFilter,
     quarterFilter,
     yearFilter,
     sortKey,
@@ -340,7 +323,6 @@ export function ProjectsList({
   }, [
     q,
     statusFilter,
-    areaFilter,
     periodFilter,
     quarterFilter,
     yearFilter,
@@ -355,7 +337,6 @@ export function ProjectsList({
   const anyFilter =
     q ||
     statusFilter !== "all" ||
-    areaFilter !== "all" ||
     periodFilter !== "all" ||
     quarterFilter !== "all" ||
     yearFilter !== "all" ||
@@ -367,7 +348,7 @@ export function ProjectsList({
     ? 7 // Trimestre, Projeto, Relator, Área, Filial, Atualizado em, seta
     : isRelator
       ? 4 // Trimestre, Status, Projeto, seta
-      : 3 + (showFilialColumn ? 1 : 0) + (showSetorColumn ? 1 : 0) + 1;
+      : 4 + (showFilialColumn ? 1 : 0) + (showSetorColumn ? 1 : 0) + 1; // + seta
 
   const shownCount = isHierarchical ? hierarchicalRows.length : filtered.length;
   const totalCount = isHierarchical ? topLevelScoped.length : scopedProjects.length;
@@ -689,56 +670,6 @@ export function ProjectsList({
         </div>
       )}
 
-      {isRevisor && (
-        <div className="mb-8">
-          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Filtre por área
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              aria-pressed={areaFilter === "all"}
-              onClick={() => setAreaFilter("all")}
-              className={cn(
-                "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
-                "bg-surface-muted text-foreground",
-                areaFilter === "all"
-                  ? "border-foreground/30 ring-2 ring-foreground/15"
-                  : "border-transparent opacity-70 hover:opacity-100",
-              )}
-            >
-              Todas
-              <span className="rounded-full bg-background/70 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums">
-                {totalCount}
-              </span>
-            </button>
-            {AREAS.map((a) => {
-              const active = areaFilter === a;
-              return (
-                <button
-                  key={a}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setAreaFilter(active ? "all" : a)}
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
-                    "bg-surface-muted text-foreground",
-                    active
-                      ? "border-foreground/30 ring-2 ring-foreground/15"
-                      : "border-transparent opacity-70 hover:opacity-100",
-                  )}
-                >
-                  {a}
-                  <span className="rounded-full bg-background/70 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums">
-                    {areaCounts[a] ?? 0}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-xs">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -860,7 +791,6 @@ export function ProjectsList({
             onClick={() => {
               setQ("");
               setStatusFilter("all");
-              setAreaFilter("all");
               setPeriodFilter("all");
               setQuarterFilter("all");
               setYearFilter("all");
@@ -910,7 +840,7 @@ export function ProjectsList({
               {!isHierarchical && <TableHead>Última atualização</TableHead>}
               {isRevisor && <TableHead className="w-[120px]">Atualizado em</TableHead>}
               {!isHierarchical && <TableHead className="text-left">Status</TableHead>}
-              {isHierarchical && <TableHead className="w-10" />}
+              <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -941,27 +871,36 @@ export function ProjectsList({
                   </TableRow>
                 )}
                 {pageRows.map((p) => (
-                  <TableRow key={p.id} className="cursor-pointer" onClick={() => openProject(p.id)}>
-                    <TableCell>
+                  <TableRow
+                    key={p.id}
+                    className="group cursor-pointer"
+                    onClick={() => openProject(p.id)}
+                  >
+                    <TableCell className="py-4">
                       <div className="font-medium text-foreground">{p.name}</div>
                       <div className="mt-0.5 text-xs text-muted-foreground">
                         Criado em {format(new Date(p.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                       </div>
                     </TableCell>
                     {showFilialColumn && (
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="py-4 text-sm text-muted-foreground">
                         {getFilial(p)}
                       </TableCell>
                     )}
                     {showSetorColumn && (
-                      <TableCell className="text-sm text-muted-foreground">{p.area}</TableCell>
+                      <TableCell className="py-4 text-sm text-muted-foreground">{p.area}</TableCell>
                     )}
-                    <TableCell className="text-sm text-muted-foreground">{p.responsible}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="py-4 text-sm text-muted-foreground">
+                      {p.responsible}
+                    </TableCell>
+                    <TableCell className="py-4 text-sm text-muted-foreground">
                       há {formatDistanceToNow(new Date(p.updatedAt), { locale: ptBR })}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-4 text-left">
                       <StatusBadge status={p.status} />
+                    </TableCell>
+                    <TableCell className="py-4 text-right">
+                      <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
                     </TableCell>
                   </TableRow>
                 ))}

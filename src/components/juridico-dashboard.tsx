@@ -233,19 +233,19 @@ export function JuridicoDashboard() {
       className={cn("group cursor-pointer", muted && "opacity-60")}
       onClick={() => openProject(p.id)}
     >
-      <TableCell className="py-3 text-sm tabular-nums text-muted-foreground">
+      <TableCell className="py-4 text-sm tabular-nums text-muted-foreground">
         {quarterLabel(p.updatedAt)}
       </TableCell>
-      <TableCell className="py-3">
+      <TableCell className="py-4">
         <div className="font-medium text-foreground">{p.name}</div>
         {p.projectType === "dependente" && (
           <div className="text-xs text-muted-foreground">Projeto Dependente</div>
         )}
       </TableCell>
-      <TableCell className="py-3 text-sm text-muted-foreground">{p.area}</TableCell>
-      <TableCell className="py-3 text-sm text-muted-foreground">{p.responsible}</TableCell>
-      <TableCell className="py-3 text-sm text-muted-foreground">{p.reviewedBy ?? "—"}</TableCell>
-      <TableCell className="py-3">
+      <TableCell className="py-4 text-sm text-muted-foreground">{p.area}</TableCell>
+      <TableCell className="py-4 text-sm text-muted-foreground">{p.responsible}</TableCell>
+      <TableCell className="py-4 text-sm text-muted-foreground">{p.reviewedBy ?? "—"}</TableCell>
+      <TableCell className="py-4">
         <span
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
@@ -256,7 +256,7 @@ export function JuridicoDashboard() {
           {LEGAL_STATUS_LABEL[p.legalStatus as LegalStatus]}
         </span>
       </TableCell>
-      <TableCell className="py-3 text-right">
+      <TableCell className="py-4 text-right">
         <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
       </TableCell>
     </TableRow>
