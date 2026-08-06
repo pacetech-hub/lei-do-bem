@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, FolderTree, Pencil, Search } from "lucide-react";
+import { FolderTree, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,18 +20,16 @@ import { Label } from "@/components/ui/label";
 import { useProjectsStore } from "@/lib/store";
 import { CURRENT_USER, type Project } from "@/lib/types";
 
-type Step = "name" | "select";
-
-interface GroupingWizardProps {
+interface GroupingFormProps {
   master?: Project;
   onSaved: (masterId: string) => void;
   onClose: () => void;
 }
 
-// Passos 1 (nome) e 2 (seleção de projetos) do agrupamento — compartilhado
+// Nome do agrupamento e seleção de projetos numa única tela — compartilhado
 // entre criação e edição, já que o conteúdo é o mesmo, só o estado inicial e
 // a ação final (criar vs. salvar alterações) mudam.
-function GroupingWizard({ master, onSaved, onClose }: GroupingWizardProps) {
+function GroupingForm({ master, onSaved, onClose }: GroupingFormProps) {
   const projects = useProjectsStore((s) => s.projects);
   const createProject = useProjectsStore((s) => s.createProject);
   const updateProject = useProjectsStore((s) => s.updateProject);
@@ -43,7 +41,6 @@ function GroupingWizard({ master, onSaved, onClose }: GroupingWizardProps) {
     );
   }, [projects, master]);
 
-  const [step, setStep] = useState<Step>("name");
   const [name, setName] = useState(master?.name ?? "");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set(currentDependentIds));
@@ -67,15 +64,11 @@ function GroupingWizard({ master, onSaved, onClose }: GroupingWizardProps) {
     });
   };
 
-  const goToSelect = () => {
+  const handleSave = () => {
     if (!name.trim()) {
       toast.error("Informe o nome do Projeto Mestre.");
       return;
     }
-    setStep("select");
-  };
-
-  const handleSave = () => {
     if (!master && selected.size === 0) {
       toast.error("Selecione ao menos um projeto para agrupar.");
       return;
@@ -127,13 +120,12 @@ function GroupingWizard({ master, onSaved, onClose }: GroupingWizardProps) {
       <DialogHeader>
         <DialogTitle>{master ? "Editar agrupamento" : "Criar Projeto Mestre"}</DialogTitle>
         <DialogDescription>
-          {step === "name"
-            ? "O Projeto Mestre é apenas um agrupador lógico — organiza projetos relacionados sem alterar o conteúdo deles."
-            : `Projeto Mestre: ${name.trim() || "—"}`}
+          O Projeto Mestre é apenas um agrupador lógico — organiza projetos relacionados sem alterar
+          o conteúdo deles.
         </DialogDescription>
       </DialogHeader>
 
-      {step === "name" ? (
+      <div className="space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="grouping-name">Nome do Projeto Mestre</Label>
           <Input
@@ -144,7 +136,7 @@ function GroupingWizard({ master, onSaved, onClose }: GroupingWizardProps) {
             autoFocus
           />
         </div>
-      ) : (
+
         <div className="space-y-1.5">
           <Label>Selecionar projetos</Label>
           <div className="relative">
@@ -180,22 +172,13 @@ function GroupingWizard({ master, onSaved, onClose }: GroupingWizardProps) {
             </p>
           )}
         </div>
-      )}
+      </div>
 
       <DialogFooter>
-        {step === "select" && (
-          <Button variant="ghost" className="mr-auto gap-1.5" onClick={() => setStep("name")}>
-            <ArrowLeft className="size-4" /> Voltar
-          </Button>
-        )}
         <Button variant="outline" onClick={onClose}>
           Cancelar
         </Button>
-        {step === "name" ? (
-          <Button onClick={goToSelect}>Continuar</Button>
-        ) : (
-          <Button onClick={handleSave}>{master ? "Salvar alterações" : "Salvar"}</Button>
-        )}
+        <Button onClick={handleSave}>{master ? "Salvar alterações" : "Salvar"}</Button>
       </DialogFooter>
     </>
   );
@@ -226,7 +209,7 @@ export function CreateGroupingDialog({ mode }: CreateGroupingDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
-        <GroupingWizard
+        <GroupingForm
           key={resetKey}
           onClose={() => setOpen(false)}
           onSaved={(masterId) => {
@@ -269,7 +252,7 @@ export function EditGroupingDialog({ master }: EditGroupingDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
-        <GroupingWizard
+        <GroupingForm
           key={resetKey}
           master={master}
           onClose={() => setOpen(false)}
