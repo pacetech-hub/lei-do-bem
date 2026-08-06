@@ -98,6 +98,9 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const [shareReviewer, setShareReviewer] = useState("");
   const [declineShareOpen, setDeclineShareOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
+  const [juridicoAdjustOpen, setJuridicoAdjustOpen] = useState(false);
+  const [juridicoAdjustNote, setJuridicoAdjustNote] = useState("");
+  const [juridicoApproveOpen, setJuridicoApproveOpen] = useState(false);
 
   const isRevisor = mode === "revisor";
   const isFinanceiro = mode === "financeiro";
@@ -110,6 +113,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
         ? "/juridico/projetos/$id"
         : "/projetos/$id";
   const canReview = isRevisor && project.status === "revisao";
+  const canDecideJuridico = isJuridico && project.legalStatus === "aguardando_juridico";
   const fieldMode: FieldMode =
     isFinanceiro || isJuridico
       ? "locked"
@@ -285,6 +289,31 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
     toast.success("Projeto encaminhado ao Jurídico");
     setApproveOpen(false);
     navigate({ to: "/revisor" });
+  };
+
+  const handleJuridicoRequestAdjustment = () => {
+    if (!juridicoAdjustNote.trim()) {
+      toast.error("Descreva o motivo do ajuste.");
+      return;
+    }
+    updateProject(project.id, {
+      status: "ajustes",
+      legalStatus: undefined,
+      lastAdjustmentNote: juridicoAdjustNote.trim(),
+    });
+    toast.success("Ajustes solicitados", { description: "O projeto retornou para o Relator." });
+    setJuridicoAdjustOpen(false);
+    setJuridicoAdjustNote("");
+    navigate({ to: "/juridico" });
+  };
+
+  const handleJuridicoApproveForFinal = () => {
+    updateProject(project.id, { legalStatus: "pronto_submissao" });
+    toast.success("Projeto aprovado", {
+      description: "Disponível para consolidação em um Projeto Final.",
+    });
+    setJuridicoApproveOpen(false);
+    navigate({ to: "/juridico" });
   };
 
   const handleShare = () => {
@@ -761,9 +790,23 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                     Somente a etapa de Despesas pode ser editada.
                   </span>
                 ) : isJuridico ? (
-                  <span className="text-xs text-muted-foreground">
-                    Utilize o painel de Processo Jurídico acima para conduzir a análise e submissão.
-                  </span>
+                  <>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      disabled={!canDecideJuridico}
+                      onClick={() => setJuridicoAdjustOpen(true)}
+                    >
+                      <Wrench className="size-4" /> Enviar para ajustes
+                    </Button>
+                    <Button
+                      className="gap-2"
+                      disabled={!canDecideJuridico}
+                      onClick={() => setJuridicoApproveOpen(true)}
+                    >
+                      <CheckCircle2 className="size-4" /> Aprovar para criar projeto final
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <Button variant="outline" className="gap-2" onClick={handleSaveDraft}>
@@ -1030,6 +1073,62 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      )}
+
+      {isJuridico && (
+        <Dialog
+          open={juridicoAdjustOpen}
+          onOpenChange={(open) => {
+            setJuridicoAdjustOpen(open);
+            if (!open) setJuridicoAdjustNote("");
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Enviar para ajustes</DialogTitle>
+              <DialogDescription>
+                Descreva o motivo do ajuste. O projeto voltará para o Relator com o status "Ajuste
+                solicitado".
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-1.5">
+              <Label htmlFor="juridico-adjust-note">O que precisa ser corrigido?</Label>
+              <Textarea
+                id="juridico-adjust-note"
+                value={juridicoAdjustNote}
+                onChange={(e) => setJuridicoAdjustNote(e.target.value)}
+                placeholder="Ex.: Falta comprovante de submissão dos documentos financeiros."
+                rows={4}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setJuridicoAdjustOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleJuridicoRequestAdjustment}>Enviar para ajustes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {isJuridico && (
+        <AlertDialog open={juridicoApproveOpen} onOpenChange={setJuridicoApproveOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Aprovar projeto para o Projeto Final?</AlertDialogTitle>
+              <AlertDialogDescription>
+                O projeto passa a ficar disponível para consolidação em um Projeto Final. O projeto
+                original continua existindo e nenhuma informação dele é alterada ou perdida.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleJuridicoApproveForFinal}>
+                Aprovar para criar projeto final
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </div>
   );

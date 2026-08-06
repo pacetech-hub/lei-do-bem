@@ -38,10 +38,12 @@ function NewFinalProject() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  // Elegível = já aprovado pelo Jurídico na ficha do projeto ("Aprovar para
+  // criar projeto final"), ainda não incluído numa consolidação anterior.
   const eligibleProjects = useMemo(
     () =>
       allProjects
-        .filter((p) => p.legalStatus === "aprovado")
+        .filter((p) => p.legalStatus === "pronto_submissao")
         .filter((p) => !query || p.name.toLowerCase().includes(query.toLowerCase())),
     [allProjects, query],
   );

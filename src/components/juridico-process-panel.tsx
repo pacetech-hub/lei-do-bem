@@ -1,14 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  ChevronRight,
-  FileWarning,
-  Gavel,
-  Send,
-  Upload,
-} from "lucide-react";
+import { ChevronRight, FileWarning, Gavel, Send, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -57,9 +49,6 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
   const pareceres = useProjectsStore((s) => s.pareceres);
   const updateProject = useProjectsStore((s) => s.updateProject);
 
-  const [analysisOpen, setAnalysisOpen] = useState(false);
-  const [analysisNote, setAnalysisNote] = useState(project.legalAnalysisNote ?? "");
-  const [adjustNote, setAdjustNote] = useState("");
   const [submissionOpen, setSubmissionOpen] = useState(false);
   const [submissionDoc, setSubmissionDoc] = useState("");
   const [submissionNote, setSubmissionNote] = useState("");
@@ -90,27 +79,6 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
     : undefined;
 
   const openProject = (id: string) => navigate({ to: "/juridico/projetos/$id", params: { id } });
-
-  const handleRequestAdjustment = () => {
-    if (!adjustNote.trim()) {
-      toast.error("Descreva o que precisa ser corrigido.");
-      return;
-    }
-    updateProject(project.id, {
-      status: "ajustes",
-      legalStatus: undefined,
-      lastAdjustmentNote: adjustNote.trim(),
-    });
-    toast.success("Ajustes solicitados", { description: "O projeto retornou para o Relator." });
-    setAnalysisOpen(false);
-    navigate({ to: "/juridico" });
-  };
-
-  const handleApproveForSubmission = () => {
-    updateProject(project.id, { legalStatus: "pronto_submissao", legalAnalysisNote: analysisNote });
-    toast.success("Projeto aprovado para submissão");
-    setAnalysisOpen(false);
-  };
 
   const handleRegisterSubmission = () => {
     if (!submissionDoc.trim()) {
@@ -202,11 +170,6 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
       <p className="mb-4 text-sm text-muted-foreground">{nextActionText[legalStatus]}</p>
 
       <div className="mb-5 flex flex-wrap gap-2">
-        {legalStatus === "aguardando_juridico" && (
-          <Button size="sm" className="gap-2" onClick={() => setAnalysisOpen(true)}>
-            <CheckCircle2 className="size-4" /> Analisar
-          </Button>
-        )}
         {legalStatus === "pronto_submissao" && (
           <Button size="sm" className="gap-2" onClick={() => setSubmissionOpen(true)}>
             <Upload className="size-4" /> Registrar submissão
@@ -341,47 +304,6 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
           ))}
         </div>
       </div>
-
-      <Dialog open={analysisOpen} onOpenChange={setAnalysisOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Análise jurídica</DialogTitle>
-            <DialogDescription>
-              Confira a documentação nas etapas ao lado, registre observações e conclua a análise.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="analysis-note">Observações</Label>
-              <Textarea
-                id="analysis-note"
-                value={analysisNote}
-                onChange={(e) => setAnalysisNote(e.target.value)}
-                placeholder="Registre observações sobre a análise jurídica deste projeto."
-                rows={4}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="adjust-note">Solicitar ajustes (opcional)</Label>
-              <Textarea
-                id="adjust-note"
-                value={adjustNote}
-                onChange={(e) => setAdjustNote(e.target.value)}
-                placeholder="Descreva o que precisa ser corrigido antes de prosseguir."
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" className="gap-2" onClick={handleRequestAdjustment}>
-              <AlertTriangle className="size-4" /> Solicitar ajustes
-            </Button>
-            <Button className="gap-2" onClick={handleApproveForSubmission}>
-              <CheckCircle2 className="size-4" /> Aprovar para submissão
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={submissionOpen} onOpenChange={setSubmissionOpen}>
         <DialogContent className="max-w-lg">
