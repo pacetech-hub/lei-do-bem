@@ -69,6 +69,7 @@ import {
   type SectionKey,
 } from "@/lib/types";
 
+import { JuridicoProcessPanel } from "@/components/juridico-process-panel";
 import { SectionGerais } from "@/components/sections/section-gerais";
 import { SectionQuestions } from "@/components/sections/section-questions";
 import { SectionEvidencias } from "@/components/sections/section-evidencias";
@@ -78,7 +79,7 @@ import type { FieldMode } from "@/components/question-field";
 
 interface ProjectFichaProps {
   project: Project;
-  mode: "relator" | "revisor" | "financeiro";
+  mode: "relator" | "revisor" | "financeiro" | "juridico";
   masterProject?: Project;
 }
 
@@ -100,19 +101,23 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
   const isRevisor = mode === "revisor";
   const isFinanceiro = mode === "financeiro";
+  const isJuridico = mode === "juridico";
   const fichaRoute = isRevisor
     ? "/revisor/projetos/$id"
     : isFinanceiro
       ? "/financeiro/projetos/$id"
-      : "/projetos/$id";
+      : isJuridico
+        ? "/juridico/projetos/$id"
+        : "/projetos/$id";
   const canReview = isRevisor && project.status === "revisao";
-  const fieldMode: FieldMode = isFinanceiro
-    ? "locked"
-    : isRevisor
-      ? canReview
-        ? "review"
-        : "locked"
-      : "editable";
+  const fieldMode: FieldMode =
+    isFinanceiro || isJuridico
+      ? "locked"
+      : isRevisor
+        ? canReview
+          ? "review"
+          : "locked"
+        : "editable";
 
   // Persistido no projeto (não em estado local) para sobreviver a navegações
   // enquanto o Revisor ainda não enviou os ajustes registrados durante a leitura.
@@ -527,6 +532,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
           {/* Section body */}
           <div className="px-6 py-8 lg:px-10">
+            {isJuridico && <JuridicoProcessPanel project={project} />}
+
             {isRevisor && canReview && draftItems.length > 0 && (
               <div className="mb-8 rounded-lg border border-primary/20 bg-primary/5 p-5">
                 <div className="mb-3 flex items-center gap-2">
@@ -752,6 +759,10 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 ) : isFinanceiro ? (
                   <span className="text-xs text-muted-foreground">
                     Somente a etapa de Despesas pode ser editada.
+                  </span>
+                ) : isJuridico ? (
+                  <span className="text-xs text-muted-foreground">
+                    Utilize o painel de Processo Jurídico acima para conduzir a análise e submissão.
                   </span>
                 ) : (
                   <>

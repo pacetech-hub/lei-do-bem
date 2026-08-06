@@ -2,6 +2,7 @@ import {
   AREAS,
   ALL_REQUIRED_QUESTIONS,
   type Attachment,
+  type FinalProject,
   type MctiParecer,
   type Project,
 } from "./types";
@@ -494,5 +495,43 @@ export const INITIAL_PARECERES: MctiParecer[] = [
       reason: p.mctiReason,
       confirmed: true,
     })),
+  },
+];
+
+// --- Projeto Final Jurídico ------------------------------------------------
+// Janela anual em que o Jurídico pode consolidar projetos aprovados em um
+// Projeto Final para envio ao MCTI. Somente informativo por ora — sem tela de
+// configuração; para testar o estado "aberto", ajuste as datas abaixo.
+export interface ConsolidationWindow {
+  year: number;
+  opensAt: string;
+  closesAt: string;
+}
+
+export const CONSOLIDATION_WINDOW: ConsolidationWindow = {
+  year: today.getFullYear(),
+  opensAt: new Date(today.getFullYear(), 0, 1).toISOString(),
+  closesAt: new Date(today.getFullYear(), 2, 31, 23, 59, 59).toISOString(),
+};
+
+export function isConsolidationWindowOpen(window = CONSOLIDATION_WINDOW): boolean {
+  const now = today.getTime();
+  return now >= new Date(window.opensAt).getTime() && now <= new Date(window.closesAt).getTime();
+}
+
+const approvedForFinal = INITIAL_PROJECTS.filter((p) => p.legalStatus === "aprovado").slice(0, 5);
+
+export const INITIAL_FINAL_PROJECTS: FinalProject[] = [
+  {
+    id: nextId("final"),
+    year: today.getFullYear() - 1,
+    name: `Projeto Final Jurídico ${today.getFullYear() - 1}`,
+    projectIds: approvedForFinal.map((p) => p.id),
+    status: "enviado",
+    notes: "Consolidação anual enviada ao MCTI dentro do prazo.",
+    createdBy: "Camila Torres",
+    createdAt: daysAgo(200),
+    updatedAt: daysAgo(190),
+    submittedAt: daysAgo(190),
   },
 ];

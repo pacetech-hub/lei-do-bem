@@ -19,9 +19,12 @@ import { Route as JuridicoIndexRouteImport } from './routes/juridico.index'
 import { Route as FinanceiroIndexRouteImport } from './routes/financeiro.index'
 import { Route as ProjetosNovoRouteImport } from './routes/projetos.novo'
 import { Route as ProjetosIdRouteImport } from './routes/projetos.$id'
-import { Route as JuridicoFinalizadosRouteImport } from './routes/juridico.finalizados'
+import { Route as JuridicoFinalRouteImport } from './routes/juridico.final'
+import { Route as JuridicoFinalIndexRouteImport } from './routes/juridico.final.index'
 import { Route as RevisorProjetosIdRouteImport } from './routes/revisor.projetos.$id'
 import { Route as JuridicoProjetosIdRouteImport } from './routes/juridico.projetos.$id'
+import { Route as JuridicoFinalNovoRouteImport } from './routes/juridico.final.novo'
+import { Route as JuridicoFinalIdRouteImport } from './routes/juridico.final.$id'
 import { Route as FinanceiroProjetosIdRouteImport } from './routes/financeiro.projetos.$id'
 
 const RevisorRoute = RevisorRouteImport.update({
@@ -74,10 +77,15 @@ const ProjetosIdRoute = ProjetosIdRouteImport.update({
   path: '/projetos/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const JuridicoFinalizadosRoute = JuridicoFinalizadosRouteImport.update({
-  id: '/finalizados',
-  path: '/finalizados',
+const JuridicoFinalRoute = JuridicoFinalRouteImport.update({
+  id: '/final',
+  path: '/final',
   getParentRoute: () => JuridicoRoute,
+} as any)
+const JuridicoFinalIndexRoute = JuridicoFinalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => JuridicoFinalRoute,
 } as any)
 const RevisorProjetosIdRoute = RevisorProjetosIdRouteImport.update({
   id: '/projetos/$id',
@@ -88,6 +96,16 @@ const JuridicoProjetosIdRoute = JuridicoProjetosIdRouteImport.update({
   id: '/projetos/$id',
   path: '/projetos/$id',
   getParentRoute: () => JuridicoRoute,
+} as any)
+const JuridicoFinalNovoRoute = JuridicoFinalNovoRouteImport.update({
+  id: '/novo',
+  path: '/novo',
+  getParentRoute: () => JuridicoFinalRoute,
+} as any)
+const JuridicoFinalIdRoute = JuridicoFinalIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => JuridicoFinalRoute,
 } as any)
 const FinanceiroProjetosIdRoute = FinanceiroProjetosIdRouteImport.update({
   id: '/projetos/$id',
@@ -101,28 +119,33 @@ export interface FileRoutesByFullPath {
   '/financeiro': typeof FinanceiroRouteWithChildren
   '/juridico': typeof JuridicoRouteWithChildren
   '/revisor': typeof RevisorRouteWithChildren
-  '/juridico/finalizados': typeof JuridicoFinalizadosRoute
+  '/juridico/final': typeof JuridicoFinalRouteWithChildren
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
   '/financeiro/': typeof FinanceiroIndexRoute
   '/juridico/': typeof JuridicoIndexRoute
   '/revisor/': typeof RevisorIndexRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
+  '/juridico/final/$id': typeof JuridicoFinalIdRoute
+  '/juridico/final/novo': typeof JuridicoFinalNovoRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
+  '/juridico/final/': typeof JuridicoFinalIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/juridico/finalizados': typeof JuridicoFinalizadosRoute
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
   '/financeiro': typeof FinanceiroIndexRoute
   '/juridico': typeof JuridicoIndexRoute
   '/revisor': typeof RevisorIndexRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
+  '/juridico/final/$id': typeof JuridicoFinalIdRoute
+  '/juridico/final/novo': typeof JuridicoFinalNovoRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
+  '/juridico/final': typeof JuridicoFinalIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -131,15 +154,18 @@ export interface FileRoutesById {
   '/financeiro': typeof FinanceiroRouteWithChildren
   '/juridico': typeof JuridicoRouteWithChildren
   '/revisor': typeof RevisorRouteWithChildren
-  '/juridico/finalizados': typeof JuridicoFinalizadosRoute
+  '/juridico/final': typeof JuridicoFinalRouteWithChildren
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
   '/financeiro/': typeof FinanceiroIndexRoute
   '/juridico/': typeof JuridicoIndexRoute
   '/revisor/': typeof RevisorIndexRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
+  '/juridico/final/$id': typeof JuridicoFinalIdRoute
+  '/juridico/final/novo': typeof JuridicoFinalNovoRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
+  '/juridico/final/': typeof JuridicoFinalIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -149,28 +175,33 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/juridico'
     | '/revisor'
-    | '/juridico/finalizados'
+    | '/juridico/final'
     | '/projetos/$id'
     | '/projetos/novo'
     | '/financeiro/'
     | '/juridico/'
     | '/revisor/'
     | '/financeiro/projetos/$id'
+    | '/juridico/final/$id'
+    | '/juridico/final/novo'
     | '/juridico/projetos/$id'
     | '/revisor/projetos/$id'
+    | '/juridico/final/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
-    | '/juridico/finalizados'
     | '/projetos/$id'
     | '/projetos/novo'
     | '/financeiro'
     | '/juridico'
     | '/revisor'
     | '/financeiro/projetos/$id'
+    | '/juridico/final/$id'
+    | '/juridico/final/novo'
     | '/juridico/projetos/$id'
     | '/revisor/projetos/$id'
+    | '/juridico/final'
   id:
     | '__root__'
     | '/'
@@ -178,15 +209,18 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/juridico'
     | '/revisor'
-    | '/juridico/finalizados'
+    | '/juridico/final'
     | '/projetos/$id'
     | '/projetos/novo'
     | '/financeiro/'
     | '/juridico/'
     | '/revisor/'
     | '/financeiro/projetos/$id'
+    | '/juridico/final/$id'
+    | '/juridico/final/novo'
     | '/juridico/projetos/$id'
     | '/revisor/projetos/$id'
+    | '/juridico/final/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -271,12 +305,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjetosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/juridico/finalizados': {
-      id: '/juridico/finalizados'
-      path: '/finalizados'
-      fullPath: '/juridico/finalizados'
-      preLoaderRoute: typeof JuridicoFinalizadosRouteImport
+    '/juridico/final': {
+      id: '/juridico/final'
+      path: '/final'
+      fullPath: '/juridico/final'
+      preLoaderRoute: typeof JuridicoFinalRouteImport
       parentRoute: typeof JuridicoRoute
+    }
+    '/juridico/final/': {
+      id: '/juridico/final/'
+      path: '/'
+      fullPath: '/juridico/final/'
+      preLoaderRoute: typeof JuridicoFinalIndexRouteImport
+      parentRoute: typeof JuridicoFinalRoute
     }
     '/revisor/projetos/$id': {
       id: '/revisor/projetos/$id'
@@ -291,6 +332,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/juridico/projetos/$id'
       preLoaderRoute: typeof JuridicoProjetosIdRouteImport
       parentRoute: typeof JuridicoRoute
+    }
+    '/juridico/final/novo': {
+      id: '/juridico/final/novo'
+      path: '/novo'
+      fullPath: '/juridico/final/novo'
+      preLoaderRoute: typeof JuridicoFinalNovoRouteImport
+      parentRoute: typeof JuridicoFinalRoute
+    }
+    '/juridico/final/$id': {
+      id: '/juridico/final/$id'
+      path: '/$id'
+      fullPath: '/juridico/final/$id'
+      preLoaderRoute: typeof JuridicoFinalIdRouteImport
+      parentRoute: typeof JuridicoFinalRoute
     }
     '/financeiro/projetos/$id': {
       id: '/financeiro/projetos/$id'
@@ -316,14 +371,30 @@ const FinanceiroRouteWithChildren = FinanceiroRoute._addFileChildren(
   FinanceiroRouteChildren,
 )
 
+interface JuridicoFinalRouteChildren {
+  JuridicoFinalIdRoute: typeof JuridicoFinalIdRoute
+  JuridicoFinalNovoRoute: typeof JuridicoFinalNovoRoute
+  JuridicoFinalIndexRoute: typeof JuridicoFinalIndexRoute
+}
+
+const JuridicoFinalRouteChildren: JuridicoFinalRouteChildren = {
+  JuridicoFinalIdRoute: JuridicoFinalIdRoute,
+  JuridicoFinalNovoRoute: JuridicoFinalNovoRoute,
+  JuridicoFinalIndexRoute: JuridicoFinalIndexRoute,
+}
+
+const JuridicoFinalRouteWithChildren = JuridicoFinalRoute._addFileChildren(
+  JuridicoFinalRouteChildren,
+)
+
 interface JuridicoRouteChildren {
-  JuridicoFinalizadosRoute: typeof JuridicoFinalizadosRoute
+  JuridicoFinalRoute: typeof JuridicoFinalRouteWithChildren
   JuridicoIndexRoute: typeof JuridicoIndexRoute
   JuridicoProjetosIdRoute: typeof JuridicoProjetosIdRoute
 }
 
 const JuridicoRouteChildren: JuridicoRouteChildren = {
-  JuridicoFinalizadosRoute: JuridicoFinalizadosRoute,
+  JuridicoFinalRoute: JuridicoFinalRouteWithChildren,
   JuridicoIndexRoute: JuridicoIndexRoute,
   JuridicoProjetosIdRoute: JuridicoProjetosIdRoute,
 }

@@ -174,6 +174,16 @@ const REVISOR_STATUS_FILTERS: Array<{ key: ProjectStatus; label: string }> = [
   { key: "indeferido", label: "Indeferidos" },
 ];
 
+// Uma vez que um projeto chega ao Jurídico ele já está "pronto" (ou além) do
+// lado do Relator/Revisor — os demais status (rascunho/revisao/ajustes) nunca
+// aparecem aqui, então a pill correspondente nem faz sentido para esta área.
+const JURIDICO_STATUS_FILTERS: Array<{ key: ProjectStatus; label: string }> = [
+  { key: "pronto", label: "Prontos" },
+  { key: "submetido", label: "Submetidos" },
+  { key: "aprovado", label: "Aprovados" },
+  { key: "indeferido", label: "Indeferidos" },
+];
+
 type QuarterKey = "all" | "Q1" | "Q2" | "Q3" | "Q4";
 
 interface ProjectsListProps {
@@ -189,7 +199,12 @@ interface ProjectsListProps {
   infoSetor?: string;
   paginated?: boolean;
   pageSize?: number;
-  variant?: "default" | "relator" | "revisor" | "financeiro";
+  variant?: "default" | "relator" | "revisor" | "financeiro" | "juridico";
+  // Conteúdo extra específico da área, renderizado dentro do mesmo componente
+  // em vez de duplicar a lógica de filtro/tabela (ex.: cards de KPI do Jurídico).
+  extraTop?: React.ReactNode;
+  // Ação extra no cabeçalho, ao lado do botão "Novo Projeto".
+  extraAction?: React.ReactNode;
 }
 
 export function ProjectsList({
@@ -203,6 +218,8 @@ export function ProjectsList({
   paginated = false,
   pageSize = 10,
   variant = "default",
+  extraTop,
+  extraAction,
 }: ProjectsListProps) {
   const projects = useProjectsStore((s) => s.projects);
   const navigate = useNavigate();
@@ -220,16 +237,22 @@ export function ProjectsList({
   const isRelator = variant === "relator";
   const isRevisor = variant === "revisor";
   const isFinanceiro = variant === "financeiro";
-  const isHierarchical = isRelator || isRevisor || isFinanceiro;
+  const isJuridico = variant === "juridico";
+  const isHierarchical = isRelator || isRevisor || isFinanceiro || isJuridico;
+  // Colunas Status/Relator/Área/Filial: mesmo formato para Revisor e Jurídico.
+  const showReviewCols = isRevisor || isJuridico;
   const isScoped = Boolean(scopedFilial && scopedSetor);
   const showFilialSetorFilters = !isScoped && variant === "default";
   const showFilialColumn = !isScoped && !isHierarchical;
   const showSetorColumn = !isScoped && !isHierarchical;
 
   const scopedProjects = useMemo(() => {
+    // O Jurídico não é escopado por filial/setor: enxerga todo projeto que já
+    // chegou à sua etapa (tem legalStatus), de qualquer área/filial.
+    if (isJuridico) return projects.filter((p) => p.legalStatus);
     if (!isScoped) return projects;
     return projects.filter((p) => getFilial(p) === scopedFilial && p.area === scopedSetor);
-  }, [projects, isScoped, scopedFilial, scopedSetor]);
+  }, [projects, isJuridico, isScoped, scopedFilial, scopedSetor]);
 
   // Top-level rows for hierarchical dashboards (Relator/Revisor): independent + master
   // projects. Dependent projects are nested inside their master's row, not listed on
@@ -365,7 +388,7 @@ export function ProjectsList({
     setorFilter !== "all" ||
     sortKey !== "updated_desc";
 
-  const colCount = isRevisor
+  const colCount = showReviewCols
     ? 7 // Trimestre, Projeto, Status, Relator, Área, Filial, seta
     : isRelator
       ? 4 // Trimestre, Projeto, Status, seta
@@ -391,7 +414,9 @@ export function ProjectsList({
         ? "/revisor/projetos/$id"
         : isFinanceiro
           ? "/financeiro/projetos/$id"
-          : "/projetos/$id",
+          : isJuridico
+            ? "/juridico/projetos/$id"
+            : "/projetos/$id",
       params: { id },
     });
 
@@ -437,12 +462,14 @@ export function ProjectsList({
                     · {dependents.length} projeto{dependents.length === 1 ? "" : "s"} dependente
                     {dependents.length === 1 ? "" : "s"}
                   </span>
-                  {isRevisor &&
+                  {showReviewCols &&
                     statusSummary.map((seg) => (
                       <span
                         key={seg.status}
                         className={
-                          seg.status === "ajustes" ? "font-semibold text-status-adjust-fg" : ""
+                          seg.status === "ajustes" || seg.status === "indeferido"
+                            ? "font-semibold text-status-adjust-fg"
+                            : ""
                         }
                       >
                         · {seg.count} {STATUS_LABEL[seg.status].toLowerCase()}
@@ -472,7 +499,7 @@ export function ProjectsList({
               </>
             )}
           </TableCell>
-          {isRevisor && (
+          {showReviewCols && (
             <TableCell className="py-4 text-left align-top">
               {isMaster ? (
                 <div className="flex flex-wrap gap-1.5">
@@ -487,7 +514,7 @@ export function ProjectsList({
               )}
             </TableCell>
           )}
-          {isRevisor && (
+          {showReviewCols && (
             <>
               <TableCell className="py-4 text-sm text-muted-foreground">{p.responsible}</TableCell>
               <TableCell className="py-4 text-sm text-muted-foreground">{p.area}</TableCell>
@@ -555,7 +582,7 @@ export function ProjectsList({
                     </span>
                   </div>
                 </TableCell>
-                {isRevisor && (
+                {showReviewCols && (
                   <TableCell className="py-3.5 text-left align-top">
                     <div className="flex flex-col items-start gap-1">
                       <StatusBadge status={d.status} />
@@ -567,7 +594,7 @@ export function ProjectsList({
                     </div>
                   </TableCell>
                 )}
-                {isRevisor && (
+                {showReviewCols && (
                   <>
                     <TableCell className="py-3.5 text-sm text-muted-foreground">
                       {d.responsible}
@@ -612,13 +639,16 @@ export function ProjectsList({
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
-        {showNewButton && (
-          <Button asChild size="default" className="gap-2">
-            <Link to="/projetos/novo">
-              <Plus className="size-4" /> Novo Projeto
-            </Link>
-          </Button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {extraAction}
+          {showNewButton && (
+            <Button asChild size="default" className="gap-2">
+              <Link to="/projetos/novo">
+                <Plus className="size-4" /> Novo Projeto
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {(isScoped || (infoFilial && infoSetor)) && (
@@ -636,6 +666,8 @@ export function ProjectsList({
           </div>
         </div>
       )}
+
+      {extraTop}
 
       {isRevisor && (
         <div className="mb-8 rounded-lg border border-primary/20 bg-primary/5 p-4">
@@ -693,7 +725,12 @@ export function ProjectsList({
                 {totalCount}
               </span>
             </button>
-            {(isRevisor ? REVISOR_STATUS_FILTERS : RELATOR_STATUS_FILTERS).map((f) => {
+            {(isRevisor
+              ? REVISOR_STATUS_FILTERS
+              : isJuridico
+                ? JURIDICO_STATUS_FILTERS
+                : RELATOR_STATUS_FILTERS
+            ).map((f) => {
               const active = statusFilter === f.key;
               return (
                 <button
@@ -915,10 +952,10 @@ export function ProjectsList({
               >
                 Projeto
               </TableHead>
-              {isRevisor && <TableHead className="w-[130px] text-left">Status</TableHead>}
-              {isRevisor && <TableHead className="w-[14%]">Relator</TableHead>}
-              {isRevisor && <TableHead className="w-[16%]">Área</TableHead>}
-              {isRevisor && <TableHead className="w-[16%]">Filial</TableHead>}
+              {showReviewCols && <TableHead className="w-[130px] text-left">Status</TableHead>}
+              {showReviewCols && <TableHead className="w-[14%]">Relator</TableHead>}
+              {showReviewCols && <TableHead className="w-[16%]">Área</TableHead>}
+              {showReviewCols && <TableHead className="w-[16%]">Filial</TableHead>}
               {isFinanceiro && <TableHead className="w-[15%]">Responsável</TableHead>}
               {showFilialColumn && <TableHead>Filial</TableHead>}
               {showSetorColumn && <TableHead>Setor</TableHead>}

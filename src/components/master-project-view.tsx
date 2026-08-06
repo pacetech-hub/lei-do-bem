@@ -21,7 +21,7 @@ import { STATUS_LABEL, type Project } from "@/lib/types";
 interface MasterProjectViewProps {
   project: Project;
   dependents: Project[];
-  mode?: "relator" | "revisor" | "financeiro";
+  mode?: "relator" | "revisor" | "financeiro" | "juridico";
 }
 
 export function MasterProjectView({
@@ -32,11 +32,14 @@ export function MasterProjectView({
   const navigate = useNavigate();
   const isRevisor = mode === "revisor";
   const isFinanceiro = mode === "financeiro";
+  const isJuridico = mode === "juridico";
   const fichaRoute = isRevisor
     ? "/revisor/projetos/$id"
     : isFinanceiro
       ? "/financeiro/projetos/$id"
-      : "/projetos/$id";
+      : isJuridico
+        ? "/juridico/projetos/$id"
+        : "/projetos/$id";
 
   const statusSummary = summarizeDependentStatuses(dependents);
   const overallProgress = dependents.length
@@ -188,8 +191,22 @@ export function MasterProjectView({
 
         <div className="mt-6">
           <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-            <Link to={isRevisor ? "/revisor" : isFinanceiro ? "/financeiro" : "/dashboard"}>
-              {isRevisor ? "Voltar para Revisão de Projetos" : "Voltar para Meus Projetos"}
+            <Link
+              to={
+                isRevisor
+                  ? "/revisor"
+                  : isFinanceiro
+                    ? "/financeiro"
+                    : isJuridico
+                      ? "/juridico"
+                      : "/dashboard"
+              }
+            >
+              {isRevisor
+                ? "Voltar para Revisão de Projetos"
+                : isJuridico
+                  ? "Voltar para a Central Jurídica"
+                  : "Voltar para Meus Projetos"}
             </Link>
           </Button>
         </div>

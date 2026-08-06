@@ -86,6 +86,30 @@ export interface MctiParecer {
   results: MctiParecerResult[];
 }
 
+// Projeto Final Jurídico: entidade separada que consolida, uma vez por ano,
+// os projetos já aprovados para a submissão oficial ao MCTI. Não substitui
+// os projetos originais — apenas referencia seus ids.
+export type FinalProjectStatus = "rascunho" | "em_revisao" | "enviado";
+
+export const FINAL_PROJECT_STATUS_LABEL: Record<FinalProjectStatus, string> = {
+  rascunho: "Rascunho",
+  em_revisao: "Em revisão final",
+  enviado: "Enviado ao MCTI",
+};
+
+export interface FinalProject {
+  id: string;
+  year: number;
+  name: string;
+  projectIds: string[];
+  status: FinalProjectStatus;
+  notes?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt?: string;
+}
+
 // Item estruturado de um pedido de ajuste do Revisor: aponta para a etapa e,
 // quando aplicável, o campo/pergunta específico dentro dela.
 export interface AdjustmentItem {

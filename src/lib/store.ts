@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import type {
   Attachment,
   EmployeeExpense,
+  FinalProject,
   MaterialExpense,
   MctiParecer,
   MctiParecerResult,
@@ -10,11 +11,12 @@ import type {
   ProjectStatus,
   ThirdPartyExpense,
 } from "./types";
-import { INITIAL_PROJECTS, INITIAL_PARECERES } from "./mock";
+import { INITIAL_PROJECTS, INITIAL_PARECERES, INITIAL_FINAL_PROJECTS } from "./mock";
 
 interface ProjectsState {
   projects: Project[];
   pareceres: MctiParecer[];
+  finalProjects: FinalProject[];
   createProject: (
     p: Omit<
       Project,
@@ -30,6 +32,10 @@ interface ProjectsState {
     >,
   ) => string;
   updateProject: (id: string, patch: Partial<Project>) => void;
+  createFinalProject: (
+    p: Omit<FinalProject, "id" | "createdAt" | "updatedAt" | "status">,
+  ) => string;
+  updateFinalProject: (id: string, patch: Partial<FinalProject>) => void;
   addParecer: (p: MctiParecer) => void;
   updateParecerResult: (
     parecerId: string,
@@ -55,6 +61,25 @@ export const useProjectsStore = create<ProjectsState>()(
     (set) => ({
       projects: INITIAL_PROJECTS,
       pareceres: INITIAL_PARECERES,
+      finalProjects: INITIAL_FINAL_PROJECTS,
+      createFinalProject: (p) => {
+        const id = crypto.randomUUID();
+        const finalProject: FinalProject = {
+          ...p,
+          id,
+          status: "rascunho",
+          createdAt: nowIso(),
+          updatedAt: nowIso(),
+        };
+        set((s) => ({ finalProjects: [finalProject, ...s.finalProjects] }));
+        return id;
+      },
+      updateFinalProject: (id, patch) =>
+        set((s) => ({
+          finalProjects: s.finalProjects.map((f) =>
+            f.id === id ? { ...f, ...patch, updatedAt: nowIso() } : f,
+          ),
+        })),
       addParecer: (p) => set((s) => ({ pareceres: [p, ...s.pareceres] })),
       updateParecerResult: (parecerId, projectId, patch) =>
         set((s) => ({

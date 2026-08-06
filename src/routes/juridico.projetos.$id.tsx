@@ -1,8 +1,10 @@
+import { useMemo } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { AppHeader } from "@/components/app-header";
-import { JuridicoProjectView } from "@/components/juridico-project-view";
+import { MasterProjectView } from "@/components/master-project-view";
+import { ProjectFicha } from "@/components/project-ficha";
 import { Button } from "@/components/ui/button";
 import { useProjectsStore } from "@/lib/store";
 
@@ -20,9 +22,26 @@ export const Route = createFileRoute("/juridico/projetos/$id")({
 function JuridicoProjetoPage() {
   const { id } = Route.useParams();
   const project = useProjectsStore((s) => s.projects.find((p) => p.id === id));
+  const allProjects = useProjectsStore((s) => s.projects);
 
   if (!project) {
     throw notFound();
+  }
+
+  const dependents = useMemo(
+    () => allProjects.filter((p) => p.masterProjectId === project.id),
+    [allProjects, project],
+  );
+  const masterProject = project.masterProjectId
+    ? allProjects.find((p) => p.id === project.masterProjectId)
+    : undefined;
+
+  // Um Projeto Mestre é apenas um agrupador lógico (sem formulário, despesas
+  // ou aprovação própria) — a visão consolidada depende do status dos
+  // dependentes, não do legalStatus do próprio Mestre, então não passa pelo
+  // mesmo bloqueio de "ainda não chegou ao Jurídico".
+  if (project.projectType === "mestre") {
+    return <MasterProjectView project={project} dependents={dependents} mode="juridico" />;
   }
 
   if (!project.legalStatus) {
@@ -47,5 +66,5 @@ function JuridicoProjetoPage() {
     );
   }
 
-  return <JuridicoProjectView project={project} />;
+  return <ProjectFicha project={project} mode="juridico" masterProject={masterProject} />;
 }

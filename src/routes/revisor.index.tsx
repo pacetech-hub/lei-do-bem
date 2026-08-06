@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppHeader } from "@/components/app-header";
+import { CreateGroupingDialog } from "@/components/create-grouping-dialog";
 import { ProjectsList } from "@/components/projects-list";
 
 export const Route = createFileRoute("/revisor/")({
@@ -22,6 +23,7 @@ function RevisorPage() {
         variant="revisor"
         infoFilial="Matriz — São Paulo/SP"
         infoSetor="Pesquisa & Desenvolvimento"
+        extraAction={<CreateGroupingDialog mode="revisor" />}
       />
     </div>
   );
