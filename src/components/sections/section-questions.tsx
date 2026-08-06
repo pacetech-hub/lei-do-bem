@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { QuestionField } from "@/components/question-field";
+import { QuestionField, type FieldMode } from "@/components/question-field";
 import type { AdjustmentItem, Project, Question } from "@/lib/types";
 import { useProjectsStore } from "@/lib/store";
 
@@ -10,7 +10,10 @@ interface Props {
   questions: Question[];
   extras?: ReactNode;
   pendingItems?: AdjustmentItem[];
-  readOnly?: boolean;
+  mode?: FieldMode;
+  draftItems?: AdjustmentItem[];
+  onAddDraftAdjustment?: (fieldId: string, fieldLabel: string, comment: string) => void;
+  onRemoveDraftAdjustment?: (id: string) => void;
 }
 
 export function SectionQuestions({
@@ -20,7 +23,10 @@ export function SectionQuestions({
   questions,
   extras,
   pendingItems,
-  readOnly = false,
+  mode = "editable",
+  draftItems,
+  onAddDraftAdjustment,
+  onRemoveDraftAdjustment,
 }: Props) {
   const setAnswer = useProjectsStore((s) => s.setAnswer);
   return (
@@ -41,7 +47,14 @@ export function SectionQuestions({
             onChange={(v) => setAnswer(project.id, q.id, v)}
             attachments={project.attachments[q.id] ?? []}
             flagComment={pendingItems?.find((i) => i.fieldId === q.id)?.comment}
-            readOnly={readOnly}
+            mode={mode}
+            draftAdjustments={draftItems?.filter((i) => i.fieldId === q.id)}
+            onAddDraftAdjustment={
+              onAddDraftAdjustment
+                ? (comment) => onAddDraftAdjustment(q.id, q.label, comment)
+                : undefined
+            }
+            onRemoveDraftAdjustment={onRemoveDraftAdjustment}
           />
         ))}
         {extras}

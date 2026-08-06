@@ -156,6 +156,9 @@ export interface Project {
   reviewedAt?: string;
   lastAdjustmentNote?: string;
   adjustmentItems?: AdjustmentItem[];
+  // Ajustes registrados pelo Revisor durante a leitura, ainda não enviados ao
+  // Relator (persistidos para sobreviver a navegações antes do envio final).
+  draftAdjustmentItems?: AdjustmentItem[];
   // Compartilhamento do projeto com outra filial/área/revisor (tag "Compartilhado
   // com a sua área"). sharedStatus controla o aceite/recusa por quem recebeu.
   sharedWithArea?: boolean;

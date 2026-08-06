@@ -6,7 +6,10 @@ export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Projetos — Relator | Lei do Bem" },
-      { name: "description", content: "Projetos de inovação sob sua responsabilidade como Relator." },
+      {
+        name: "description",
+        content: "Projetos de inovação sob sua responsabilidade como Relator.",
+      },
     ],
   }),
   component: DashboardPage,
@@ -24,7 +27,6 @@ function DashboardPage() {
         scopedSetor="Pesquisa & Desenvolvimento"
         variant="relator"
       />
-
     </div>
   );
 }

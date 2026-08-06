@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertTriangle, Pencil, Save, X } from "lucide-react";
+import { AlertTriangle, Pencil, Save, Wrench, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -18,6 +19,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { useProjectsStore } from "@/lib/store";
 import { AREAS, STATUS_LABEL, type AdjustmentItem, type Project } from "@/lib/types";
+import type { FieldMode } from "@/components/question-field";
 import { cn } from "@/lib/utils";
 
 const NATUREZA = { produto: "Produto", processo: "Processo", servico: "Serviço" } as const;
@@ -31,33 +33,112 @@ function Row({
   label,
   value,
   flag,
+  draftFlags,
+  canRequestAdjustment = false,
+  onRequestAdjustment,
+  onRemoveDraft,
 }: {
   label: string;
   value: React.ReactNode;
   flag?: AdjustmentItem;
+  draftFlags?: AdjustmentItem[];
+  canRequestAdjustment?: boolean;
+  onRequestAdjustment?: (comment: string) => void;
+  onRemoveDraft?: (id: string) => void;
 }) {
+  const [requesting, setRequesting] = useState(false);
+  const [comment, setComment] = useState("");
+  const hasHighlight = Boolean(flag) || Boolean(draftFlags?.length);
+
+  const submit = () => {
+    if (!comment.trim()) return;
+    onRequestAdjustment?.(comment.trim());
+    setRequesting(false);
+    setComment("");
+  };
+
   return (
     <div
       className={cn(
         "grid grid-cols-1 gap-1 border-b border-border py-3 last:border-0 sm:grid-cols-[240px_1fr] sm:gap-4",
-        flag && "-mx-3 rounded-md border border-status-adjust-fg/40 bg-status-adjust/5 px-3",
+        hasHighlight &&
+          "-mx-3 rounded-md border border-status-adjust-fg/40 bg-status-adjust/5 px-3",
       )}
     >
       <dt
         className={cn(
           "flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-muted-foreground",
-          flag && "text-status-adjust-fg",
+          hasHighlight && "text-status-adjust-fg",
         )}
       >
-        {flag && <AlertTriangle className="size-3 shrink-0" />}
+        {hasHighlight && <AlertTriangle className="size-3 shrink-0" />}
         {label}
       </dt>
       <dd className="text-sm text-foreground">
-        {value}
+        <div className="flex items-start justify-between gap-2">
+          <div>{value}</div>
+          {canRequestAdjustment && !requesting && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 shrink-0 gap-1 px-1.5 text-[11px] text-status-adjust-fg hover:bg-status-adjust/10 hover:text-status-adjust-fg"
+              onClick={() => setRequesting(true)}
+            >
+              <Wrench className="size-3" /> Solicitar ajuste
+            </Button>
+          )}
+        </div>
         {flag && (
           <p className="mt-1 text-xs font-medium text-status-adjust-fg">
             Ajuste solicitado: {flag.comment}
           </p>
+        )}
+        {draftFlags?.map((item) => (
+          <div
+            key={item.id}
+            className="mt-1.5 flex items-start justify-between gap-2 rounded-md border border-dashed border-status-adjust-fg/40 bg-background/70 p-2 text-xs text-status-adjust-fg"
+          >
+            <span>
+              <span className="font-medium">Ajuste registrado</span> (será enviado ao final da
+              revisão): {item.comment}
+            </span>
+            <button
+              type="button"
+              onClick={() => onRemoveDraft?.(item.id)}
+              className="shrink-0 text-status-adjust-fg/70 hover:text-status-adjust-fg"
+              aria-label="Remover solicitação"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        ))}
+        {requesting && (
+          <div className="mt-2 space-y-1.5">
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={2}
+              placeholder="Descreva o que precisa ser corrigido."
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setRequesting(false);
+                  setComment("");
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button type="button" size="sm" disabled={!comment.trim()} onClick={submit}>
+                Registrar solicitação
+              </Button>
+            </div>
+          </div>
         )}
       </dd>
     </div>
@@ -93,17 +174,25 @@ function toFormState(p: Project): FormState {
 export function SectionGerais({
   project,
   pendingItems,
-  readOnly = false,
+  mode = "editable",
+  draftItems,
+  onAddDraftAdjustment,
+  onRemoveDraftAdjustment,
 }: {
   project: Project;
   pendingItems?: AdjustmentItem[];
-  readOnly?: boolean;
+  mode?: FieldMode;
+  draftItems?: AdjustmentItem[];
+  onAddDraftAdjustment?: (fieldId: string, fieldLabel: string, comment: string) => void;
+  onRemoveDraftAdjustment?: (id: string) => void;
 }) {
   const updateProject = useProjectsStore((s) => s.updateProject);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => toFormState(project));
 
+  const canRequestAdjustment = mode === "review";
   const flagFor = (fieldId: string) => pendingItems?.find((i) => i.fieldId === fieldId);
+  const draftFlagsFor = (fieldId: string) => draftItems?.filter((i) => i.fieldId === fieldId);
 
   const startEdit = () => {
     setForm(toFormState(project));
@@ -162,7 +251,7 @@ export function SectionGerais({
             Dados de identificação do projeto informados na criação.
           </p>
         </div>
-        {readOnly ? null : !editing ? (
+        {mode === "locked" ? null : !editing ? (
           <Button variant="outline" size="sm" className="gap-2" onClick={startEdit}>
             <Pencil className="size-4" /> Editar
           </Button>
@@ -180,26 +269,82 @@ export function SectionGerais({
 
       {!editing ? (
         <dl className="rounded-lg border border-border bg-surface px-5">
-          <Row label="Nome do projeto" value={project.name} flag={flagFor("name")} />
-          <Row label="Área" value={project.area} flag={flagFor("area")} />
-          <Row label="Responsável" value={project.responsible} flag={flagFor("responsible")} />
+          <Row
+            label="Nome do projeto"
+            value={project.name}
+            flag={flagFor("name")}
+            draftFlags={draftFlagsFor("name")}
+            canRequestAdjustment={canRequestAdjustment}
+            onRequestAdjustment={(c) => onAddDraftAdjustment?.("name", "Nome do projeto", c)}
+            onRemoveDraft={onRemoveDraftAdjustment}
+          />
+          <Row
+            label="Área"
+            value={project.area}
+            flag={flagFor("area")}
+            draftFlags={draftFlagsFor("area")}
+            canRequestAdjustment={canRequestAdjustment}
+            onRequestAdjustment={(c) => onAddDraftAdjustment?.("area", "Área", c)}
+            onRemoveDraft={onRemoveDraftAdjustment}
+          />
+          <Row
+            label="Responsável"
+            value={project.responsible}
+            flag={flagFor("responsible")}
+            draftFlags={draftFlagsFor("responsible")}
+            canRequestAdjustment={canRequestAdjustment}
+            onRequestAdjustment={(c) => onAddDraftAdjustment?.("responsible", "Responsável", c)}
+            onRemoveDraft={onRemoveDraftAdjustment}
+          />
           <Row
             label="Data de início"
             value={format(new Date(project.startDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
             flag={flagFor("startDate")}
+            draftFlags={draftFlagsFor("startDate")}
+            canRequestAdjustment={canRequestAdjustment}
+            onRequestAdjustment={(c) => onAddDraftAdjustment?.("startDate", "Data de início", c)}
+            onRemoveDraft={onRemoveDraftAdjustment}
           />
           <Row
             label="Data prevista de término"
             value={format(new Date(project.endDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
             flag={flagFor("endDate")}
+            draftFlags={draftFlagsFor("endDate")}
+            canRequestAdjustment={canRequestAdjustment}
+            onRequestAdjustment={(c) =>
+              onAddDraftAdjustment?.("endDate", "Data prevista de término", c)
+            }
+            onRemoveDraft={onRemoveDraftAdjustment}
           />
           <Row
             label="Registro de patente"
             value={project.hasPatent ? `Sim — ${project.patentNumber ?? "não informado"}` : "Não"}
             flag={flagFor("hasPatent")}
+            draftFlags={draftFlagsFor("hasPatent")}
+            canRequestAdjustment={canRequestAdjustment}
+            onRequestAdjustment={(c) =>
+              onAddDraftAdjustment?.("hasPatent", "Registro de patente", c)
+            }
+            onRemoveDraft={onRemoveDraftAdjustment}
           />
-          <Row label="Natureza" value={NATUREZA[project.natureza]} flag={flagFor("natureza")} />
-          <Row label="Atividade" value={ATIVIDADE[project.atividade]} flag={flagFor("atividade")} />
+          <Row
+            label="Natureza"
+            value={NATUREZA[project.natureza]}
+            flag={flagFor("natureza")}
+            draftFlags={draftFlagsFor("natureza")}
+            canRequestAdjustment={canRequestAdjustment}
+            onRequestAdjustment={(c) => onAddDraftAdjustment?.("natureza", "Natureza", c)}
+            onRemoveDraft={onRemoveDraftAdjustment}
+          />
+          <Row
+            label="Atividade"
+            value={ATIVIDADE[project.atividade]}
+            flag={flagFor("atividade")}
+            draftFlags={draftFlagsFor("atividade")}
+            canRequestAdjustment={canRequestAdjustment}
+            onRequestAdjustment={(c) => onAddDraftAdjustment?.("atividade", "Atividade", c)}
+            onRemoveDraft={onRemoveDraftAdjustment}
+          />
           <Row label="Status atual" value={STATUS_LABEL[project.status]} />
         </dl>
       ) : (

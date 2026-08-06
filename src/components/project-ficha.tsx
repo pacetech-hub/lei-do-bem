@@ -74,6 +74,7 @@ import { SectionQuestions } from "@/components/sections/section-questions";
 import { SectionEvidencias } from "@/components/sections/section-evidencias";
 import { SectionDespesas } from "@/components/sections/section-despesas";
 import { SectionRevisao } from "@/components/sections/section-revisao";
+import type { FieldMode } from "@/components/question-field";
 
 interface ProjectFichaProps {
   project: Project;
@@ -89,7 +90,6 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const [adjustSection, setAdjustSection] = useState<SectionKey>("gerais");
   const [adjustFieldId, setAdjustFieldId] = useState<string>("");
   const [adjustComment, setAdjustComment] = useState("");
-  const [draftItems, setDraftItems] = useState<AdjustmentItem[]>([]);
   const [approveOpen, setApproveOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareFilial, setShareFilial] = useState("");
@@ -106,6 +106,23 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       ? "/financeiro/projetos/$id"
       : "/projetos/$id";
   const canReview = isRevisor && project.status === "revisao";
+  const fieldMode: FieldMode = isFinanceiro
+    ? "locked"
+    : isRevisor
+      ? canReview
+        ? "review"
+        : "locked"
+      : "editable";
+
+  // Persistido no projeto (não em estado local) para sobreviver a navegações
+  // enquanto o Revisor ainda não enviou os ajustes registrados durante a leitura.
+  const draftItems = project.draftAdjustmentItems ?? [];
+  const setDraftItems = (
+    updater: AdjustmentItem[] | ((prev: AdjustmentItem[]) => AdjustmentItem[]),
+  ) => {
+    const next = typeof updater === "function" ? updater(draftItems) : updater;
+    updateProject(project.id, { draftAdjustmentItems: next });
+  };
 
   const pendingItems = useMemo(() => project.adjustmentItems ?? [], [project.adjustmentItems]);
   const pendingBySection = useMemo(() => {
@@ -178,16 +195,31 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
     updateProject(project.id, {
       status: "revisao",
       adjustmentItems: [],
+      draftAdjustmentItems: [],
       lastAdjustmentNote: undefined,
     });
     toast.success("Projeto enviado para revisão");
   };
 
-  const resetAdjustDraft = () => {
-    setDraftItems([]);
+  const resetAdjustPicker = () => {
     setAdjustSection("gerais");
     setAdjustFieldId("");
     setAdjustComment("");
+  };
+
+  const addFieldDraftItem = (
+    sectionKey: SectionKey,
+    fieldId: string,
+    fieldLabel: string,
+    comment: string,
+  ) => {
+    setDraftItems((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), sectionKey, fieldId, fieldLabel, comment },
+    ]);
+    toast.success("Ajuste registrado", {
+      description: "Será enviado ao Relator quando você concluir a revisão.",
+    });
   };
 
   const addAdjustItem = () => {
@@ -223,6 +255,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
     updateProject(project.id, {
       status: "ajustes",
       adjustmentItems: draftItems,
+      draftAdjustmentItems: [],
       lastAdjustmentNote: draftItems
         .map(
           (i) =>
@@ -232,7 +265,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
     });
     toast.success("Ajustes solicitados", { description: "O projeto foi devolvido ao Relator." });
     setAdjustOpen(false);
-    resetAdjustDraft();
+    resetAdjustPicker();
     navigate({ to: "/revisor" });
   };
 
@@ -242,6 +275,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       legalStatus: "aguardando_juridico",
       reviewedBy: CURRENT_USER.name,
       reviewedAt: new Date().toISOString(),
+      draftAdjustmentItems: [],
     });
     toast.success("Projeto encaminhado ao Jurídico");
     setApproveOpen(false);
@@ -493,6 +527,62 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
           {/* Section body */}
           <div className="px-6 py-8 lg:px-10">
+            {isRevisor && canReview && draftItems.length > 0 && (
+              <div className="mb-8 rounded-lg border border-primary/20 bg-primary/5 p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <Wrench className="size-4 text-primary" />
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Ajustes registrados nesta revisão
+                  </h2>
+                  <span className="rounded-full bg-background/70 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
+                    {draftItems.length}
+                  </span>
+                </div>
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Ainda não foram enviados ao Relator. Continue a revisão e use "Enviar para
+                  ajustes" no rodapé quando concluir.
+                </p>
+                <div className="space-y-2.5">
+                  {draftItems.map((item) => {
+                    const sectionLabel =
+                      SECTIONS.find((s) => s.key === item.sectionKey)?.label ?? item.sectionKey;
+                    return (
+                      <div
+                        key={item.id}
+                        className="rounded-md border border-border bg-surface p-3.5"
+                      >
+                        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                          <div className="text-xs font-medium text-muted-foreground">
+                            {sectionLabel} <span className="text-foreground/40">·</span>{" "}
+                            <span className="text-foreground">{item.fieldLabel}</span>
+                          </div>
+                          <div className="flex shrink-0 gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-xs text-primary hover:bg-primary/5 hover:text-primary"
+                              onClick={() => setSection(item.sectionKey)}
+                            >
+                              Ir para a seção
+                            </Button>
+                            <button
+                              type="button"
+                              onClick={() => removeAdjustItem(item.id)}
+                              className="text-muted-foreground hover:text-primary"
+                              aria-label="Remover item"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-sm text-foreground">{item.comment}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {mode === "relator" && pendingItems.length > 0 && (
               <div className="mb-8 rounded-lg border border-status-adjust-fg/30 bg-status-adjust/10 p-5">
                 <div className="mb-3 flex items-center gap-2">
@@ -539,7 +629,12 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
               <SectionGerais
                 project={project}
                 pendingItems={pendingBySection.get("gerais")}
-                readOnly={isFinanceiro}
+                mode={fieldMode}
+                draftItems={draftItems.filter((i) => i.sectionKey === "gerais")}
+                onAddDraftAdjustment={(fieldId, fieldLabel, comment) =>
+                  addFieldDraftItem("gerais", fieldId, fieldLabel, comment)
+                }
+                onRemoveDraftAdjustment={removeAdjustItem}
               />
             )}
             {section === "inovador" && (
@@ -549,7 +644,12 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 description="Descreva com riqueza de detalhes a novidade tecnológica do projeto, seus objetivos e o cenário que motivou o desenvolvimento."
                 questions={QUESTIONS_INOVADOR}
                 pendingItems={pendingBySection.get("inovador")}
-                readOnly={isFinanceiro}
+                mode={fieldMode}
+                draftItems={draftItems.filter((i) => i.sectionKey === "inovador")}
+                onAddDraftAdjustment={(fieldId, fieldLabel, comment) =>
+                  addFieldDraftItem("inovador", fieldId, fieldLabel, comment)
+                }
+                onRemoveDraftAdjustment={removeAdjustItem}
               />
             )}
             {section === "barreiras" && (
@@ -559,7 +659,12 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 description="Documente os desafios enfrentados, competências mobilizadas e estratégias adotadas para superá-los."
                 questions={QUESTIONS_BARREIRAS}
                 pendingItems={pendingBySection.get("barreiras")}
-                readOnly={isFinanceiro}
+                mode={fieldMode}
+                draftItems={draftItems.filter((i) => i.sectionKey === "barreiras")}
+                onAddDraftAdjustment={(fieldId, fieldLabel, comment) =>
+                  addFieldDraftItem("barreiras", fieldId, fieldLabel, comment)
+                }
+                onRemoveDraftAdjustment={removeAdjustItem}
               />
             )}
             {section === "metodologia" && (
@@ -569,7 +674,12 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 description="Detalhe a metodologia empregada, o passo a passo e os resultados esperados e alcançados."
                 questions={QUESTIONS_METODOLOGIA}
                 pendingItems={pendingBySection.get("metodologia")}
-                readOnly={isFinanceiro}
+                mode={fieldMode}
+                draftItems={draftItems.filter((i) => i.sectionKey === "metodologia")}
+                onAddDraftAdjustment={(fieldId, fieldLabel, comment) =>
+                  addFieldDraftItem("metodologia", fieldId, fieldLabel, comment)
+                }
+                onRemoveDraftAdjustment={removeAdjustItem}
                 extras={
                   isFinanceiro ? undefined : (
                     <div className="rounded-lg border border-dashed border-border bg-surface p-4">
@@ -588,7 +698,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
               <SectionEvidencias
                 project={project}
                 pendingItems={generalPendingItems("evidencias")}
-                readOnly={isFinanceiro}
+                readOnly={fieldMode === "locked"}
               />
             )}
             {section === "despesas" && (
@@ -664,7 +774,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
           open={adjustOpen}
           onOpenChange={(open) => {
             setAdjustOpen(open);
-            if (!open) resetAdjustDraft();
+            if (!open) resetAdjustPicker();
           }}
         >
           <DialogContent className="max-w-lg">
