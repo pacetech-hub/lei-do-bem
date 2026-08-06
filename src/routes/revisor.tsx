@@ -20,6 +20,8 @@ function RevisorPage() {
         title="Revisão de Projetos"
         description="Acompanhe os projetos de todas as áreas e filiais que aguardam sua análise técnica."
         variant="revisor"
+        infoFilial="Matriz — São Paulo/SP"
+        infoSetor="Pesquisa & Desenvolvimento"
       />
     </div>
   );

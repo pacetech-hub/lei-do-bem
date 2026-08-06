@@ -182,6 +182,11 @@ interface ProjectsListProps {
   showNewButton?: boolean;
   scopedFilial?: string;
   scopedSetor?: string;
+  // Somente exibição (não filtra os projetos listados) — usado no Revisor,
+  // que precisa ver a mesma área de Filial/Setor da sua base, mas continua
+  // revisando projetos de todas as filiais e áreas.
+  infoFilial?: string;
+  infoSetor?: string;
   paginated?: boolean;
   pageSize?: number;
   variant?: "default" | "relator" | "revisor";
@@ -193,6 +198,8 @@ export function ProjectsList({
   showNewButton = false,
   scopedFilial,
   scopedSetor,
+  infoFilial,
+  infoSetor,
   paginated = false,
   pageSize = 10,
   variant = "default",
@@ -596,18 +603,18 @@ export function ProjectsList({
         )}
       </div>
 
-      {isScoped && (
+      {(isScoped || (infoFilial && infoSetor)) && (
         <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface-muted/60 px-4 py-3">
           <div className="flex items-center gap-2 text-sm">
             <Building2 className="size-4 text-muted-foreground" />
             <span className="text-muted-foreground">Filial:</span>
-            <span className="font-medium text-foreground">{scopedFilial}</span>
+            <span className="font-medium text-foreground">{scopedFilial ?? infoFilial}</span>
           </div>
           <div className="h-4 w-px bg-border" />
           <div className="flex items-center gap-2 text-sm">
             <Briefcase className="size-4 text-muted-foreground" />
             <span className="text-muted-foreground">Setor:</span>
-            <span className="font-medium text-foreground">{scopedSetor}</span>
+            <span className="font-medium text-foreground">{scopedSetor ?? infoSetor}</span>
           </div>
         </div>
       )}
@@ -866,7 +873,7 @@ export function ProjectsList({
           <TableHeader>
             <TableRow className="bg-surface-muted hover:bg-surface-muted">
               {isHierarchical && (
-                <TableHead className="w-[130px]">
+                <TableHead className={isRelator ? "w-[15%]" : "w-[130px]"}>
                   <button
                     type="button"
                     onClick={toggleQuarterSort}
