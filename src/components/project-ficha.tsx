@@ -196,6 +196,16 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const handleSaveDraft = () => {
     toast.success("Rascunho salvo", { description: "As alterações foram registradas." });
   };
+  const handleFinanceiroSave = () => {
+    toast.success("Alterações salvas", {
+      description: "As informações financeiras foram registradas.",
+    });
+  };
+  const handleFinanceiroSubmit = () => {
+    toast.success("Enviado para revisão", {
+      description: "As informações financeiras foram encaminhadas para revisão.",
+    });
+  };
   const handleSubmit = () => {
     if (!canSubmit) {
       toast.warning("Complete as seções obrigatórias antes de enviar para revisão.");
@@ -786,9 +796,14 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                     </Button>
                   </>
                 ) : isFinanceiro ? (
-                  <span className="text-xs text-muted-foreground">
-                    Somente a etapa de Despesas pode ser editada.
-                  </span>
+                  <>
+                    <Button variant="outline" className="gap-2" onClick={handleFinanceiroSave}>
+                      <Save className="size-4" /> Salvar alterações
+                    </Button>
+                    <Button className="gap-2" onClick={handleFinanceiroSubmit}>
+                      <Send className="size-4" /> Enviar para revisão
+                    </Button>
+                  </>
                 ) : isJuridico ? (
                   <>
                     <Button

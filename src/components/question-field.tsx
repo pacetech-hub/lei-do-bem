@@ -67,6 +67,7 @@ export function QuestionField({
 
   const isEditable = mode === "editable";
   const isReview = mode === "review";
+  const isLocked = mode === "locked";
   const canTypeDirectly = isEditable || editingText;
   const displayedValue = editingText ? draftText : value;
   const charCount = displayedValue.length;
@@ -239,21 +240,29 @@ export function QuestionField({
         )}
       </div>
 
-      <Textarea
-        id={questionId}
-        value={displayedValue}
-        onChange={(e) => {
-          if (isEditable) onChange(e.target.value);
-          else if (editingText) setDraftText(e.target.value);
-        }}
-        readOnly={!canTypeDirectly}
-        rows={5}
-        placeholder="Escreva a resposta com o maior nível de detalhe possível…"
-        className={cn(
-          "resize-y bg-background text-sm leading-relaxed",
-          !canTypeDirectly && "cursor-default resize-none bg-surface-muted/50",
-        )}
-      />
+      {isLocked ? (
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+          {value.trim() || (
+            <span className="text-muted-foreground">Nenhuma resposta registrada.</span>
+          )}
+        </p>
+      ) : (
+        <Textarea
+          id={questionId}
+          value={displayedValue}
+          onChange={(e) => {
+            if (isEditable) onChange(e.target.value);
+            else if (editingText) setDraftText(e.target.value);
+          }}
+          readOnly={!canTypeDirectly}
+          rows={5}
+          placeholder="Escreva a resposta com o maior nível de detalhe possível…"
+          className={cn(
+            "resize-y bg-background text-sm leading-relaxed",
+            !canTypeDirectly && "cursor-default resize-none bg-surface-muted/50",
+          )}
+        />
+      )}
 
       {requestingAdjustment && (
         <div className="mt-3 space-y-2 rounded-md border border-status-adjust-fg/30 bg-status-adjust/5 p-3">
@@ -287,25 +296,27 @@ export function QuestionField({
         </div>
       )}
 
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-3 text-xs">
-          <span className={meetsMin ? "text-muted-foreground" : "text-primary"}>
-            {charCount.toLocaleString("pt-BR")} caracteres
-            {!meetsMin && ` · sugerido: ${minChars}+`}
-          </span>
+      {!isLocked && (
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-3 text-xs">
+            <span className={meetsMin ? "text-muted-foreground" : "text-primary"}>
+              {charCount.toLocaleString("pt-BR")} caracteres
+              {!meetsMin && ` · sugerido: ${minChars}+`}
+            </span>
+          </div>
+          {isEditable && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1.5 text-xs"
+              onClick={handleAttach}
+            >
+              <Paperclip className="size-3.5" /> Anexar documento
+            </Button>
+          )}
         </div>
-        {isEditable && (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="h-7 gap-1.5 text-xs"
-            onClick={handleAttach}
-          >
-            <Paperclip className="size-3.5" /> Anexar documento
-          </Button>
-        )}
-      </div>
+      )}
 
       {attachments.length > 0 && (
         <ul className="mt-3 space-y-1.5">
