@@ -469,7 +469,6 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 completion={completion}
                 onGoToSection={setSection}
                 canSubmit={canSubmit}
-                onSubmit={handleSubmit}
                 hideSubmitCta={isRevisor}
                 pendingItems={generalPendingItems("revisao")}
               />

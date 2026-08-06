@@ -9,7 +9,6 @@ interface Props {
   completion: Record<SectionKey, number>;
   onGoToSection: (s: SectionKey) => void;
   canSubmit: boolean;
-  onSubmit: () => void;
   hideSubmitCta?: boolean;
   pendingItems?: AdjustmentItem[];
 }
@@ -19,7 +18,6 @@ export function SectionRevisao({
   completion,
   onGoToSection,
   canSubmit,
-  onSubmit,
   hideSubmitCta = false,
   pendingItems,
 }: Props) {
@@ -94,13 +92,11 @@ export function SectionRevisao({
             <div className="flex-1">
               <div className="text-sm font-semibold">Enviar para revisão</div>
               <p className="mt-1 text-sm text-muted-foreground">
-                Ao enviar, o projeto será avaliado pela equipe responsável. Você poderá continuar
-                editando caso ele retorne com status "Ajuste solicitado".
+                Use o botão em destaque "Enviar para Revisão" no rodapé da página. O projeto será
+                avaliado pela equipe responsável e você poderá continuar editando caso ele retorne
+                com status "Ajuste solicitado".
               </p>
             </div>
-            <Button className="gap-2" disabled={!canSubmit} onClick={onSubmit}>
-              <Send className="size-4" /> Enviar
-            </Button>
           </div>
           {!canSubmit && (
             <p className="mt-3 text-xs text-muted-foreground">

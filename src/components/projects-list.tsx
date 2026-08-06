@@ -870,7 +870,7 @@ export function ProjectsList({
               {showSetorColumn && <TableHead>Setor</TableHead>}
               {!isHierarchical && <TableHead>Responsável</TableHead>}
               {!isHierarchical && <TableHead>Última atualização</TableHead>}
-              {isRelator && <TableHead className="w-[160px] text-left">Status</TableHead>}
+              {isRelator && <TableHead className="w-[20%] text-left">Status</TableHead>}
               {!isHierarchical && <TableHead className="text-left">Status</TableHead>}
               <TableHead className="w-10" />
             </TableRow>

@@ -1,4 +1,10 @@
-import { AREAS, type MctiParecer, type Project } from "./types";
+import {
+  AREAS,
+  ALL_REQUIRED_QUESTIONS,
+  type Attachment,
+  type MctiParecer,
+  type Project,
+} from "./types";
 
 export interface MockEmployee {
   code: string;
@@ -244,6 +250,89 @@ INITIAL_PROJECTS.push(
     updatedAt: daysAgo(8),
     startDate: daysAgo(130),
     endDate: daysFromNow(40),
+  }),
+);
+
+// Projeto de teste com todos os campos preenchidos, para validar o fluxo de
+// "Enviar para Revisão" (as respostas obrigatórias já atendem os 80% mínimos).
+const FULL_TEST_ANSWER =
+  "Resposta completa preenchida para fins de teste, cobrindo o contexto técnico, os objetivos, a metodologia empregada e os resultados esperados desta pergunta com o nível de detalhe exigido pela Lei do Bem.";
+
+function fullAnswers(): Record<string, string> {
+  const map: Record<string, string> = {};
+  ALL_REQUIRED_QUESTIONS.forEach((id) => {
+    map[id] = FULL_TEST_ANSWER;
+  });
+  return map;
+}
+
+const testProjectEvidences: Attachment[] = [
+  {
+    id: crypto.randomUUID(),
+    name: "relatorio-tecnico-completo.pdf",
+    type: "application/pdf",
+    category: "relatorio",
+    uploadedAt: daysAgo(1),
+    uploadedBy: "Ana Souza",
+    size: 850 * 1024,
+  },
+  {
+    id: crypto.randomUUID(),
+    name: "fotos-bancada-testes.jpg",
+    type: "image/jpeg",
+    category: "fotos",
+    uploadedAt: daysAgo(1),
+    uploadedBy: "Ana Souza",
+    size: 1200 * 1024,
+  },
+];
+
+INITIAL_PROJECTS.push(
+  emptyProject({
+    name: "Projeto de Teste — Pronto para Envio",
+    filial: RELATOR_FILIAL,
+    area: RELATOR_SETOR,
+    status: "rascunho",
+    updatedAt: daysAgo(0),
+    startDate: daysAgo(60),
+    endDate: daysFromNow(120),
+    hasPatent: true,
+    patentNumber: "BR102024005555-0",
+    answers: fullAnswers(),
+    attachments: { _evidencias: testProjectEvidences },
+    employees: [
+      {
+        id: crypto.randomUUID(),
+        code: MOCK_EMPLOYEES[0].code,
+        name: MOCK_EMPLOYEES[0].name,
+        role: MOCK_EMPLOYEES[0].role,
+        activity: "Desenvolvimento do algoritmo de controle preditivo",
+        totalHours: 480,
+        eligibleHours: 400,
+      },
+    ],
+    thirdParties: [
+      {
+        id: crypto.randomUUID(),
+        company: MOCK_SUPPLIERS[0].name,
+        cnpj: MOCK_SUPPLIERS[0].cnpj,
+        invoice: "NF-000123",
+        invoiceTotal: 45000,
+        usedInProject: 45000,
+      },
+    ],
+    materials: [
+      {
+        id: crypto.randomUUID(),
+        supplier: MOCK_SUPPLIERS[1].name,
+        cnpj: MOCK_SUPPLIERS[1].cnpj,
+        invoice: "NF-000456",
+        grossValue: 12000,
+        netValue: 10500,
+        materialDescription: "Componentes eletrônicos para protótipo",
+        usageDescription: "Montagem do protótipo funcional de validação",
+      },
+    ],
   }),
 );
 
