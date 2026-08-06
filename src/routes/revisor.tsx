@@ -1,28 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AppHeader } from "@/components/app-header";
-import { ProjectsList } from "@/components/projects-list";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
+// Layout-only route: /revisor/projetos/$id is registered as a child of this
+// route (it shares the "/revisor" path prefix), so this component must
+// render <Outlet /> for that child page to actually appear. The real list
+// page lives in revisor.index.tsx (the exact "/revisor" match).
 export const Route = createFileRoute("/revisor")({
-  head: () => ({
-    meta: [
-      { title: "Projetos — Revisor | Lei do Bem" },
-      { name: "description", content: "Central de revisão dos projetos de inovação da empresa." },
-    ],
-  }),
-  component: RevisorPage,
+  component: Outlet,
 });
-
-function RevisorPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      <AppHeader current="Revisor" />
-      <ProjectsList
-        title="Revisão de Projetos"
-        description="Acompanhe os projetos de todas as áreas e filiais que aguardam sua análise técnica."
-        variant="revisor"
-        infoFilial="Matriz — São Paulo/SP"
-        infoSetor="Pesquisa & Desenvolvimento"
-      />
-    </div>
-  );
-}

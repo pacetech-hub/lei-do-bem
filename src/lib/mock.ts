@@ -39,9 +39,21 @@ const today = new Date();
 const daysAgo = (n: number) => new Date(today.getTime() - n * 86400000).toISOString();
 const daysFromNow = (n: number) => new Date(today.getTime() + n * 86400000).toISOString();
 
+// IDs determinísticos (não crypto.randomUUID()): este módulo é avaliado tanto
+// no servidor (SSR) quanto no cliente (hidratação), e um id diferente a cada
+// avaliação causa "hydration mismatch" em qualquer valor derivado do id (ex.:
+// a coluna Filial do Revisor, que usa um hash de p.id) — o React descarta e
+// reconstrói a árvore, o que pode fazer cliques na tabela parecerem não fazer
+// nada. Um contador sequencial produz sempre a mesma sequência dos dois lados.
+let idSeq = 0;
+function nextId(prefix: string): string {
+  idSeq += 1;
+  return `${prefix}-${String(idSeq).padStart(4, "0")}`;
+}
+
 function emptyProject(over: Partial<Project>): Project {
   const base: Project = {
-    id: crypto.randomUUID(),
+    id: nextId("proj"),
     name: "Projeto sem nome",
     area: "Pesquisa & Desenvolvimento",
     responsible: "Ana Souza",
@@ -93,7 +105,7 @@ export const INITIAL_PROJECTS: Project[] = [
     endDate: daysFromNow(60),
     adjustmentItems: [
       {
-        id: crypto.randomUUID(),
+        id: nextId("adj"),
         sectionKey: "inovador",
         fieldId: "inov_4",
         fieldLabel: "Comparativo entre a tecnologia anterior e a nova tecnologia desenvolvida.",
@@ -101,7 +113,7 @@ export const INITIAL_PROJECTS: Project[] = [
           "Detalhar melhor o comparativo tecnológico, incluindo métricas objetivas de desempenho.",
       },
       {
-        id: crypto.randomUUID(),
+        id: nextId("adj"),
         sectionKey: "despesas",
         fieldLabel: "Despesas",
         comment: "Faltam notas fiscais dos materiais utilizados no ano base.",
@@ -198,7 +210,7 @@ export const INITIAL_PROJECTS: Project[] = [
     endDate: daysFromNow(75),
     adjustmentItems: [
       {
-        id: crypto.randomUUID(),
+        id: nextId("adj"),
         sectionKey: "barreiras",
         fieldId: "barr_7",
         fieldLabel: "Testes realizados.",
@@ -211,7 +223,7 @@ export const INITIAL_PROJECTS: Project[] = [
   }),
 ];
 
-const masterProjectId = crypto.randomUUID();
+const masterProjectId = nextId("proj");
 
 INITIAL_PROJECTS.push(
   emptyProject({
@@ -276,7 +288,7 @@ function fullAnswers(): Record<string, string> {
 
 const testProjectEvidences: Attachment[] = [
   {
-    id: crypto.randomUUID(),
+    id: nextId("att"),
     name: "relatorio-tecnico-completo.pdf",
     type: "application/pdf",
     category: "relatorio",
@@ -285,7 +297,7 @@ const testProjectEvidences: Attachment[] = [
     size: 850 * 1024,
   },
   {
-    id: crypto.randomUUID(),
+    id: nextId("att"),
     name: "fotos-bancada-testes.jpg",
     type: "image/jpeg",
     category: "fotos",
@@ -310,7 +322,7 @@ INITIAL_PROJECTS.push(
     attachments: { _evidencias: testProjectEvidences },
     employees: [
       {
-        id: crypto.randomUUID(),
+        id: nextId("emp"),
         code: MOCK_EMPLOYEES[0].code,
         name: MOCK_EMPLOYEES[0].name,
         role: MOCK_EMPLOYEES[0].role,
@@ -321,7 +333,7 @@ INITIAL_PROJECTS.push(
     ],
     thirdParties: [
       {
-        id: crypto.randomUUID(),
+        id: nextId("tp"),
         company: MOCK_SUPPLIERS[0].name,
         cnpj: MOCK_SUPPLIERS[0].cnpj,
         invoice: "NF-000123",
@@ -331,7 +343,7 @@ INITIAL_PROJECTS.push(
     ],
     materials: [
       {
-        id: crypto.randomUUID(),
+        id: nextId("mat"),
         supplier: MOCK_SUPPLIERS[1].name,
         cnpj: MOCK_SUPPLIERS[1].cnpj,
         invoice: "NF-000456",
@@ -457,7 +469,7 @@ INITIAL_PROJECTS.forEach((p) => {
 });
 
 // --- Parecer do MCTI (exemplo) -------------------------------------------
-const seedParecerId = crypto.randomUUID();
+const seedParecerId = nextId("parecer");
 const seedParecerCandidates = INITIAL_PROJECTS.filter(
   (p) => p.legalStatus === "aprovado" || p.legalStatus === "ajustes_mcti",
 ).slice(0, 10);
