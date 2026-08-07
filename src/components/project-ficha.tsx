@@ -14,15 +14,13 @@ import {
   Wrench,
   XCircle,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 
 import { AppHeader } from "@/components/app-header";
+import { ProjectHistoryDrawer } from "@/components/project-history-drawer";
 import { ProjectSidebar } from "@/components/project-sidebar";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -524,27 +522,13 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <StatusBadge status={project.status} />
-                    <span className="text-xs text-muted-foreground">
-                      Atualizado há{" "}
-                      {formatDistanceToNow(new Date(project.updatedAt), { locale: ptBR })}
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-status-ready-fg">
-                      <CloudUpload className="size-3.5" /> Salvo automaticamente
-                    </span>
                   </div>
                   <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">
                     {project.name}
                   </h1>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {project.area} · Responsável: {project.responsible}
-                  </p>
                 </div>
-                <div className="flex min-w-[220px] flex-col items-end gap-1.5">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>Progresso da ficha</span>
-                    <span className="font-semibold text-foreground">{overall}%</span>
-                  </div>
-                  <Progress value={overall} className="h-1.5 w-[220px]" />
+                <div className="flex min-w-[160px] flex-col items-end justify-start pt-1">
+                  <ProjectHistoryDrawer project={project} />
                 </div>
               </div>
             </div>

@@ -39,10 +39,12 @@ interface JuridicoProcessPanelProps {
   project: Project;
 }
 
-// Painel único que reúne as ferramentas do Jurídico (análise, submissão,
-// parecer, histórico, relacionados, ajustes) — as etapas do projeto em si
-// (Gerais/Inovador/.../Revisão Final) já são exibidas pelo ProjectFicha, de
-// forma idêntica ao Relator/Revisor/Financeiro.
+// Painel único que reúne as ferramentas do Jurídico (submissão, parecer,
+// relacionados, ajustes) — as etapas do projeto em si (Gerais/Inovador/.../
+// Revisão Final) já são exibidas pelo ProjectFicha, de forma idêntica ao
+// Relator/Revisor/Financeiro. O histórico do projeto tem seu próprio acesso
+// no cabeçalho da ficha (ProjectHistoryDrawer), compartilhado com as demais
+// áreas.
 export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
   const navigate = useNavigate();
   const allProjects = useProjectsStore((s) => s.projects);
@@ -99,48 +101,6 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
     updateProject(project.id, { legalStatus: "pronto_submissao" });
     toast.success("Projeto liberado para nova submissão");
   };
-
-  const historyEvents = useMemo(() => {
-    const events: Array<{ date: string; actor: string; description: string }> = [
-      {
-        date: project.createdAt,
-        actor: `Relator: ${project.responsible}`,
-        description: "Projeto criado.",
-      },
-    ];
-    if (project.reviewedAt) {
-      events.push({
-        date: project.reviewedAt,
-        actor: project.reviewedBy ? `Revisor: ${project.reviewedBy}` : "Revisor",
-        description: "Revisão técnica concluída, projeto encaminhado ao Jurídico.",
-      });
-    }
-    if (project.lastAdjustmentNote) {
-      events.push({
-        date: project.updatedAt,
-        actor: "Ajuste solicitado",
-        description: project.lastAdjustmentNote,
-      });
-    }
-    if (project.submissionDate) {
-      events.push({
-        date: project.submissionDate,
-        actor: "Jurídico",
-        description: `Submissão registrada ao MCTI (${project.submissionDoc ?? "documento"}).`,
-      });
-    }
-    if (parecer) {
-      events.push({
-        date: parecer.uploadedAt,
-        actor: "Parecer do MCTI",
-        description:
-          project.mctiResult === "aprovado"
-            ? "Projeto aprovado pelo MCTI."
-            : `Ajuste solicitado pelo MCTI: ${project.mctiReason ?? ""}`,
-      });
-    }
-    return events.sort((a, b) => +new Date(b.date) - +new Date(a.date));
-  }, [project, parecer]);
 
   const nextActionText: Record<LegalStatus, string> = {
     aguardando_juridico: "Realize a análise jurídica da documentação para liberar a submissão.",
@@ -285,25 +245,6 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
           </div>
         </div>
       )}
-
-      <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Histórico
-        </h3>
-        <div className="space-y-2">
-          {historyEvents.map((ev, idx) => (
-            <div key={idx} className="flex gap-3 rounded-lg border border-border bg-surface p-3">
-              <div className="w-20 shrink-0 text-xs tabular-nums text-muted-foreground">
-                {format(new Date(ev.date), "dd/MM/yyyy", { locale: ptBR })}
-              </div>
-              <div>
-                <div className="text-xs font-medium text-primary">{ev.actor}</div>
-                <div className="mt-0.5 text-sm text-foreground">{ev.description}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
       <Dialog open={submissionOpen} onOpenChange={setSubmissionOpen}>
         <DialogContent className="max-w-lg">
