@@ -2,10 +2,6 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ListChecks,
-  FileCheck2,
-  Scale,
-  FileClock,
-  FileWarning,
   ChevronRight,
   Upload,
   FileText,
@@ -29,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { CreateGroupingDialog } from "@/components/create-grouping-dialog";
 import { MctiParecerDialog } from "@/components/mcti-parecer-dialog";
-import { ProjectsList, quarterLabel, yearOf } from "@/components/projects-list";
+import { ProjectsList, quarterLabel } from "@/components/projects-list";
 import { useProjectsStore } from "@/lib/store";
 import { CONSOLIDATION_WINDOW, isConsolidationWindowOpen } from "@/lib/mock";
 import {
@@ -47,7 +43,6 @@ export function JuridicoDashboard() {
 
   const [parecerDialogOpen, setParecerDialogOpen] = useState(false);
 
-  const currentYear = new Date().getFullYear();
   const windowOpen = isConsolidationWindowOpen();
 
   const legalProjects = useMemo(() => allProjects.filter((p) => p.legalStatus), [allProjects]);
@@ -55,26 +50,6 @@ export function JuridicoDashboard() {
     () =>
       legalProjects.filter((p) => p.legalStatus !== "aprovado" && p.legalStatus !== "indeferido"),
     [legalProjects],
-  );
-
-  const counts = useMemo(() => {
-    const c: Record<LegalStatus, number> = {
-      aguardando_juridico: 0,
-      pronto_submissao: 0,
-      submetido: 0,
-      ajustes_mcti: 0,
-      aprovado: 0,
-      indeferido: 0,
-    };
-    activeProjects.forEach((p) => {
-      if (p.legalStatus) c[p.legalStatus]++;
-    });
-    return c;
-  }, [activeProjects]);
-
-  const projectsThisYear = useMemo(
-    () => legalProjects.filter((p) => yearOf(p.updatedAt) === currentYear).length,
-    [legalProjects, currentYear],
   );
 
   const priorityProjects = useMemo(
@@ -117,7 +92,7 @@ export function JuridicoDashboard() {
   const extraTop = (
     <>
       {/* Prazo do Projeto Final */}
-      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface-muted/60 px-4 py-3 text-sm">
+      <div className="mb-8 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface-muted/60 px-4 py-3 text-sm">
         <CalendarClock className="size-4 text-muted-foreground" />
         <span className="text-muted-foreground">
           Período de consolidação do Projeto Final {CONSOLIDATION_WINDOW.year}:{" "}
@@ -137,55 +112,6 @@ export function JuridicoDashboard() {
           {windowOpen ? <CheckCircle2 className="size-3" /> : <Lock className="size-3" />}
           {windowOpen ? "Aberto" : "Encerrado"}
         </span>
-      </div>
-
-      {/* Visão geral */}
-      <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <div className="mb-3 grid size-9 place-items-center rounded-md bg-surface-muted text-muted-foreground">
-            <FileText className="size-4.5" />
-          </div>
-          <div className="text-2xl font-semibold tabular-nums tracking-tight">
-            {projectsThisYear}
-          </div>
-          <div className="mt-0.5 text-xs text-muted-foreground">Projetos no ano</div>
-        </div>
-        <div className="rounded-lg border-2 border-primary/50 bg-primary/5 p-4">
-          <div className="mb-3 grid size-9 place-items-center rounded-md bg-primary/10 text-primary">
-            <FileCheck2 className="size-4.5" />
-          </div>
-          <div className="text-2xl font-semibold tabular-nums tracking-tight text-primary">
-            {counts.pronto_submissao}
-          </div>
-          <div className="mt-0.5 text-xs font-medium text-foreground">Prontos para submissão</div>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <div className="mb-3 grid size-9 place-items-center rounded-md bg-surface-muted text-status-review-fg">
-            <FileClock className="size-4.5" />
-          </div>
-          <div className="text-2xl font-semibold tabular-nums tracking-tight">
-            {counts.aguardando_juridico}
-          </div>
-          <div className="mt-0.5 text-xs text-muted-foreground">Aguardando análise jurídica</div>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <div className="mb-3 grid size-9 place-items-center rounded-md bg-surface-muted text-status-submitted-fg">
-            <Scale className="size-4.5" />
-          </div>
-          <div className="text-2xl font-semibold tabular-nums tracking-tight">
-            {counts.submetido}
-          </div>
-          <div className="mt-0.5 text-xs text-muted-foreground">Em análise pelo MCTI</div>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <div className="mb-3 grid size-9 place-items-center rounded-md bg-surface-muted text-status-adjust-fg">
-            <FileWarning className="size-4.5" />
-          </div>
-          <div className="text-2xl font-semibold tabular-nums tracking-tight">
-            {counts.ajustes_mcti}
-          </div>
-          <div className="mt-0.5 text-xs text-muted-foreground">Ajustes solicitados</div>
-        </div>
       </div>
 
       {/* Projetos que precisam da minha ação */}
@@ -221,11 +147,23 @@ export function JuridicoDashboard() {
       </div>
 
       {/* Pareceres do MCTI */}
-      {pareceres.length > 0 && (
-        <div className="mb-8">
-          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="mb-8">
+        <div className="mb-2.5 flex items-center justify-between gap-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Pareceres do MCTI
           </h2>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => setParecerDialogOpen(true)}
+          >
+            <Upload className="size-4" /> Adicionar parecer
+          </Button>
+        </div>
+        {pareceres.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum parecer do MCTI adicionado ainda.</p>
+        ) : (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {pareceres.map((parecer) => {
               const aprovados = parecer.results.filter((r) => r.suggested === "aprovado").length;
@@ -246,22 +184,14 @@ export function JuridicoDashboard() {
               );
             })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </>
   );
 
   const extraAction = (
     <>
       <CreateGroupingDialog mode="juridico" />
-      <Button variant="outline" className="gap-2" onClick={() => setParecerDialogOpen(true)}>
-        <Upload className="size-4" /> Adicionar parecer do MCTI
-      </Button>
-      <Button asChild variant="outline" className="gap-2">
-        <Link to="/juridico/final">
-          <FileText className="size-4" /> Projetos Finais
-        </Link>
-      </Button>
       {windowOpen ? (
         <Button asChild className="gap-2">
           <Link to="/juridico/final/novo">

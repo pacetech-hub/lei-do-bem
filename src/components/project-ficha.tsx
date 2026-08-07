@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   AlertTriangle,
   CheckCircle2,
+  Pencil,
   Plus,
   Save,
   Send,
@@ -50,7 +51,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useProjectsStore } from "@/lib/store";
-import { FILIAIS, getFilial, quarterLabel } from "@/components/projects-list";
+import { FILIAIS, getFilial, quarterLabel, ProjetoFinalTag } from "@/components/projects-list";
 import { REVISOR_NAMES } from "@/lib/mock";
 import {
   ALL_REQUIRED_QUESTIONS,
@@ -84,6 +85,7 @@ interface ProjectFichaProps {
 export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps) {
   const navigate = useNavigate();
   const updateProject = useProjectsStore((s) => s.updateProject);
+  const finalProjects = useProjectsStore((s) => s.finalProjects);
   const [section, setSection] = useState<SectionKey>("gerais");
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustSection, setAdjustSection] = useState<SectionKey>("gerais");
@@ -522,6 +524,9 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <StatusBadge status={project.status} />
+                    {isJuridico && finalProjects.some((f) => f.projectIds.includes(project.id)) && (
+                      <ProjetoFinalTag />
+                    )}
                   </div>
                   <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">
                     {project.name}
@@ -796,14 +801,14 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                       disabled={!canDecideJuridico}
                       onClick={() => setJuridicoAdjustOpen(true)}
                     >
-                      <Wrench className="size-4" /> Enviar para ajustes
+                      <Pencil className="size-4" /> Enviar para ajustes
                     </Button>
                     <Button
                       className="gap-2"
                       disabled={!canDecideJuridico}
                       onClick={() => setJuridicoApproveOpen(true)}
                     >
-                      <CheckCircle2 className="size-4" /> Aprovar para criar projeto final
+                      <Send className="size-4" /> Aprovar para criar projeto final
                     </Button>
                   </>
                 ) : (

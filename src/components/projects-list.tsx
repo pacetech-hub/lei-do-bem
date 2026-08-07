@@ -135,6 +135,17 @@ function SharedWithAreaTag() {
   );
 }
 
+// Tag de projeto (não é status): indica que o projeto já faz parte de um
+// Projeto Final consolidado. Não existe mais uma área separada de listagem
+// de "Projetos Finais" — a identificação acontece no próprio projeto.
+export function ProjetoFinalTag() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+      <FolderTree className="size-3" /> Projeto Final
+    </span>
+  );
+}
+
 type SummaryCard = {
   key: ProjectStatus;
   label: string;
@@ -222,6 +233,8 @@ export function ProjectsList({
   extraAction,
 }: ProjectsListProps) {
   const projects = useProjectsStore((s) => s.projects);
+  const finalProjects = useProjectsStore((s) => s.finalProjects);
+  const isInFinalProject = (id: string) => finalProjects.some((f) => f.projectIds.includes(id));
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">("all");
@@ -447,6 +460,11 @@ export function ProjectsList({
                     <SharedWithAreaTag />
                   </div>
                 )}
+                {isJuridico && isInFinalProject(p.id) && (
+                  <div className="mb-1.5 pl-6">
+                    <ProjetoFinalTag />
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-2.5">
                   {isExpanded ? (
                     <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
@@ -483,6 +501,11 @@ export function ProjectsList({
                 {isRevisor && p.sharedWithArea && (
                   <div className="mb-1.5">
                     <SharedWithAreaTag />
+                  </div>
+                )}
+                {isJuridico && isInFinalProject(p.id) && (
+                  <div className="mb-1.5">
+                    <ProjetoFinalTag />
                   </div>
                 )}
                 <div className="flex flex-wrap items-center gap-2">
@@ -569,6 +592,11 @@ export function ProjectsList({
                   {isRevisor && d.sharedWithArea && (
                     <div className="mb-1.5 pl-4">
                       <SharedWithAreaTag />
+                    </div>
+                  )}
+                  {isJuridico && isInFinalProject(d.id) && (
+                    <div className="mb-1.5 pl-4">
+                      <ProjetoFinalTag />
                     </div>
                   )}
                   <div className="flex items-center gap-2.5 border-l-2 border-border pl-4">

@@ -101,8 +101,8 @@ function FinalProjectReview() {
             </p>
           </div>
           <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-            <Link to="/juridico/final">
-              <ArrowLeft className="size-4" /> Voltar para Projetos Finais
+            <Link to="/juridico">
+              <ArrowLeft className="size-4" /> Voltar para a Central Jurídica
             </Link>
           </Button>
         </div>
