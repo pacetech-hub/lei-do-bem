@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 
 import { useProjectsStore } from "@/lib/store";
 import { CONSOLIDATION_WINDOW, isConsolidationWindowOpen } from "@/lib/mock";
-import { CURRENT_USER } from "@/lib/types";
+import { ROLE_USERS } from "@/lib/types";
 
 export const Route = createFileRoute("/juridico/final/novo")({
   head: () => ({
@@ -40,13 +40,44 @@ function NewFinalProject() {
 
   // Elegível = já aprovado pelo Jurídico na ficha do projeto ("Aprovar para
   // criar projeto final"), ainda não incluído numa consolidação anterior.
-  const eligibleProjects = useMemo(
-    () =>
-      allProjects
-        .filter((p) => p.legalStatus === "pronto_submissao")
-        .filter((p) => !query || p.name.toLowerCase().includes(query.toLowerCase())),
-    [allProjects, query],
-  );
+  // Agrupadores também aparecem como uma única linha selecionável — ao
+  // marcar um agrupador, todos os seus dependentes prontos entram de uma vez.
+  const readyDependentsByMaster = useMemo(() => {
+    const map = new Map<string, typeof allProjects>();
+    allProjects.forEach((p) => {
+      if (
+        p.projectType === "dependente" &&
+        p.masterProjectId &&
+        p.legalStatus === "pronto_submissao"
+      ) {
+        const list = map.get(p.masterProjectId) ?? [];
+        list.push(p);
+        map.set(p.masterProjectId, list);
+      }
+    });
+    return map;
+  }, [allProjects]);
+
+  const eligibleEntries = useMemo(() => {
+    const entries: Array<{
+      id: string;
+      name: string;
+      area: string;
+      isGroup: boolean;
+      count?: number;
+    }> = [];
+    allProjects.forEach((p) => {
+      if (p.projectType === "independente" && p.legalStatus === "pronto_submissao") {
+        entries.push({ id: p.id, name: p.name, area: p.area, isGroup: false });
+      } else if (p.projectType === "mestre") {
+        const deps = readyDependentsByMaster.get(p.id) ?? [];
+        if (deps.length > 0) {
+          entries.push({ id: p.id, name: p.name, area: p.area, isGroup: true, count: deps.length });
+        }
+      }
+    });
+    return entries.filter((e) => !query || e.name.toLowerCase().includes(query.toLowerCase()));
+  }, [allProjects, readyDependentsByMaster, query]);
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -63,14 +94,20 @@ function NewFinalProject() {
       return;
     }
     if (selected.size === 0) {
-      toast.error("Selecione ao menos um projeto para consolidar.");
+      toast.error("Selecione ao menos um projeto ou agrupador para consolidar.");
       return;
     }
+    // Um agrupador selecionado expande para os ids dos seus dependentes
+    // prontos — o agrupador em si nunca é submetido, é só um agregador.
+    const projectIds = Array.from(selected).flatMap((id) => {
+      const deps = readyDependentsByMaster.get(id);
+      return deps ? deps.map((d) => d.id) : [id];
+    });
     const id = createFinalProject({
       year: currentYear,
       name: name.trim(),
-      projectIds: Array.from(selected),
-      createdBy: CURRENT_USER.name,
+      projectIds,
+      createdBy: ROLE_USERS.juridico.name,
     });
     toast.success("Projeto Final gerado", {
       description: "Revise as informações consolidadas antes de enviar ao MCTI.",
@@ -81,7 +118,7 @@ function NewFinalProject() {
   if (!windowOpen) {
     return (
       <div className="min-h-screen bg-background">
-        <AppHeader current="Criar Projeto Final" />
+        <AppHeader current="Criar Projeto Final" role="juridico" />
         <main className="mx-auto max-w-xl px-6 py-16 text-center">
           <Lock className="mx-auto mb-3 size-8 text-muted-foreground" />
           <h1 className="text-lg font-semibold text-foreground">
@@ -103,7 +140,7 @@ function NewFinalProject() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader current="Criar Projeto Final" />
+      <AppHeader current="Criar Projeto Final" role="juridico" />
       <main className="mx-auto max-w-3xl px-6 py-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -127,37 +164,48 @@ function NewFinalProject() {
           </div>
 
           <div className="space-y-2">
-            <Label>Projetos aprovados disponíveis</Label>
+            <Label>Projetos e agrupadores disponíveis</Label>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por nome do projeto…"
+                placeholder="Buscar por nome…"
                 className="h-9 pl-8"
               />
             </div>
             <div className="max-h-80 space-y-1 overflow-y-auto rounded-md border border-border p-2">
-              {eligibleProjects.length === 0 ? (
+              {eligibleEntries.length === 0 ? (
                 <p className="p-2 text-sm text-muted-foreground">
-                  Nenhum projeto aprovado disponível para consolidação.
+                  Nenhum projeto ou agrupador disponível para consolidação.
                 </p>
               ) : (
-                eligibleProjects.map((p) => (
+                eligibleEntries.map((e) => (
                   <label
-                    key={p.id}
+                    key={e.id}
                     className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-surface-muted"
                   >
-                    <Checkbox checked={selected.has(p.id)} onCheckedChange={() => toggle(p.id)} />
-                    <span className="flex-1 truncate text-foreground">{p.name}</span>
-                    <span className="text-xs text-muted-foreground">{p.area}</span>
+                    <Checkbox checked={selected.has(e.id)} onCheckedChange={() => toggle(e.id)} />
+                    {e.isGroup && (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
+                        <FolderTree className="size-3" /> Agrupador
+                      </span>
+                    )}
+                    <span className="flex-1 truncate text-foreground">{e.name}</span>
+                    {e.isGroup && (
+                      <span className="text-xs text-muted-foreground">
+                        {e.count} projeto{e.count === 1 ? "" : "s"} pronto
+                        {e.count === 1 ? "" : "s"}
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground">{e.area}</span>
                   </label>
                 ))
               )}
             </div>
             {selected.size > 0 && (
               <p className="text-xs text-muted-foreground">
-                {selected.size} projeto{selected.size === 1 ? "" : "s"} selecionado
+                {selected.size} ite{selected.size === 1 ? "m" : "ns"} selecionado
                 {selected.size === 1 ? "" : "s"}.
               </p>
             )}

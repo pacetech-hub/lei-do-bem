@@ -16,7 +16,7 @@ export const Route = createFileRoute("/revisor/")({
 function RevisorPage() {
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader current="Revisor" />
+      <AppHeader current="Revisor" role="revisor" />
       <ProjectsList
         title="Revisão de Projetos"
         description="Acompanhe os projetos de todas as áreas e filiais que aguardam sua análise técnica."

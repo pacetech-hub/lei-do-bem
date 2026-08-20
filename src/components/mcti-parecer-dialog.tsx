@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { useProjectsStore } from "@/lib/store";
-import type { MctiParecerResult } from "@/lib/types";
+import { ROLE_USERS, type MctiParecerResult } from "@/lib/types";
 
 const REASONS = [
   "Apresentar nova evidência técnica.",
@@ -48,7 +48,6 @@ export function MctiParecerDialog({ open, onOpenChange }: MctiParecerDialogProps
 
   const [step, setStep] = useState<"upload" | "review">("upload");
   const [year, setYear] = useState(String(new Date().getFullYear()));
-  const [quarter, setQuarter] = useState<"1" | "2" | "3" | "4">("1");
   const [fileName, setFileName] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<MctiParecerResult[]>([]);
@@ -99,10 +98,9 @@ export function MctiParecerDialog({ open, onOpenChange }: MctiParecerDialogProps
     addParecer({
       id: parecerId,
       year: Number(year),
-      quarter: Number(quarter) as 1 | 2 | 3 | 4,
       fileName,
       uploadedAt: new Date().toISOString(),
-      uploadedBy: "Ana Souza",
+      uploadedBy: ROLE_USERS.juridico.name,
       results: results.map((r) => ({ ...r, confirmed: true })),
     });
     results.forEach((r) => {
@@ -130,46 +128,30 @@ export function MctiParecerDialog({ open, onOpenChange }: MctiParecerDialogProps
           <DialogTitle>Adicionar parecer do MCTI</DialogTitle>
           <DialogDescription>
             {step === "upload"
-              ? "Selecione o ano e o trimestre e envie o documento recebido do Ministério."
+              ? "Selecione o ano e envie o documento recebido do Ministério."
               : "Confira o resultado sugerido para cada projeto antes de confirmar."}
           </DialogDescription>
         </DialogHeader>
 
         {step === "upload" ? (
           <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Ano</Label>
-                <Select value={year} onValueChange={setYear}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[0, 1, 2, 3].map((d) => {
-                      const y = new Date().getFullYear() - d;
-                      return (
-                        <SelectItem key={y} value={y.toString()}>
-                          {y}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Trimestre</Label>
-                <Select value={quarter} onValueChange={(v) => setQuarter(v as typeof quarter)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1º Tri</SelectItem>
-                    <SelectItem value="2">2º Tri</SelectItem>
-                    <SelectItem value="3">3º Tri</SelectItem>
-                    <SelectItem value="4">4º Tri</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2 sm:max-w-[200px]">
+              <Label>Ano</Label>
+              <Select value={year} onValueChange={setYear}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[0, 1, 2, 3].map((d) => {
+                    const y = new Date().getFullYear() - d;
+                    return (
+                      <SelectItem key={y} value={y.toString()}>
+                        {y}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

@@ -178,7 +178,7 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
       {parecer && (
         <div className="mb-5 rounded-lg border border-border bg-surface p-4">
           <div className="text-sm font-semibold text-foreground">
-            Parecer do MCTI — {parecer.quarter}º Trimestre de {parecer.year}
+            Parecer do MCTI — {parecer.year}
           </div>
           <p className="mt-1 text-xs text-muted-foreground">{parecer.fileName}</p>
         </div>

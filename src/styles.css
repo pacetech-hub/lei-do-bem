@@ -128,21 +128,24 @@
   --input: var(--rw-neutral-2);
   --ring: var(--rw-red);
 
-  /* Status colors — mapped onto the Redwood palette, no invented hues */
-  --status-draft: var(--rw-neutral-1);
-  --status-draft-fg: var(--rw-neutral-4);
-  --status-adjust: color-mix(in srgb, var(--rw-sienna) 16%, white);
-  --status-adjust-fg: color-mix(in srgb, var(--rw-sienna) 80%, black);
-  --status-review: color-mix(in srgb, var(--rw-ocean) 14%, white);
-  --status-review-fg: color-mix(in srgb, var(--rw-ocean) 85%, black);
-  --status-ready: color-mix(in srgb, var(--rw-ocean) 20%, white);
-  --status-ready-fg: var(--rw-ocean);
-  --status-submitted: color-mix(in srgb, var(--rw-ocean) 28%, white);
-  --status-submitted-fg: color-mix(in srgb, var(--rw-ocean) 92%, black);
-  --status-approved: color-mix(in srgb, var(--rw-ivy) 20%, white);
-  --status-approved-fg: color-mix(in srgb, var(--rw-ivy) 78%, black);
-  --status-rejected: color-mix(in srgb, var(--rw-red) 14%, white);
-  --status-rejected-fg: var(--rw-red-dark);
+  /* Status colors — restauradas às cores vivas de antes do redesign Redwood
+     (o usuário achou as versões mapeadas na paleta Redwood "lavadas demais").
+     Únicos tokens que escapam à paleta Redwood; todo o resto do tema segue
+     os tokens --rw-* acima. */
+  --status-draft: oklch(0.945 0.01 250);
+  --status-draft-fg: oklch(0.38 0.02 258);
+  --status-adjust: oklch(0.95 0.055 75);
+  --status-adjust-fg: oklch(0.42 0.1 55);
+  --status-review: oklch(0.94 0.055 240);
+  --status-review-fg: oklch(0.42 0.14 250);
+  --status-ready: oklch(0.94 0.055 170);
+  --status-ready-fg: oklch(0.4 0.1 170);
+  --status-submitted: oklch(0.93 0.06 285);
+  --status-submitted-fg: oklch(0.42 0.14 285);
+  --status-approved: oklch(0.93 0.075 155);
+  --status-approved-fg: oklch(0.38 0.13 155);
+  --status-rejected: oklch(0.94 0.055 25);
+  --status-rejected-fg: oklch(0.45 0.16 25);
 
   --chart-1: var(--rw-red);
   --chart-2: var(--rw-ocean);

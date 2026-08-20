@@ -1,6 +1,7 @@
 import {
   AREAS,
   ALL_REQUIRED_QUESTIONS,
+  ROLE_USERS,
   type Attachment,
   type FinalProject,
   type MctiParecer,
@@ -484,10 +485,9 @@ export const INITIAL_PARECERES: MctiParecer[] = [
   {
     id: seedParecerId,
     year: today.getFullYear(),
-    quarter: (Math.floor(today.getMonth() / 3) + 1) as 1 | 2 | 3 | 4,
-    fileName: "parecer-mcti-trimestre.pdf",
+    fileName: "parecer-mcti-anual.pdf",
     uploadedAt: daysAgo(15),
-    uploadedBy: "Ana Souza",
+    uploadedBy: ROLE_USERS.juridico.name,
     results: seedParecerCandidates.map((p) => ({
       projectId: p.id,
       projectName: p.name,

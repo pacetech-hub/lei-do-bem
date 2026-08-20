@@ -214,7 +214,7 @@ interface ProjectsListProps {
   // Conteúdo extra específico da área, renderizado dentro do mesmo componente
   // em vez de duplicar a lógica de filtro/tabela (ex.: cards de KPI do Jurídico).
   extraTop?: React.ReactNode;
-  // Ação extra no cabeçalho, ao lado do botão "Novo Projeto".
+  // Ação extra no cabeçalho, ao lado do botão "Nova iniciativa".
   extraAction?: React.ReactNode;
 }
 
@@ -354,20 +354,23 @@ export function ProjectsList({
     sortKey,
   ]);
 
-  // Revisor's work queue: exclusively projects with status "revisao" (self or a
-  // dependent), independent of whatever the filters below are set to.
+  // Fila de trabalho no topo do dashboard: para o Revisor, projetos com
+  // status "revisao" (aguardando a revisão dele); para o Relator, o mesmo
+  // painel mas com projetos "ajustes" (devolvidos e aguardando correção dele).
+  // Independente dos filtros abaixo.
+  const priorityStatus: ProjectStatus | null = isRevisor ? "revisao" : isRelator ? "ajustes" : null;
   const priorityRows = useMemo(() => {
-    if (!isRevisor) return [];
+    if (!priorityStatus) return [];
     const rows: Array<{ project: Project; dependents: Project[] }> = [];
     topLevelScoped.forEach((p) => {
       const deps = p.projectType === "mestre" ? (dependentsByMaster.get(p.id) ?? []) : [];
-      const revisaoDeps = deps.filter((d) => d.status === "revisao");
-      const selfQualifies = p.status === "revisao";
-      if (!selfQualifies && revisaoDeps.length === 0) return;
-      rows.push({ project: p, dependents: revisaoDeps });
+      const qualifyingDeps = deps.filter((d) => d.status === priorityStatus);
+      const selfQualifies = p.status === priorityStatus;
+      if (!selfQualifies && qualifyingDeps.length === 0) return;
+      rows.push({ project: p, dependents: qualifyingDeps });
     });
     return rows.sort((a, b) => compareProjects(a.project, b.project, "updated_desc"));
-  }, [isRevisor, topLevelScoped, dependentsByMaster]);
+  }, [priorityStatus, topLevelScoped, dependentsByMaster]);
 
   const priorityRowsShown = priorityRows.slice(0, 5);
 
@@ -672,7 +675,7 @@ export function ProjectsList({
           {showNewButton && (
             <Button asChild size="default" className="gap-2">
               <Link to="/projetos/novo">
-                <Plus className="size-4" /> Novo Projeto
+                <Plus className="size-4" /> Nova iniciativa
               </Link>
             </Button>
           )}
@@ -697,7 +700,7 @@ export function ProjectsList({
 
       {extraTop}
 
-      {isRevisor && (
+      {priorityStatus && (
         <div className="mb-8 rounded-lg border border-primary/20 bg-primary/5 p-4">
           <div className="mb-3 flex items-center gap-2">
             <ListChecks className="size-4 text-primary" />
@@ -975,7 +978,13 @@ export function ProjectsList({
               )}
               <TableHead
                 className={
-                  isRelator || isFinanceiro ? "w-[65%]" : isHierarchical ? "w-[22%]" : "w-[30%]"
+                  isRelator
+                    ? "w-[65%]"
+                    : isFinanceiro
+                      ? "w-[45%]"
+                      : isHierarchical
+                        ? "w-[22%]"
+                        : "w-[30%]"
                 }
               >
                 Projeto
@@ -989,9 +998,8 @@ export function ProjectsList({
               {showSetorColumn && <TableHead>Setor</TableHead>}
               {!isHierarchical && <TableHead>Responsável</TableHead>}
               {!isHierarchical && <TableHead>Última atualização</TableHead>}
-              {(isRelator || isFinanceiro) && (
-                <TableHead className="w-[20%] text-left">Status</TableHead>
-              )}
+              {isRelator && <TableHead className="w-[20%] text-left">Status</TableHead>}
+              {isFinanceiro && <TableHead className="w-[25%] text-left">Status</TableHead>}
               {!isHierarchical && <TableHead className="text-left">Status</TableHead>}
               <TableHead className="w-10" />
             </TableRow>

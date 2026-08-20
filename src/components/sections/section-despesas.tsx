@@ -20,7 +20,7 @@ import { toast } from "sonner";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-function EmployeesTab({ project }: { project: Project }) {
+function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: boolean }) {
   const addEmployee = useProjectsStore((s) => s.addEmployee);
   const removeEmployee = useProjectsStore((s) => s.removeEmployee);
   const [badge, setBadge] = useState("");
@@ -69,77 +69,81 @@ function EmployeesTab({ project }: { project: Project }) {
 
   return (
     <div className="space-y-4">
-      <Alert>
-        <AlertTriangle className="size-4" />
-        <AlertTitle>Atenção às horas elegíveis</AlertTitle>
-        <AlertDescription>
-          Nem todas as horas do colaborador podem ser consideradas. Apenas as horas dedicadas a
-          atividades de inovação devem ser contabilizadas.
-        </AlertDescription>
-      </Alert>
+      {!readOnly && (
+        <>
+          <Alert>
+            <AlertTriangle className="size-4" />
+            <AlertTitle>Atenção às horas elegíveis</AlertTitle>
+            <AlertDescription>
+              Nem todas as horas do colaborador podem ser consideradas. Apenas as horas dedicadas a
+              atividades de inovação devem ser contabilizadas.
+            </AlertDescription>
+          </Alert>
 
-      <div className="rounded-lg border border-border bg-surface p-4">
-        <h4 className="mb-3 text-sm font-semibold">Adicionar colaborador</h4>
-        <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
-          <div className="space-y-2">
-            <Label>Crachá</Label>
-            <div className="flex gap-2">
-              <Input
-                value={badge}
-                onChange={(e) => setBadge(e.target.value)}
-                placeholder="Ex.: 10234"
-              />
-              <Button variant="outline" size="icon" onClick={search}>
-                <Search className="size-4" />
-              </Button>
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <h4 className="mb-3 text-sm font-semibold">Adicionar colaborador</h4>
+            <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
+              <div className="space-y-2">
+                <Label>Crachá</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={badge}
+                    onChange={(e) => setBadge(e.target.value)}
+                    placeholder="Ex.: 10234"
+                  />
+                  <Button variant="outline" size="icon" onClick={search}>
+                    <Search className="size-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Nome / Função</Label>
+                <Input
+                  value={found ? `${found.name} — ${found.role}` : ""}
+                  disabled
+                  placeholder="Busque pelo crachá…"
+                />
+              </div>
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Nome / Função</Label>
-            <Input
-              value={found ? `${found.name} — ${found.role}` : ""}
-              disabled
-              placeholder="Busque pelo crachá…"
-            />
-          </div>
-        </div>
 
-        {found && (
-          <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <div className="space-y-2 md:col-span-3">
-              <Label>Atividade realizada</Label>
-              <Input
-                value={activity}
-                onChange={(e) => setActivity(e.target.value)}
-                placeholder="Descreva a atividade de inovação executada"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Horas totais no ano</Label>
-              <Input
-                type="number"
-                min="0"
-                value={totalHours}
-                onChange={(e) => setTotalHours(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Horas elegíveis</Label>
-              <Input
-                type="number"
-                min="0"
-                value={eligibleHours}
-                onChange={(e) => setEligibleHours(e.target.value)}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button className="w-full gap-2" onClick={submit}>
-                <Plus className="size-4" /> Adicionar
-              </Button>
-            </div>
+            {found && (
+              <div className="mt-3 grid gap-3 md:grid-cols-3">
+                <div className="space-y-2 md:col-span-3">
+                  <Label>Atividade realizada</Label>
+                  <Input
+                    value={activity}
+                    onChange={(e) => setActivity(e.target.value)}
+                    placeholder="Descreva a atividade de inovação executada"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Horas totais no ano</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={totalHours}
+                    onChange={(e) => setTotalHours(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Horas elegíveis</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={eligibleHours}
+                    onChange={(e) => setEligibleHours(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button className="w-full gap-2" onClick={submit}>
+                    <Plus className="size-4" /> Adicionar
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface">
         <Table>
@@ -151,13 +155,16 @@ function EmployeesTab({ project }: { project: Project }) {
               <TableHead>Atividade</TableHead>
               <TableHead className="text-right">Horas totais</TableHead>
               <TableHead className="text-right">Horas elegíveis</TableHead>
-              <TableHead className="w-10" />
+              {!readOnly && <TableHead className="w-10" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {project.employees.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="h-20 text-center text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={readOnly ? 6 : 7}
+                  className="h-20 text-center text-sm text-muted-foreground"
+                >
                   Nenhum colaborador adicionado.
                 </TableCell>
               </TableRow>
@@ -172,16 +179,18 @@ function EmployeesTab({ project }: { project: Project }) {
                 <TableCell className="text-right tabular-nums font-medium">
                   {e.eligibleHours}h
                 </TableCell>
-                <TableCell>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="size-8"
-                    onClick={() => removeEmployee(project.id, e.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </TableCell>
+                {!readOnly && (
+                  <TableCell>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8"
+                      onClick={() => removeEmployee(project.id, e.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -191,7 +200,7 @@ function EmployeesTab({ project }: { project: Project }) {
   );
 }
 
-function ThirdPartyTab({ project }: { project: Project }) {
+function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boolean }) {
   const addThirdParty = useProjectsStore((s) => s.addThirdParty);
   const removeThirdParty = useProjectsStore((s) => s.removeThirdParty);
   const [company, setCompany] = useState<string>(MOCK_SUPPLIERS[0].name);
@@ -234,73 +243,75 @@ function ThirdPartyTab({ project }: { project: Project }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-border bg-surface p-4">
-        <h4 className="mb-3 text-sm font-semibold">Adicionar serviço de terceiro</h4>
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Empresa fornecedora</Label>
-            <select
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
-              {MOCK_SUPPLIERS.map((s) => (
-                <option key={s.cnpj} value={s.name}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+      {!readOnly && (
+        <div className="rounded-lg border border-border bg-surface p-4">
+          <h4 className="mb-3 text-sm font-semibold">Adicionar serviço de terceiro</h4>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Empresa fornecedora</Label>
+              <select
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                {MOCK_SUPPLIERS.map((s) => (
+                  <option key={s.cnpj} value={s.name}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>CNPJ</Label>
+              <Input value={supplier.cnpj} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Nota fiscal</Label>
+              <Input
+                value={invoice}
+                onChange={(e) => setInvoice(e.target.value)}
+                placeholder="Ex.: NF 12345"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Valor total da nota (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={total}
+                onChange={(e) => setTotal(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Valor utilizado neste projeto (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={used}
+                onChange={(e) => setUsed(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                Já alocado em outros projetos (R$)
+                <Info className="size-3.5 text-muted-foreground" />
+              </Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={allocatedElsewhere}
+                onChange={(e) => setAllocatedElsewhere(e.target.value)}
+                placeholder="0,00"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>CNPJ</Label>
-            <Input value={supplier.cnpj} disabled />
-          </div>
-          <div className="space-y-2">
-            <Label>Nota fiscal</Label>
-            <Input
-              value={invoice}
-              onChange={(e) => setInvoice(e.target.value)}
-              placeholder="Ex.: NF 12345"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Valor total da nota (R$)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={total}
-              onChange={(e) => setTotal(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Valor utilizado neste projeto (R$)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={used}
-              onChange={(e) => setUsed(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              Já alocado em outros projetos (R$)
-              <Info className="size-3.5 text-muted-foreground" />
-            </Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={allocatedElsewhere}
-              onChange={(e) => setAllocatedElsewhere(e.target.value)}
-              placeholder="0,00"
-            />
+          <div className="mt-3 flex justify-end">
+            <Button className="gap-2" onClick={submit}>
+              <Plus className="size-4" /> Adicionar
+            </Button>
           </div>
         </div>
-        <div className="mt-3 flex justify-end">
-          <Button className="gap-2" onClick={submit}>
-            <Plus className="size-4" /> Adicionar
-          </Button>
-        </div>
-      </div>
+      )}
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface">
         <Table>
@@ -312,13 +323,16 @@ function ThirdPartyTab({ project }: { project: Project }) {
               <TableHead className="text-right">Valor total</TableHead>
               <TableHead className="text-right">Utilizado</TableHead>
               <TableHead className="text-right">Outros projetos</TableHead>
-              <TableHead className="w-10" />
+              {!readOnly && <TableHead className="w-10" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {project.thirdParties.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="h-20 text-center text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={readOnly ? 6 : 7}
+                  className="h-20 text-center text-sm text-muted-foreground"
+                >
                   Nenhum serviço de terceiro cadastrado.
                 </TableCell>
               </TableRow>
@@ -335,16 +349,18 @@ function ThirdPartyTab({ project }: { project: Project }) {
                 <TableCell className="text-right tabular-nums text-muted-foreground">
                   {brl(e.allocatedElsewhere ?? 0)}
                 </TableCell>
-                <TableCell>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="size-8"
-                    onClick={() => removeThirdParty(project.id, e.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </TableCell>
+                {!readOnly && (
+                  <TableCell>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8"
+                      onClick={() => removeThirdParty(project.id, e.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -354,7 +370,7 @@ function ThirdPartyTab({ project }: { project: Project }) {
   );
 }
 
-function MaterialsTab({ project }: { project: Project }) {
+function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: boolean }) {
   const addMaterial = useProjectsStore((s) => s.addMaterial);
   const removeMaterial = useProjectsStore((s) => s.removeMaterial);
   const [supplier, setSupplier] = useState<string>(MOCK_SUPPLIERS[0].name);
@@ -390,67 +406,74 @@ function MaterialsTab({ project }: { project: Project }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-border bg-surface p-4">
-        <h4 className="mb-3 text-sm font-semibold">Adicionar material</h4>
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Fornecedor</Label>
-            <select
-              value={supplier}
-              onChange={(e) => setSupplier(e.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
-              {MOCK_SUPPLIERS.map((x) => (
-                <option key={x.cnpj} value={x.name}>
-                  {x.name}
-                </option>
-              ))}
-            </select>
+      {!readOnly && (
+        <div className="rounded-lg border border-border bg-surface p-4">
+          <h4 className="mb-3 text-sm font-semibold">Adicionar material</h4>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Fornecedor</Label>
+              <select
+                value={supplier}
+                onChange={(e) => setSupplier(e.target.value)}
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                {MOCK_SUPPLIERS.map((x) => (
+                  <option key={x.cnpj} value={x.name}>
+                    {x.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>CNPJ</Label>
+              <Input value={s.cnpj} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Nota fiscal</Label>
+              <Input value={invoice} onChange={(e) => setInvoice(e.target.value)} />
+            </div>
+            <div className="space-y-2 md:col-span-1">
+              <Label>Valor bruto (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={gross}
+                onChange={(e) => setGross(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Valor líquido (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={net}
+                onChange={(e) => setNet(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Descrição do material</Label>
+              <Input
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+                placeholder="Ex.: Placa FPGA modelo XYZ"
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Descrição da utilização no projeto</Label>
+              <Input
+                value={usage}
+                onChange={(e) => setUsage(e.target.value)}
+                placeholder="Ex.: Prototipagem de módulo de aquisição de dados"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>CNPJ</Label>
-            <Input value={s.cnpj} disabled />
-          </div>
-          <div className="space-y-2">
-            <Label>Nota fiscal</Label>
-            <Input value={invoice} onChange={(e) => setInvoice(e.target.value)} />
-          </div>
-          <div className="space-y-2 md:col-span-1">
-            <Label>Valor bruto (R$)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={gross}
-              onChange={(e) => setGross(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Valor líquido (R$)</Label>
-            <Input type="number" step="0.01" value={net} onChange={(e) => setNet(e.target.value)} />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label>Descrição do material</Label>
-            <Input
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              placeholder="Ex.: Placa FPGA modelo XYZ"
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label>Descrição da utilização no projeto</Label>
-            <Input
-              value={usage}
-              onChange={(e) => setUsage(e.target.value)}
-              placeholder="Ex.: Prototipagem de módulo de aquisição de dados"
-            />
+          <div className="mt-3 flex justify-end">
+            <Button className="gap-2" onClick={submit}>
+              <Plus className="size-4" /> Adicionar
+            </Button>
           </div>
         </div>
-        <div className="mt-3 flex justify-end">
-          <Button className="gap-2" onClick={submit}>
-            <Plus className="size-4" /> Adicionar
-          </Button>
-        </div>
-      </div>
+      )}
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface">
         <Table>
@@ -461,13 +484,16 @@ function MaterialsTab({ project }: { project: Project }) {
               <TableHead>Material</TableHead>
               <TableHead className="text-right">Bruto</TableHead>
               <TableHead className="text-right">Líquido</TableHead>
-              <TableHead className="w-10" />
+              {!readOnly && <TableHead className="w-10" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {project.materials.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="h-20 text-center text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={readOnly ? 5 : 6}
+                  className="h-20 text-center text-sm text-muted-foreground"
+                >
                   Nenhum material cadastrado.
                 </TableCell>
               </TableRow>
@@ -481,16 +507,18 @@ function MaterialsTab({ project }: { project: Project }) {
                 <TableCell className="text-right tabular-nums font-medium">
                   {brl(m.netValue)}
                 </TableCell>
-                <TableCell>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="size-8"
-                    onClick={() => removeMaterial(project.id, m.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </TableCell>
+                {!readOnly && (
+                  <TableCell>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8"
+                      onClick={() => removeMaterial(project.id, m.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -503,17 +531,22 @@ function MaterialsTab({ project }: { project: Project }) {
 export function SectionDespesas({
   project,
   pendingItems,
+  readOnly,
 }: {
   project: Project;
   pendingItems?: AdjustmentItem[];
+  // Despesas só são editáveis pelo Responsável Financeiro — Relator, Revisor
+  // e Jurídico apenas visualizam os lançamentos já feitos.
+  readOnly?: boolean;
 }) {
   return (
     <div className="max-w-5xl">
       <header className="mb-6">
         <h2 className="text-lg font-semibold tracking-tight">Despesas</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Registre as despesas elegíveis vinculadas ao projeto: horas de funcionários, serviços de
-          terceiros e materiais.
+          {readOnly
+            ? "Despesas elegíveis lançadas pelo Responsável Financeiro: horas de funcionários, serviços de terceiros e materiais."
+            : "Registre as despesas elegíveis vinculadas ao projeto: horas de funcionários, serviços de terceiros e materiais."}
         </p>
       </header>
 
@@ -535,13 +568,13 @@ export function SectionDespesas({
           <TabsTrigger value="materiais">Materiais</TabsTrigger>
         </TabsList>
         <TabsContent value="funcionarios" className="mt-4">
-          <EmployeesTab project={project} />
+          <EmployeesTab project={project} readOnly={readOnly} />
         </TabsContent>
         <TabsContent value="terceiros" className="mt-4">
-          <ThirdPartyTab project={project} />
+          <ThirdPartyTab project={project} readOnly={readOnly} />
         </TabsContent>
         <TabsContent value="materiais" className="mt-4">
-          <MaterialsTab project={project} />
+          <MaterialsTab project={project} readOnly={readOnly} />
         </TabsContent>
       </Tabs>
     </div>

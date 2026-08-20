@@ -1,15 +1,5 @@
 import { useState } from "react";
-import {
-  AlertTriangle,
-  Paperclip,
-  Pencil,
-  Save,
-  Sparkles,
-  ScanSearch,
-  Wrench,
-  X,
-  FileText,
-} from "lucide-react";
+import { AlertTriangle, Paperclip, Save, Sparkles, ScanSearch, X, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -225,7 +215,7 @@ export function QuestionField({
               className="h-7 gap-2 px-2 text-xs"
               onClick={startEditingText}
             >
-              <Pencil className="size-3.5" /> Ajustar texto
+              Ajustar texto
             </Button>
             <Button
               type="button"
@@ -234,7 +224,7 @@ export function QuestionField({
               className="h-7 gap-2 px-2 text-xs text-status-adjust-fg hover:text-status-adjust-fg"
               onClick={startRequestingAdjustment}
             >
-              <Wrench className="size-3.5" /> Solicitar ajuste
+              Solicitar ajuste
             </Button>
           </div>
         )}

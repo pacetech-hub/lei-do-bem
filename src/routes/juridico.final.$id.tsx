@@ -80,7 +80,7 @@ function FinalProjectReview() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader current={finalProject.name} />
+      <AppHeader current={finalProject.name} role="juridico" />
       <main className="mx-auto max-w-4xl px-6 py-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>

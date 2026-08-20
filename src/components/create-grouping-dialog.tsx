@@ -18,10 +18,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { useProjectsStore } from "@/lib/store";
-import { CURRENT_USER, type Project } from "@/lib/types";
+import { ROLE_USERS, type Project, type UserRole } from "@/lib/types";
 
 interface GroupingFormProps {
   master?: Project;
+  // Só é usado ao criar um agrupamento novo, para atribuir a área/responsável
+  // ao perfil de quem está agrupando (Revisor ou Jurídico).
+  mode?: UserRole;
   onSaved: (masterId: string) => void;
   onClose: () => void;
 }
@@ -29,7 +32,8 @@ interface GroupingFormProps {
 // Nome do agrupamento e seleção de projetos numa única tela — compartilhado
 // entre criação e edição, já que o conteúdo é o mesmo, só o estado inicial e
 // a ação final (criar vs. salvar alterações) mudam.
-function GroupingForm({ master, onSaved, onClose }: GroupingFormProps) {
+function GroupingForm({ master, mode = "revisor", onSaved, onClose }: GroupingFormProps) {
+  const actingUser = ROLE_USERS[mode];
   const projects = useProjectsStore((s) => s.projects);
   const createProject = useProjectsStore((s) => s.createProject);
   const updateProject = useProjectsStore((s) => s.updateProject);
@@ -66,7 +70,7 @@ function GroupingForm({ master, onSaved, onClose }: GroupingFormProps) {
 
   const handleSave = () => {
     if (!name.trim()) {
-      toast.error("Informe o nome do Projeto Mestre.");
+      toast.error("Informe o nome do agrupamento.");
       return;
     }
     if (!master && selected.size === 0) {
@@ -95,8 +99,8 @@ function GroupingForm({ master, onSaved, onClose }: GroupingFormProps) {
     const inSixMonths = new Date(now.getTime() + 180 * 86400000);
     const masterId = createProject({
       name: name.trim(),
-      area: CURRENT_USER.area,
-      responsible: CURRENT_USER.name,
+      area: actingUser.area,
+      responsible: actingUser.name,
       startDate: now.toISOString(),
       endDate: inSixMonths.toISOString(),
       hasPatent: false,
@@ -107,7 +111,7 @@ function GroupingForm({ master, onSaved, onClose }: GroupingFormProps) {
     selected.forEach((id) => {
       updateProject(id, { projectType: "dependente", masterProjectId: masterId });
     });
-    toast.success("Projeto Mestre criado", {
+    toast.success("Agrupamento criado", {
       description: `${selected.size} projeto${selected.size === 1 ? "" : "s"} vinculado${
         selected.size === 1 ? "" : "s"
       } a "${name.trim()}".`,
@@ -118,16 +122,15 @@ function GroupingForm({ master, onSaved, onClose }: GroupingFormProps) {
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{master ? "Editar agrupamento" : "Criar Projeto Mestre"}</DialogTitle>
+        <DialogTitle>{master ? "Editar agrupamento" : "Criar agrupamento"}</DialogTitle>
         <DialogDescription>
-          O Projeto Mestre é apenas um agrupador lógico — organiza projetos relacionados sem alterar
-          o conteúdo deles.
+          O grupo de projetos é apenas um agrupador lógico, organiza os projetos relacionados.
         </DialogDescription>
       </DialogHeader>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="grouping-name">Nome do Projeto Mestre</Label>
+          <Label htmlFor="grouping-name">Nome do agrupamento</Label>
           <Input
             id="grouping-name"
             value={name}
@@ -194,6 +197,8 @@ export function CreateGroupingDialog({ mode }: CreateGroupingDialogProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
+  // Mesmo agrupamento nos dois casos — só o rótulo do botão muda por área.
+  const triggerLabel = mode === "juridico" ? "Criar agrupador" : "Agrupar projetos";
 
   return (
     <Dialog
@@ -205,12 +210,13 @@ export function CreateGroupingDialog({ mode }: CreateGroupingDialogProps) {
     >
       <DialogTrigger asChild>
         <Button variant="outline" size="default" className="gap-2">
-          <FolderTree className="size-4" /> Criar Projeto Mestre
+          <FolderTree className="size-4" /> {triggerLabel}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <GroupingForm
           key={resetKey}
+          mode={mode}
           onClose={() => setOpen(false)}
           onSaved={(masterId) => {
             setOpen(false);

@@ -78,8 +78,8 @@ export interface MctiParecerResult {
 
 export interface MctiParecer {
   id: string;
+  // Um único parecer anual — o MCTI não é mais tratado por trimestre.
   year: number;
-  quarter: 1 | 2 | 3 | 4;
   fileName: string;
   uploadedAt: string;
   uploadedBy: string;
@@ -322,9 +322,18 @@ export const AREAS = [
   "Automação",
 ];
 
-export const CURRENT_USER = {
-  name: "Ana Souza",
-  area: "Pesquisa & Desenvolvimento",
-  role: "Relator",
-  initials: "AS",
+export type UserRole = "relator" | "financeiro" | "revisor" | "juridico";
+
+// Um usuário fixo por perfil de acesso, exibido no cabeçalho da área
+// correspondente. Troca automaticamente conforme o perfil selecionado na
+// tela inicial — a tela inicial em si não identifica nenhum usuário.
+export const ROLE_USERS: Record<UserRole, { name: string; area: string; initials: string }> = {
+  relator: { name: "Ana Souza", area: "Pesquisa & Desenvolvimento", initials: "AS" },
+  financeiro: { name: "Carlos Oliveira", area: "Financeiro", initials: "CO" },
+  revisor: { name: "Mariana Costa", area: "Pesquisa & Desenvolvimento", initials: "MC" },
+  juridico: { name: "Ricardo Almeida", area: "Jurídico", initials: "RA" },
 };
+
+// Alias para o perfil de Relator — mantido para os fluxos que só existem
+// dentro dessa área (criação de iniciativa, upload de evidências etc.).
+export const CURRENT_USER = ROLE_USERS.relator;

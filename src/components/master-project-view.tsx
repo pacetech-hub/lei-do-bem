@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { FolderTree, Plus, ChevronRight, CloudUpload } from "lucide-react";
+import { FolderTree, ChevronRight, CloudUpload } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -50,7 +50,7 @@ export function MasterProjectView({
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader current={project.name} />
+      <AppHeader current={project.name} role={mode} />
 
       <main className="mx-auto max-w-[1440px] px-6 py-8">
         {/* Banner de hierarquia */}
@@ -71,13 +71,6 @@ export function MasterProjectView({
               {project.area} · Responsável: {project.responsible}
             </p>
           </div>
-          {mode === "relator" && (
-            <Button asChild size="default" className="gap-2">
-              <a href={`/projetos/novo?master=${project.id}`}>
-                <Plus className="size-4" /> Novo Projeto Dependente
-              </a>
-            </Button>
-          )}
           {(isRevisor || isJuridico) && <EditGroupingDialog master={project} />}
         </div>
 

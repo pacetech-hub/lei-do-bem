@@ -171,7 +171,7 @@ export function JuridicoDashboard() {
               return (
                 <div key={parecer.id} className="rounded-lg border border-border bg-surface p-4">
                   <div className="text-sm font-semibold text-foreground">
-                    {parecer.quarter}º Trimestre de {parecer.year}
+                    Parecer de {parecer.year}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {parecer.results.length} projetos · {aprovados} aprovados · {ajustes} ajustes
@@ -208,7 +208,7 @@ export function JuridicoDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader current="Jurídico" />
+      <AppHeader current="Jurídico" role="juridico" />
       <ProjectsList
         title="Central Jurídica"
         description="Gerencie o portfólio de projetos, controle submissões ao MCTI e conduza ajustes e defesas."

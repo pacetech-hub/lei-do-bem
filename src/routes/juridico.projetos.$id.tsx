@@ -47,7 +47,7 @@ function JuridicoProjetoPage() {
   if (!project.legalStatus) {
     return (
       <div className="min-h-screen bg-background">
-        <AppHeader current={project.name} />
+        <AppHeader current={project.name} role="juridico" />
         <main className="mx-auto max-w-xl px-6 py-16 text-center">
           <h1 className="text-lg font-semibold text-foreground">
             Este projeto ainda não chegou ao Jurídico

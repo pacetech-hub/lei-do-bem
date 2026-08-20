@@ -18,7 +18,7 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader current="Meus Projetos" />
+      <AppHeader current="Meus Projetos" role="relator" />
       <ProjectsList
         title="Meus Projetos"
         description="Acompanhe o preenchimento e o andamento dos seus projetos da Lei do Bem."
