@@ -81,7 +81,7 @@ function EmployeesTab({ project }: { project: Project }) {
       <div className="rounded-lg border border-border bg-surface p-4">
         <h4 className="mb-3 text-sm font-semibold">Adicionar colaborador</h4>
         <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Crachá</Label>
             <div className="flex gap-2">
               <Input
@@ -94,7 +94,7 @@ function EmployeesTab({ project }: { project: Project }) {
               </Button>
             </div>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Nome / Função</Label>
             <Input
               value={found ? `${found.name} — ${found.role}` : ""}
@@ -106,7 +106,7 @@ function EmployeesTab({ project }: { project: Project }) {
 
         {found && (
           <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <div className="space-y-1.5 md:col-span-3">
+            <div className="space-y-2 md:col-span-3">
               <Label>Atividade realizada</Label>
               <Input
                 value={activity}
@@ -114,7 +114,7 @@ function EmployeesTab({ project }: { project: Project }) {
                 placeholder="Descreva a atividade de inovação executada"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Horas totais no ano</Label>
               <Input
                 type="number"
@@ -123,7 +123,7 @@ function EmployeesTab({ project }: { project: Project }) {
                 onChange={(e) => setTotalHours(e.target.value)}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>Horas elegíveis</Label>
               <Input
                 type="number"
@@ -237,7 +237,7 @@ function ThirdPartyTab({ project }: { project: Project }) {
       <div className="rounded-lg border border-border bg-surface p-4">
         <h4 className="mb-3 text-sm font-semibold">Adicionar serviço de terceiro</h4>
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Empresa fornecedora</Label>
             <select
               value={company}
@@ -251,11 +251,11 @@ function ThirdPartyTab({ project }: { project: Project }) {
               ))}
             </select>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>CNPJ</Label>
             <Input value={supplier.cnpj} disabled />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Nota fiscal</Label>
             <Input
               value={invoice}
@@ -263,7 +263,7 @@ function ThirdPartyTab({ project }: { project: Project }) {
               placeholder="Ex.: NF 12345"
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Valor total da nota (R$)</Label>
             <Input
               type="number"
@@ -272,7 +272,7 @@ function ThirdPartyTab({ project }: { project: Project }) {
               onChange={(e) => setTotal(e.target.value)}
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Valor utilizado neste projeto (R$)</Label>
             <Input
               type="number"
@@ -281,8 +281,8 @@ function ThirdPartyTab({ project }: { project: Project }) {
               onChange={(e) => setUsed(e.target.value)}
             />
           </div>
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
               Já alocado em outros projetos (R$)
               <Info className="size-3.5 text-muted-foreground" />
             </Label>
@@ -393,7 +393,7 @@ function MaterialsTab({ project }: { project: Project }) {
       <div className="rounded-lg border border-border bg-surface p-4">
         <h4 className="mb-3 text-sm font-semibold">Adicionar material</h4>
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Fornecedor</Label>
             <select
               value={supplier}
@@ -407,15 +407,15 @@ function MaterialsTab({ project }: { project: Project }) {
               ))}
             </select>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>CNPJ</Label>
             <Input value={s.cnpj} disabled />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Nota fiscal</Label>
             <Input value={invoice} onChange={(e) => setInvoice(e.target.value)} />
           </div>
-          <div className="space-y-1.5 md:col-span-1">
+          <div className="space-y-2 md:col-span-1">
             <Label>Valor bruto (R$)</Label>
             <Input
               type="number"
@@ -424,11 +424,11 @@ function MaterialsTab({ project }: { project: Project }) {
               onChange={(e) => setGross(e.target.value)}
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Valor líquido (R$)</Label>
             <Input type="number" step="0.01" value={net} onChange={(e) => setNet(e.target.value)} />
           </div>
-          <div className="space-y-1.5 md:col-span-2">
+          <div className="space-y-2 md:col-span-2">
             <Label>Descrição do material</Label>
             <Input
               value={desc}
@@ -436,7 +436,7 @@ function MaterialsTab({ project }: { project: Project }) {
               placeholder="Ex.: Placa FPGA modelo XYZ"
             />
           </div>
-          <div className="space-y-1.5 md:col-span-2">
+          <div className="space-y-2 md:col-span-2">
             <Label>Descrição da utilização no projeto</Label>
             <Input
               value={usage}
@@ -519,7 +519,7 @@ export function SectionDespesas({
 
       {pendingItems && pendingItems.length > 0 && (
         <div className="mb-6 flex items-start gap-2 rounded-lg border border-status-adjust-fg/40 bg-status-adjust/5 p-4 text-sm text-status-adjust-fg">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <AlertTriangle className="mt-1 size-4 shrink-0" />
           <div className="space-y-1">
             {pendingItems.map((item) => (
               <p key={item.id}>Ajuste solicitado: {item.comment}</p>

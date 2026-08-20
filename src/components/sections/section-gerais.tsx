@@ -82,7 +82,7 @@ function Row({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-6 shrink-0 gap-1 px-1.5 text-[11px] text-status-adjust-fg hover:bg-status-adjust/10 hover:text-status-adjust-fg"
+              className="h-6 shrink-0 gap-1 px-2 text-xs text-status-adjust-fg hover:bg-status-adjust/10 hover:text-status-adjust-fg"
               onClick={() => setRequesting(true)}
             >
               <Wrench className="size-3" /> Solicitar ajuste
@@ -97,7 +97,7 @@ function Row({
         {draftFlags?.map((item) => (
           <div
             key={item.id}
-            className="mt-1.5 flex items-start justify-between gap-2 rounded-md border border-dashed border-status-adjust-fg/40 bg-background/70 p-2 text-xs text-status-adjust-fg"
+            className="mt-2 flex items-start justify-between gap-2 rounded-md border border-dashed border-status-adjust-fg/40 bg-background/70 p-2 text-xs text-status-adjust-fg"
           >
             <span>
               <span className="font-medium">Ajuste registrado</span> (será enviado ao final da
@@ -114,7 +114,7 @@ function Row({
           </div>
         ))}
         {requesting && (
-          <div className="mt-2 space-y-1.5">
+          <div className="mt-2 space-y-2">
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -349,7 +349,7 @@ export function SectionGerais({
         </dl>
       ) : (
         <div className="space-y-5 rounded-lg border border-border bg-surface p-5">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="ge-name">
               Nome do projeto <span className="text-primary">*</span>
             </Label>
@@ -361,7 +361,7 @@ export function SectionGerais({
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label>
                 Área <span className="text-primary">*</span>
               </Label>
@@ -378,7 +378,7 @@ export function SectionGerais({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="ge-resp">Responsável</Label>
               <Input
                 id="ge-resp"
@@ -389,7 +389,7 @@ export function SectionGerais({
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="ge-start">
                 Data de início <span className="text-primary">*</span>
               </Label>
@@ -400,7 +400,7 @@ export function SectionGerais({
                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="ge-end">
                 Data prevista de término <span className="text-primary">*</span>
               </Label>
@@ -429,7 +429,7 @@ export function SectionGerais({
               ].map((opt) => (
                 <label
                   key={opt.v}
-                  className="flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2.5 text-sm transition-colors hover:border-primary/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+                  className="flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-3 text-sm transition-colors hover:border-primary/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
                 >
                   <RadioGroupItem value={opt.v} /> {opt.l}
                 </label>
@@ -437,7 +437,7 @@ export function SectionGerais({
             </RadioGroup>
           </div>
 
-          <div className="space-y-1.5 sm:max-w-md">
+          <div className="space-y-2 sm:max-w-md">
             <Label>
               Atividade <span className="text-primary">*</span>
             </Label>
@@ -472,7 +472,7 @@ export function SectionGerais({
                 ].map((opt) => (
                   <label
                     key={opt.v}
-                    className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2.5 text-sm transition-colors hover:border-primary/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+                    className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-3 text-sm transition-colors hover:border-primary/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
                   >
                     <RadioGroupItem value={opt.v} /> {opt.l}
                   </label>
@@ -480,7 +480,7 @@ export function SectionGerais({
               </RadioGroup>
             </div>
             {form.hasPatent === "sim" && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="ge-patent">
                   Número da patente <span className="text-primary">*</span>
                 </Label>

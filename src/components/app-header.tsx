@@ -27,13 +27,13 @@ export function AppHeader({ current }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface">
       <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-6 px-6">
-        <Link to="/" className="flex items-center gap-2.5">
+        <Link to="/" className="flex items-center gap-3">
           <div className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground font-bold text-sm">
             LB
           </div>
           <div className="leading-tight">
-            <div className="text-[15px] font-semibold tracking-tight">Lei do Bem</div>
-            <div className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+            <div className="text-base font-semibold tracking-tight">Lei do Bem</div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">
               Gestão de Projetos de Inovação
             </div>
           </div>
@@ -77,7 +77,7 @@ export function AppHeader({ current }: AppHeaderProps) {
       </div>
 
       {current && (
-        <div className="mx-auto max-w-[1440px] px-6 pb-2.5">
+        <div className="mx-auto max-w-[1440px] px-6 pb-3">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>

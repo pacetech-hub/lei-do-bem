@@ -91,7 +91,7 @@ export function SectionEvidencias({
 
       {pendingItems && pendingItems.length > 0 && (
         <div className="mb-6 flex items-start gap-2 rounded-lg border border-status-adjust-fg/40 bg-status-adjust/5 p-4 text-sm text-status-adjust-fg">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <AlertTriangle className="mt-1 size-4 shrink-0" />
           <div className="space-y-1">
             {pendingItems.map((item) => (
               <p key={item.id}>Ajuste solicitado: {item.comment}</p>

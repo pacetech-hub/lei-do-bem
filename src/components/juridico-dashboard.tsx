@@ -75,7 +75,7 @@ export function JuridicoDashboard() {
       <TableCell className="py-4">
         <span
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
+            "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
             LEGAL_STATUS_BADGE_CLASS[p.legalStatus as LegalStatus],
           )}
         >
@@ -103,7 +103,7 @@ export function JuridicoDashboard() {
         </span>
         <span
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
+            "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
             windowOpen
               ? "bg-status-approved text-status-approved-fg"
               : "bg-surface-muted text-muted-foreground",
@@ -121,7 +121,7 @@ export function JuridicoDashboard() {
           <h2 className="text-sm font-semibold text-foreground">
             Projetos que precisam da minha ação
           </h2>
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
+          <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold tabular-nums text-primary">
             {priorityProjects.length}
           </span>
         </div>
@@ -148,7 +148,7 @@ export function JuridicoDashboard() {
 
       {/* Pareceres do MCTI */}
       <div className="mb-8">
-        <div className="mb-2.5 flex items-center justify-between gap-2">
+        <div className="mb-3 flex items-center justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Pareceres do MCTI
           </h2>

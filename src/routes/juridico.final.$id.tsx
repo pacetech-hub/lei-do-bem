@@ -87,7 +87,7 @@ function FinalProjectReview() {
             <div className="mb-2 flex items-center gap-2">
               <span
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
+                  "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
                   STATUS_BADGE_CLASS[finalProject.status],
                 )}
               >
@@ -100,7 +100,7 @@ function FinalProjectReview() {
               Etapa 3 de 3 — Revisão final antes do envio oficial ao MCTI.
             </p>
           </div>
-          <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+          <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
             <Link to="/juridico">
               <ArrowLeft className="size-4" /> Voltar para a Central Jurídica
             </Link>
@@ -134,7 +134,7 @@ function FinalProjectReview() {
           </Table>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label htmlFor="final-notes">Observações da consolidação</Label>
           <Textarea
             id="final-notes"

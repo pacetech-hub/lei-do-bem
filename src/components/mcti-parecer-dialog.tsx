@@ -138,7 +138,7 @@ export function MctiParecerDialog({ open, onOpenChange }: MctiParecerDialogProps
         {step === "upload" ? (
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label>Ano</Label>
                 <Select value={year} onValueChange={setYear}>
                   <SelectTrigger>
@@ -156,7 +156,7 @@ export function MctiParecerDialog({ open, onOpenChange }: MctiParecerDialogProps
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label>Trimestre</Label>
                 <Select value={quarter} onValueChange={(v) => setQuarter(v as typeof quarter)}>
                   <SelectTrigger>
@@ -172,7 +172,7 @@ export function MctiParecerDialog({ open, onOpenChange }: MctiParecerDialogProps
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="parecer-file">Documento do MCTI</Label>
               <div className="flex items-center gap-2">
                 <input
@@ -219,10 +219,10 @@ export function MctiParecerDialog({ open, onOpenChange }: MctiParecerDialogProps
 
                 <div className="max-h-[360px] space-y-4 overflow-y-auto pr-1">
                   <section>
-                    <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-status-approved-fg">
+                    <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-status-approved-fg">
                       <CheckCircle2 className="size-3.5" /> Aprovados ({approved.length})
                     </h3>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {approved.map((r) => (
                         <ResultRow key={r.projectId} result={r} onChange={updateResult} />
                       ))}
@@ -231,11 +231,11 @@ export function MctiParecerDialog({ open, onOpenChange }: MctiParecerDialogProps
 
                   {adjustments.length > 0 && (
                     <section>
-                      <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-status-adjust-fg">
+                      <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-status-adjust-fg">
                         <FileWarning className="size-3.5" /> Ajustes solicitados (
                         {adjustments.length})
                       </h3>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {adjustments.map((r) => (
                           <ResultRow key={r.projectId} result={r} onChange={updateResult} />
                         ))}
@@ -274,7 +274,7 @@ function ResultRow({
     <div className="rounded-md border border-border bg-surface p-3">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-medium text-foreground">{result.projectName}</span>
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-2">
           {result.confirmed ? (
             <span className="inline-flex items-center gap-1 text-xs font-medium text-status-approved-fg">
               <CheckCircle2 className="size-3.5" /> Confirmado
@@ -294,7 +294,7 @@ function ResultRow({
         </div>
       </div>
       {editing && (
-        <div className="mt-2.5 space-y-2 border-t border-border pt-2.5">
+        <div className="mt-3 space-y-2 border-t border-border pt-3">
           <Select
             value={result.suggested}
             onValueChange={(v) =>
@@ -326,7 +326,7 @@ function ResultRow({
         </div>
       )}
       {!editing && result.reason && (
-        <p className="mt-1.5 text-xs text-muted-foreground">{result.reason}</p>
+        <p className="mt-2 text-xs text-muted-foreground">{result.reason}</p>
       )}
     </div>
   );

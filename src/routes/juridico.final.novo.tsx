@@ -113,7 +113,7 @@ function NewFinalProject() {
               de {currentYear}.
             </p>
           </div>
-          <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+          <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
             <Link to="/juridico">
               <ArrowLeft className="size-4" /> Cancelar
             </Link>
@@ -121,15 +121,15 @@ function NewFinalProject() {
         </div>
 
         <div className="space-y-4 rounded-lg border border-border bg-surface p-5">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="final-name">Nome do Projeto Final</Label>
             <Input id="final-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Projetos aprovados disponíveis</Label>
             <div className="relative">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -146,7 +146,7 @@ function NewFinalProject() {
                 eligibleProjects.map((p) => (
                   <label
                     key={p.id}
-                    className="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-surface-muted"
+                    className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-surface-muted"
                   >
                     <Checkbox checked={selected.has(p.id)} onCheckedChange={() => toggle(p.id)} />
                     <span className="flex-1 truncate text-foreground">{p.name}</span>

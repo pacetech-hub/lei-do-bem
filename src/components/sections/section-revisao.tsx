@@ -36,7 +36,7 @@ export function SectionRevisao({
 
       {pendingItems && pendingItems.length > 0 && (
         <div className="mb-6 flex items-start gap-2 rounded-lg border border-status-adjust-fg/40 bg-status-adjust/5 p-4 text-sm text-status-adjust-fg">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <AlertTriangle className="mt-1 size-4 shrink-0" />
           <div className="space-y-1">
             {pendingItems.map((item) => (
               <p key={item.id}>Ajuste solicitado: {item.comment}</p>
@@ -88,7 +88,7 @@ export function SectionRevisao({
       {!hideSubmitCta && (
         <div className="mt-8 rounded-lg border border-primary/20 bg-primary/5 p-5">
           <div className="flex items-start gap-3">
-            <Send className="mt-0.5 size-5 shrink-0 text-primary" />
+            <Send className="mt-1 size-5 shrink-0 text-primary" />
             <div className="flex-1">
               <div className="text-sm font-semibold">Enviar para revisão</div>
               <p className="mt-1 text-sm text-muted-foreground">

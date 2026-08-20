@@ -126,7 +126,7 @@ function GroupingForm({ master, onSaved, onClose }: GroupingFormProps) {
       </DialogHeader>
 
       <div className="space-y-4">
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label htmlFor="grouping-name">Nome do Projeto Mestre</Label>
           <Input
             id="grouping-name"
@@ -137,10 +137,10 @@ function GroupingForm({ master, onSaved, onClose }: GroupingFormProps) {
           />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label>Selecionar projetos</Label>
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -157,7 +157,7 @@ function GroupingForm({ master, onSaved, onClose }: GroupingFormProps) {
               eligibleProjects.map((p) => (
                 <label
                   key={p.id}
-                  className="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-surface-muted"
+                  className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-surface-muted"
                 >
                   <Checkbox checked={selected.has(p.id)} onCheckedChange={() => toggle(p.id)} />
                   <span className="flex-1 truncate text-foreground">{p.name}</span>

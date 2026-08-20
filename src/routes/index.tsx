@@ -68,14 +68,14 @@ function DashboardsHub() {
               <Link
                 key={c.to}
                 to={c.to}
-                className="group flex flex-col rounded-lg border border-border bg-surface p-6 transition-all hover:border-primary/50 hover:shadow-md"
+                className="group flex flex-col rounded-lg border border-border bg-surface p-6 transition-all hover:border-primary/50 hover:shadow-sm"
               >
                 <div className="mb-4 grid size-11 place-items-center rounded-md bg-primary/10 text-primary">
                   <Icon className="size-5.5" />
                 </div>
                 <div className="text-base font-semibold tracking-tight">{c.title}</div>
-                <p className="mt-1.5 flex-1 text-sm text-muted-foreground">{c.description}</p>
-                <div className="mt-4 flex items-center gap-1.5 text-sm font-medium text-primary">
+                <p className="mt-2 flex-1 text-sm text-muted-foreground">{c.description}</p>
+                <div className="mt-4 flex items-center gap-2 text-sm font-medium text-primary">
                   Acessar
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
                 </div>

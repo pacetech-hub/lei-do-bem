@@ -35,13 +35,13 @@ export function ProjectSidebar({ active, onChange, completion, overall }: Props)
                 type="button"
                 onClick={() => onChange(s.key)}
                 className={cn(
-                  "group flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left text-sm transition-colors",
+                  "group flex w-full items-start gap-3 rounded-md px-3 py-3 text-left text-sm transition-colors",
                   state === "active"
                     ? "bg-primary/8 text-foreground"
                     : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
                 )}
               >
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center">
+                <span className="mt-1 flex size-5 shrink-0 items-center justify-center">
                   {state === "done" ? (
                     <span className="grid size-5 place-items-center rounded-full bg-status-ready-fg/15 text-status-ready-fg">
                       <Check className="size-3" strokeWidth={3} />
@@ -53,19 +53,19 @@ export function ProjectSidebar({ active, onChange, completion, overall }: Props)
                   )}
                 </span>
                 <span className="flex-1">
-                  <span className="block text-[11px] font-medium uppercase tracking-wider text-muted-foreground/80">
+                  <span className="block text-xs font-medium uppercase tracking-wider text-muted-foreground/80">
                     Etapa {idx + 1}
                   </span>
                   <span
                     className={cn(
-                      "block text-[13px] leading-tight",
+                      "block text-sm leading-tight",
                       state === "active" && "font-semibold text-foreground",
                     )}
                   >
                     {s.label}
                   </span>
                   {pct > 0 && pct < 100 && (
-                    <span className="mt-1 block text-[11px] text-muted-foreground">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       {pct}% preenchido
                     </span>
                   )}

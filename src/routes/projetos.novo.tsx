@@ -108,12 +108,12 @@ function SectionCard({
   return (
     <section className="rounded-lg border border-border bg-surface">
       <header className="flex items-start gap-3 border-b border-border px-6 py-4">
-        <span className="mt-0.5 grid size-8 place-items-center rounded-md bg-primary/10 text-primary">
+        <span className="mt-1 grid size-8 place-items-center rounded-md bg-primary/10 text-primary">
           <Icon className="size-4" />
         </span>
         <div>
           <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-          {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
+          {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
         </div>
       </header>
       <div className="px-6 py-5">{children}</div>
@@ -214,7 +214,7 @@ function NovoProjetoPage() {
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               Como deseja criar o projeto?
             </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-muted-foreground">
               Escolha se este projeto é independente ou faz parte de um agrupamento de projetos
               relacionados.
             </p>
@@ -254,7 +254,7 @@ function NovoProjetoPage() {
           </div>
 
           {projectType === "dependente" && (
-            <div className="mt-5 max-w-md space-y-1.5">
+            <div className="mt-5 max-w-md space-y-2">
               <Label>
                 Vincular a um Projeto Mestre <span className="text-primary">*</span>
               </Label>
@@ -305,7 +305,7 @@ function NovoProjetoPage() {
               ? "Novo Projeto"
               : `Novo ${PROJECT_TYPE_LABEL[projectType]}`}
           </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             Cadastre as informações iniciais do projeto para começar o preenchimento da documentação
             técnica.
           </p>
@@ -319,7 +319,7 @@ function NovoProjetoPage() {
             <button
               type="button"
               onClick={() => setStep("tipo")}
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="size-3.5" /> Escolher outro tipo de projeto
             </button>
@@ -334,7 +334,7 @@ function NovoProjetoPage() {
             description="Dados básicos que identificam o projeto internamente."
           >
             <div className="grid gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="name">
                   Nome do Projeto <span className="text-primary">*</span>
                 </Label>
@@ -347,7 +347,7 @@ function NovoProjetoPage() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label>
                     Área do Projeto <span className="text-primary">*</span>
                   </Label>
@@ -368,10 +368,10 @@ function NovoProjetoPage() {
                   </Select>
                   {errors.area && <p className="text-xs text-primary">{errors.area.message}</p>}
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label>Responsável pelo Projeto</Label>
                   <Input value={CURRENT_USER.name} disabled readOnly />
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Preenchido automaticamente com o usuário logado.
                   </p>
                 </div>
@@ -402,7 +402,7 @@ function NovoProjetoPage() {
                   ].map((opt) => (
                     <label
                       key={opt.v}
-                      className="flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2.5 text-sm transition-colors hover:border-primary/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+                      className="flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-3 text-sm transition-colors hover:border-primary/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
                     >
                       <RadioGroupItem value={opt.v} /> {opt.l}
                     </label>
@@ -410,7 +410,7 @@ function NovoProjetoPage() {
                 </RadioGroup>
               </div>
 
-              <div className="space-y-1.5 sm:max-w-md">
+              <div className="space-y-2 sm:max-w-md">
                 <Label>
                   Atividade <span className="text-primary">*</span>
                 </Label>
@@ -438,7 +438,7 @@ function NovoProjetoPage() {
             description="Vigência prevista para execução das atividades."
           >
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="startDate">
                   Data de início <span className="text-primary">*</span>
                 </Label>
@@ -447,7 +447,7 @@ function NovoProjetoPage() {
                   <p className="text-xs text-primary">{errors.startDate.message}</p>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="endDate">
                   Data prevista de término <span className="text-primary">*</span>
                 </Label>
@@ -480,7 +480,7 @@ function NovoProjetoPage() {
                   ].map((opt) => (
                     <label
                       key={opt.v}
-                      className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2.5 text-sm transition-colors hover:border-primary/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+                      className="flex flex-1 cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-3 text-sm transition-colors hover:border-primary/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
                     >
                       <RadioGroupItem value={opt.v} /> {opt.l}
                     </label>
@@ -488,7 +488,7 @@ function NovoProjetoPage() {
                 </RadioGroup>
               </div>
               {hasPatent === "sim" && (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="patentNumber">
                     Número da patente <span className="text-primary">*</span>
                   </Label>

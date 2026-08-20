@@ -30,7 +30,7 @@ export function ProjectHistoryDrawer({ project }: ProjectHistoryDrawerProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        className="inline-flex items-center gap-2 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
       >
         <History className="size-3.5" /> Ver histórico do projeto
       </button>
@@ -46,7 +46,7 @@ export function ProjectHistoryDrawer({ project }: ProjectHistoryDrawerProps) {
             </SheetDescription>
           </SheetHeader>
 
-          <div className="mt-4 space-y-2.5 px-4">
+          <div className="mt-4 space-y-3 px-4">
             {events.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhum evento registrado ainda.</p>
             ) : (

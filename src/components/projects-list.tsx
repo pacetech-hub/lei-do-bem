@@ -129,7 +129,7 @@ export function summarizeDependentStatuses(deps: Project[]) {
 // área do Revisor, mesmo sem ele ser o revisor titular.
 function SharedWithAreaTag() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+    <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
       <Share2 className="size-3" /> Compartilhado com a sua área
     </span>
   );
@@ -140,7 +140,7 @@ function SharedWithAreaTag() {
 // de "Projetos Finais" — a identificação acontece no próprio projeto.
 export function ProjetoFinalTag() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
       <FolderTree className="size-3" /> Projeto Final
     </span>
   );
@@ -456,16 +456,16 @@ export function ProjectsList({
             {isMaster ? (
               <>
                 {isRevisor && p.sharedWithArea && (
-                  <div className="mb-1.5 pl-6">
+                  <div className="mb-2 pl-6">
                     <SharedWithAreaTag />
                   </div>
                 )}
                 {isJuridico && isInFinalProject(p.id) && (
-                  <div className="mb-1.5 pl-6">
+                  <div className="mb-2 pl-6">
                     <ProjetoFinalTag />
                   </div>
                 )}
-                <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-3">
                   {isExpanded ? (
                     <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
                   ) : (
@@ -474,7 +474,7 @@ export function ProjectsList({
                   <FolderTree className="size-4 shrink-0 text-primary" />
                   <span className="font-medium text-foreground">{p.name}</span>
                 </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 pl-6 text-xs text-muted-foreground">
+                <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 pl-6 text-xs text-muted-foreground">
                   <span className="font-medium text-foreground/80">Mestre</span>
                   <span>
                     · {dependents.length} projeto{dependents.length === 1 ? "" : "s"} dependente
@@ -499,12 +499,12 @@ export function ProjectsList({
             ) : (
               <>
                 {isRevisor && p.sharedWithArea && (
-                  <div className="mb-1.5">
+                  <div className="mb-2">
                     <SharedWithAreaTag />
                   </div>
                 )}
                 {isJuridico && isInFinalProject(p.id) && (
-                  <div className="mb-1.5">
+                  <div className="mb-2">
                     <ProjetoFinalTag />
                   </div>
                 )}
@@ -525,7 +525,7 @@ export function ProjectsList({
           {showReviewCols && (
             <TableCell className="py-4 text-left align-top">
               {isMaster ? (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {statusSummary.length === 0 ? (
                     <span className="text-xs text-muted-foreground">—</span>
                   ) : (
@@ -550,7 +550,7 @@ export function ProjectsList({
           {(isRelator || isFinanceiro) && (
             <TableCell className="py-4 text-left align-top">
               {isMaster ? (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {statusSummary.length === 0 ? (
                     <span className="text-xs text-muted-foreground">—</span>
                   ) : (
@@ -585,37 +585,37 @@ export function ProjectsList({
                 className="group cursor-pointer bg-background hover:bg-surface-muted/50"
                 onClick={() => openProject(d.id)}
               >
-                <TableCell className="py-3.5 text-sm text-muted-foreground tabular-nums">
+                <TableCell className="py-4 text-sm text-muted-foreground tabular-nums">
                   {quarterLabel(d.updatedAt)}
                 </TableCell>
-                <TableCell className="py-3.5">
+                <TableCell className="py-4">
                   {isRevisor && d.sharedWithArea && (
-                    <div className="mb-1.5 pl-4">
+                    <div className="mb-2 pl-4">
                       <SharedWithAreaTag />
                     </div>
                   )}
                   {isJuridico && isInFinalProject(d.id) && (
-                    <div className="mb-1.5 pl-4">
+                    <div className="mb-2 pl-4">
                       <ProjetoFinalTag />
                     </div>
                   )}
-                  <div className="flex items-center gap-2.5 border-l-2 border-border pl-4">
+                  <div className="flex items-center gap-3 border-l-2 border-border pl-4">
                     <CornerDownRight className="size-3.5 shrink-0 text-muted-foreground/60" />
                     <span className="text-sm font-medium text-foreground">{d.name}</span>
                   </div>
-                  <div className="ml-2 mt-1.5 flex items-center gap-2 border-l-2 border-transparent pl-4">
+                  <div className="ml-2 mt-2 flex items-center gap-2 border-l-2 border-transparent pl-4">
                     <Progress value={dProgress} className="h-1 w-20" />
-                    <span className="text-[11px] tabular-nums text-muted-foreground">
+                    <span className="text-xs tabular-nums text-muted-foreground">
                       {dProgress}% preenchido
                     </span>
                   </div>
                 </TableCell>
                 {showReviewCols && (
-                  <TableCell className="py-3.5 text-left align-top">
+                  <TableCell className="py-4 text-left align-top">
                     <div className="flex flex-col items-start gap-1">
                       <StatusBadge status={d.status} />
                       {d.status === "ajustes" && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-status-adjust-fg">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-status-adjust-fg">
                           <AlertTriangle className="size-3" /> Pendência
                         </span>
                       )}
@@ -624,33 +624,33 @@ export function ProjectsList({
                 )}
                 {showReviewCols && (
                   <>
-                    <TableCell className="py-3.5 text-sm text-muted-foreground">
+                    <TableCell className="py-4 text-sm text-muted-foreground">
                       {d.responsible}
                     </TableCell>
-                    <TableCell className="py-3.5 text-sm text-muted-foreground">{d.area}</TableCell>
-                    <TableCell className="py-3.5 text-sm text-muted-foreground">
+                    <TableCell className="py-4 text-sm text-muted-foreground">{d.area}</TableCell>
+                    <TableCell className="py-4 text-sm text-muted-foreground">
                       {getFilial(d)}
                     </TableCell>
                   </>
                 )}
                 {isFinanceiro && (
-                  <TableCell className="py-3.5 text-sm text-muted-foreground">
+                  <TableCell className="py-4 text-sm text-muted-foreground">
                     {d.responsible}
                   </TableCell>
                 )}
                 {(isRelator || isFinanceiro) && (
-                  <TableCell className="py-3.5 text-left align-top">
+                  <TableCell className="py-4 text-left align-top">
                     <div className="flex flex-col items-start gap-1">
                       <StatusBadge status={d.status} />
                       {d.status === "ajustes" && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-status-adjust-fg">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-status-adjust-fg">
                           <AlertTriangle className="size-3" /> Pendência
                         </span>
                       )}
                     </div>
                   </TableCell>
                 )}
-                <TableCell className="py-3.5 text-right">
+                <TableCell className="py-4 text-right">
                   <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
                 </TableCell>
               </TableRow>
@@ -704,7 +704,7 @@ export function ProjectsList({
             <h2 className="text-sm font-semibold text-foreground">
               Projetos que precisam da sua revisão
             </h2>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
+            <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold tabular-nums text-primary">
               {priorityRows.length}
             </span>
           </div>
@@ -732,7 +732,7 @@ export function ProjectsList({
 
       {isHierarchical ? (
         <div className="mb-8">
-          <h2 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Filtre por status
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -741,7 +741,7 @@ export function ProjectsList({
               aria-pressed={statusFilter === "all"}
               onClick={() => setStatusFilter("all")}
               className={cn(
-                "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
+                "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium transition-all",
                 "bg-surface-muted text-foreground",
                 statusFilter === "all"
                   ? "border-foreground/30 ring-2 ring-foreground/15"
@@ -749,7 +749,7 @@ export function ProjectsList({
               )}
             >
               Todos os projetos
-              <span className="rounded-full bg-background/70 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums">
+              <span className="rounded-full bg-background/70 px-2 py-1 text-xs font-semibold tabular-nums">
                 {totalCount}
               </span>
             </button>
@@ -767,7 +767,7 @@ export function ProjectsList({
                   aria-pressed={active}
                   onClick={() => setStatusFilter(active ? "all" : f.key)}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
+                    "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium transition-all",
                     STATUS_BADGE_CLASS[f.key],
                     active
                       ? "border-current ring-2 ring-current/25"
@@ -776,7 +776,7 @@ export function ProjectsList({
                 >
                   <span className="size-1.5 rounded-full bg-current opacity-70" />
                   {f.label}
-                  <span className="rounded-full bg-background/70 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums">
+                  <span className="rounded-full bg-background/70 px-2 py-1 text-xs font-semibold tabular-nums">
                     {counts[f.key]}
                   </span>
                 </button>
@@ -807,7 +807,7 @@ export function ProjectsList({
                 <div className="text-2xl font-semibold tabular-nums tracking-tight">
                   {counts[c.key]}
                 </div>
-                <div className="mt-0.5 text-xs text-muted-foreground">{c.label}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{c.label}</div>
               </button>
             );
           })}
@@ -816,7 +816,7 @@ export function ProjectsList({
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-xs">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -1031,7 +1031,7 @@ export function ProjectsList({
                   >
                     <TableCell className="py-4">
                       <div className="font-medium text-foreground">{p.name}</div>
-                      <div className="mt-0.5 text-xs text-muted-foreground">
+                      <div className="mt-1 text-xs text-muted-foreground">
                         Criado em {format(new Date(p.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                       </div>
                     </TableCell>

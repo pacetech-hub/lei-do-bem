@@ -409,7 +409,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             <div className="px-6 py-5 lg:px-10">
               {isRevisor && (
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface-muted/60 px-4 py-3 text-xs text-muted-foreground">
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                     <span>
                       Status:{" "}
                       <span className="font-medium text-foreground">
@@ -437,7 +437,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 shrink-0 gap-1.5 text-xs"
+                    className="h-7 shrink-0 gap-2 text-xs"
                     onClick={() => setShareOpen(true)}
                   >
                     <Share2 className="size-3.5" /> Compartilhar projeto
@@ -448,7 +448,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
               {isRevisor && project.sharedWithArea && project.sharedStatus === "pendente" && (
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
                   <div className="flex items-start gap-2 text-sm text-foreground">
-                    <Share2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <Share2 className="mt-1 size-4 shrink-0 text-primary" />
                     <span>
                       Este projeto foi compartilhado com{" "}
                       <span className="font-medium">{project.sharedSetor}</span>
@@ -460,12 +460,12 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-1.5"
+                      className="gap-2"
                       onClick={() => setDeclineShareOpen(true)}
                     >
                       <XCircle className="size-3.5" /> Recusar
                     </Button>
-                    <Button size="sm" className="gap-1.5" onClick={handleAcceptShare}>
+                    <Button size="sm" className="gap-2" onClick={handleAcceptShare}>
                       <CheckCircle2 className="size-3.5" /> Aceitar
                     </Button>
                   </div>
@@ -475,7 +475,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
               {isRevisor && project.sharedStatus === "recusado" && project.sharedDeclineReason && (
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-lg border border-status-adjust-fg/30 bg-status-adjust/10 px-4 py-3">
                   <div className="flex items-start gap-2 text-sm text-foreground">
-                    <XCircle className="mt-0.5 size-4 shrink-0 text-status-adjust-fg" />
+                    <XCircle className="mt-1 size-4 shrink-0 text-status-adjust-fg" />
                     <span>
                       {project.sharedSetor && (
                         <>
@@ -499,7 +499,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
               {project.projectType === "dependente" && (
                 <div className="mb-4 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                     <GitFork className="size-3.5" /> Projeto Dependente
                   </span>
                   {masterProject && (
@@ -546,7 +546,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   type="button"
                   onClick={() => setSection(s.key)}
                   className={
-                    "shrink-0 rounded-md px-3 py-1.5 text-xs font-medium " +
+                    "shrink-0 rounded-md px-3 py-2 text-xs font-medium " +
                     (section === s.key
                       ? "bg-primary text-primary-foreground"
                       : "bg-surface-muted text-muted-foreground")
@@ -569,7 +569,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   <h2 className="text-sm font-semibold text-foreground">
                     Ajustes registrados nesta revisão
                   </h2>
-                  <span className="rounded-full bg-background/70 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
+                  <span className="rounded-full bg-background/70 px-2 py-1 text-xs font-semibold tabular-nums text-primary">
                     {draftItems.length}
                   </span>
                 </div>
@@ -577,15 +577,12 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   Ainda não foram enviados ao Relator. Continue a revisão e use "Enviar para
                   ajustes" no rodapé quando concluir.
                 </p>
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {draftItems.map((item) => {
                     const sectionLabel =
                       SECTIONS.find((s) => s.key === item.sectionKey)?.label ?? item.sectionKey;
                     return (
-                      <div
-                        key={item.id}
-                        className="rounded-md border border-border bg-surface p-3.5"
-                      >
+                      <div key={item.id} className="rounded-md border border-border bg-surface p-4">
                         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                           <div className="text-xs font-medium text-muted-foreground">
                             {sectionLabel} <span className="text-foreground/40">·</span>{" "}
@@ -625,19 +622,16 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   <h2 className="text-sm font-semibold text-status-adjust-fg">
                     Ajustes solicitados
                   </h2>
-                  <span className="rounded-full bg-background/70 px-2 py-0.5 text-xs font-semibold tabular-nums text-status-adjust-fg">
+                  <span className="rounded-full bg-background/70 px-2 py-1 text-xs font-semibold tabular-nums text-status-adjust-fg">
                     {pendingItems.length}
                   </span>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {pendingItems.map((item) => {
                     const sectionLabel =
                       SECTIONS.find((s) => s.key === item.sectionKey)?.label ?? item.sectionKey;
                     return (
-                      <div
-                        key={item.id}
-                        className="rounded-md border border-border bg-surface p-3.5"
-                      >
+                      <div key={item.id} className="rounded-md border border-border bg-surface p-4">
                         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                           <div className="text-xs font-medium text-muted-foreground">
                             {sectionLabel} <span className="text-foreground/40">·</span>{" "}
@@ -846,7 +840,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label>Etapa</Label>
                   <Select
                     value={adjustSection}
@@ -868,7 +862,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   </Select>
                 </div>
                 {adjustFieldOptions.length > 0 && (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label>Campo</Label>
                     <Select value={adjustFieldId} onValueChange={setAdjustFieldId}>
                       <SelectTrigger>
@@ -886,7 +880,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 )}
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="adjust-note">O que precisa ser corrigido?</Label>
                 <Textarea
                   id="adjust-note"
@@ -901,7 +895,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 type="button"
                 variant="outline"
                 size="sm"
-                className="gap-1.5"
+                className="gap-2"
                 onClick={addAdjustItem}
               >
                 <Plus className="size-3.5" /> Adicionar item ao pedido
@@ -915,14 +909,14 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                     return (
                       <div
                         key={item.id}
-                        className="flex items-start justify-between gap-2 rounded-md border border-border bg-surface p-2.5"
+                        className="flex items-start justify-between gap-2 rounded-md border border-border bg-surface p-3"
                       >
                         <div className="min-w-0 flex-1">
                           <div className="text-xs font-medium text-muted-foreground">
                             {sectionLabel} ·{" "}
                             <span className="text-foreground">{item.fieldLabel}</span>
                           </div>
-                          <p className="mt-0.5 text-sm text-foreground">{item.comment}</p>
+                          <p className="mt-1 text-sm text-foreground">{item.comment}</p>
                         </div>
                         <button
                           type="button"
@@ -984,7 +978,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             </DialogHeader>
 
             <div className="space-y-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label>Filial</Label>
                 <Select value={shareFilial} onValueChange={setShareFilial}>
                   <SelectTrigger>
@@ -999,7 +993,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label>Área</Label>
                 <Select value={shareSetor} onValueChange={setShareSetor}>
                   <SelectTrigger>
@@ -1014,7 +1008,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label>Revisor responsável</Label>
                 <Select value={shareReviewer} onValueChange={setShareReviewer}>
                   <SelectTrigger>
@@ -1057,7 +1051,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 que precisa ser ajustado antes de encaminhar novamente.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="decline-reason">Motivo da recusa</Label>
               <Textarea
                 id="decline-reason"
@@ -1095,7 +1089,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 solicitado".
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="juridico-adjust-note">O que precisa ser corrigido?</Label>
               <Textarea
                 id="juridico-adjust-note"

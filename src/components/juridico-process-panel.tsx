@@ -118,7 +118,7 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
         <h2 className="text-sm font-semibold text-foreground">Processo Jurídico</h2>
         <span
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
+            "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
             LEGAL_STATUS_BADGE_CLASS[legalStatus],
           )}
         >
@@ -225,7 +225,7 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
                       {p.legalStatus ? (
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
+                            "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
                             LEGAL_STATUS_BADGE_CLASS[p.legalStatus],
                           )}
                         >
@@ -256,7 +256,7 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="submission-doc">Documento ou comprovante</Label>
               <Input
                 id="submission-doc"
@@ -265,7 +265,7 @@ export function JuridicoProcessPanel({ project }: JuridicoProcessPanelProps) {
                 placeholder="Ex.: protocolo-mcti-2026-Q1.pdf"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="submission-note">Observações</Label>
               <Textarea
                 id="submission-note"

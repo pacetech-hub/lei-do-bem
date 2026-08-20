@@ -127,18 +127,18 @@ export function QuestionField({
       )}
     >
       {flagComment && (
-        <div className="mb-3 flex items-start gap-1.5 rounded-md bg-background/70 p-2.5 text-xs font-medium text-status-adjust-fg">
-          <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+        <div className="mb-3 flex items-start gap-2 rounded-md bg-background/70 p-3 text-xs font-medium text-status-adjust-fg">
+          <AlertTriangle className="mt-1 size-3.5 shrink-0" />
           <span>Ajuste solicitado: {flagComment}</span>
         </div>
       )}
 
       {draftAdjustments && draftAdjustments.length > 0 && (
-        <div className="mb-3 space-y-1.5">
+        <div className="mb-3 space-y-2">
           {draftAdjustments.map((item) => (
             <div
               key={item.id}
-              className="flex items-start justify-between gap-2 rounded-md border border-dashed border-status-adjust-fg/40 bg-background/70 p-2.5 text-xs text-status-adjust-fg"
+              className="flex items-start justify-between gap-2 rounded-md border border-dashed border-status-adjust-fg/40 bg-background/70 p-3 text-xs text-status-adjust-fg"
             >
               <span>
                 <span className="font-medium">Ajuste registrado</span> (será enviado ao Relator ao
@@ -158,17 +158,17 @@ export function QuestionField({
       )}
 
       <div className="mb-2 flex items-start justify-between gap-4">
-        <Label htmlFor={questionId} className="text-[13px] font-semibold text-foreground">
+        <Label htmlFor={questionId} className="text-sm font-semibold text-foreground">
           {label}
         </Label>
 
         {isEditable && (
-          <div className="flex shrink-0 gap-1.5">
+          <div className="flex shrink-0 gap-2">
             <Button
               type="button"
               size="sm"
               variant="ghost"
-              className="h-7 gap-1.5 px-2 text-xs text-primary hover:bg-primary/5 hover:text-primary"
+              className="h-7 gap-2 px-2 text-xs text-primary hover:bg-primary/5 hover:text-primary"
               onClick={() => openAi("improve")}
             >
               <Sparkles className="size-3.5" /> Melhorar com IA
@@ -177,7 +177,7 @@ export function QuestionField({
               type="button"
               size="sm"
               variant="ghost"
-              className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+              className="h-7 gap-2 px-2 text-xs text-muted-foreground hover:text-foreground"
               onClick={() => openAi("analyze")}
             >
               <ScanSearch className="size-3.5" /> Analisar
@@ -186,12 +186,12 @@ export function QuestionField({
         )}
 
         {isReview && editingText && (
-          <div className="flex shrink-0 gap-1.5">
+          <div className="flex shrink-0 gap-2">
             <Button
               type="button"
               size="sm"
               variant="ghost"
-              className="h-7 gap-1.5 px-2 text-xs"
+              className="h-7 gap-2 px-2 text-xs"
               onClick={cancelEditingText}
             >
               <X className="size-3.5" /> Cancelar
@@ -199,7 +199,7 @@ export function QuestionField({
             <Button
               type="button"
               size="sm"
-              className="h-7 gap-1.5 px-2 text-xs"
+              className="h-7 gap-2 px-2 text-xs"
               onClick={saveEditingText}
             >
               <Save className="size-3.5" /> Salvar
@@ -208,12 +208,12 @@ export function QuestionField({
         )}
 
         {isReview && !editingText && !requestingAdjustment && (
-          <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+          <div className="flex shrink-0 flex-wrap justify-end gap-2">
             <Button
               type="button"
               size="sm"
               variant="outline"
-              className="h-7 gap-1.5 px-2 text-xs"
+              className="h-7 gap-2 px-2 text-xs"
               onClick={handleAttach}
             >
               <Paperclip className="size-3.5" /> Anexar documento
@@ -222,7 +222,7 @@ export function QuestionField({
               type="button"
               size="sm"
               variant="outline"
-              className="h-7 gap-1.5 px-2 text-xs"
+              className="h-7 gap-2 px-2 text-xs"
               onClick={startEditingText}
             >
               <Pencil className="size-3.5" /> Ajustar texto
@@ -231,7 +231,7 @@ export function QuestionField({
               type="button"
               size="sm"
               variant="outline"
-              className="h-7 gap-1.5 px-2 text-xs text-status-adjust-fg hover:text-status-adjust-fg"
+              className="h-7 gap-2 px-2 text-xs text-status-adjust-fg hover:text-status-adjust-fg"
               onClick={startRequestingAdjustment}
             >
               <Wrench className="size-3.5" /> Solicitar ajuste
@@ -309,7 +309,7 @@ export function QuestionField({
               type="button"
               size="sm"
               variant="outline"
-              className="h-7 gap-1.5 text-xs"
+              className="h-7 gap-2 text-xs"
               onClick={handleAttach}
             >
               <Paperclip className="size-3.5" /> Anexar documento
@@ -319,11 +319,11 @@ export function QuestionField({
       )}
 
       {attachments.length > 0 && (
-        <ul className="mt-3 space-y-1.5">
+        <ul className="mt-3 space-y-2">
           {attachments.map((a) => (
             <li
               key={a.id}
-              className="flex items-center gap-2 rounded-md border border-border bg-surface-muted px-2.5 py-1.5 text-xs"
+              className="flex items-center gap-2 rounded-md border border-border bg-surface-muted px-3 py-2 text-xs"
             >
               <FileText className="size-3.5 text-muted-foreground" />
               <span className="flex-1 truncate">{a.name}</span>
@@ -359,7 +359,7 @@ export function QuestionField({
 
           <div className="mt-4 space-y-4 px-4 text-sm">
             <div className="rounded-md border border-border bg-surface-muted p-3">
-              <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Pergunta
               </div>
               <p className="text-foreground">{label}</p>
@@ -367,7 +367,7 @@ export function QuestionField({
 
             {aiMode === "improve" ? (
               <div className="space-y-2">
-                <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Versão sugerida
                 </div>
                 <div className="rounded-md border border-primary/20 bg-primary/5 p-3 text-sm leading-relaxed">
@@ -382,7 +382,7 @@ export function QuestionField({
             ) : (
               <div className="space-y-3">
                 <div className="rounded-md border border-border p-3">
-                  <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <div className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Completude
                   </div>
                   <p>
@@ -392,7 +392,7 @@ export function QuestionField({
                   </p>
                 </div>
                 <div className="rounded-md border border-border p-3">
-                  <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <div className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Pontos a reforçar
                   </div>
                   <ul className="list-disc space-y-1 pl-4 text-muted-foreground">

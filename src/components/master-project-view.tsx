@@ -55,7 +55,7 @@ export function MasterProjectView({
       <main className="mx-auto max-w-[1440px] px-6 py-8">
         {/* Banner de hierarquia */}
         <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <FolderTree className="size-3.5" /> Mestre
           </span>
           <span>
@@ -85,7 +85,7 @@ export function MasterProjectView({
         <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-lg border border-border bg-surface p-4">
             <div className="text-xs text-muted-foreground">Status geral</div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="mt-2 flex flex-wrap gap-2">
               {statusSummary.length === 0 && (
                 <span className="text-sm text-muted-foreground">Sem dependentes ainda</span>
               )}
@@ -94,8 +94,8 @@ export function MasterProjectView({
                   key={seg.status}
                   className={
                     seg.status === "ajustes"
-                      ? "inline-flex items-center gap-1 rounded-full bg-status-adjust px-2 py-0.5 text-xs font-semibold text-status-adjust-fg"
-                      : "inline-flex items-center gap-1 rounded-full bg-surface-muted px-2 py-0.5 text-xs text-muted-foreground"
+                      ? "inline-flex items-center gap-1 rounded-full bg-status-adjust px-2 py-1 text-xs font-semibold text-status-adjust-fg"
+                      : "inline-flex items-center gap-1 rounded-full bg-surface-muted px-2 py-1 text-xs text-muted-foreground"
                   }
                 >
                   {seg.count} {STATUS_LABEL[seg.status].toLowerCase()}
@@ -128,7 +128,7 @@ export function MasterProjectView({
 
           <div className="rounded-lg border border-border bg-surface p-4">
             <div className="text-xs text-muted-foreground">Última atualização</div>
-            <div className="mt-2 flex items-center gap-1.5 text-sm text-foreground">
+            <div className="mt-2 flex items-center gap-2 text-sm text-foreground">
               <CloudUpload className="size-3.5 text-status-ready-fg" />
               há {formatDistanceToNow(new Date(project.updatedAt), { locale: ptBR })}
             </div>
@@ -171,9 +171,9 @@ export function MasterProjectView({
                     </TableCell>
                     <TableCell className="py-4">
                       <div className="font-medium text-foreground">{d.name}</div>
-                      <div className="mt-1.5 flex items-center gap-2">
+                      <div className="mt-2 flex items-center gap-2">
                         <Progress value={progress} className="h-1 w-20" />
-                        <span className="text-[11px] tabular-nums text-muted-foreground">
+                        <span className="text-xs tabular-nums text-muted-foreground">
                           {progress}% preenchido
                         </span>
                       </div>
@@ -192,7 +192,7 @@ export function MasterProjectView({
         </div>
 
         <div className="mt-6">
-          <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+          <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
             <Link
               to={
                 isRevisor
