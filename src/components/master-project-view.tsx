@@ -71,7 +71,7 @@ export function MasterProjectView({
               {project.area} · Responsável: {project.responsible}
             </p>
           </div>
-          {(isRevisor || isJuridico) && <EditGroupingDialog master={project} />}
+          {isJuridico && <EditGroupingDialog master={project} />}
         </div>
 
         {/* Informações do Projeto Mestre */}

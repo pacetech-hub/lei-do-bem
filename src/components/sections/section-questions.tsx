@@ -14,6 +14,10 @@ interface Props {
   draftItems?: AdjustmentItem[];
   onAddDraftAdjustment?: (fieldId: string, fieldLabel: string, comment: string) => void;
   onRemoveDraftAdjustment?: (id: string) => void;
+  // Projeto de origem compartilhada (Revisor): texto original somente
+  // leitura, com observações adicionais por campo — ver QuestionField.
+  sharedReadOnly?: boolean;
+  onChangeAdditionalNote?: (fieldId: string, value: string) => void;
 }
 
 export function SectionQuestions({
@@ -27,6 +31,8 @@ export function SectionQuestions({
   draftItems,
   onAddDraftAdjustment,
   onRemoveDraftAdjustment,
+  sharedReadOnly = false,
+  onChangeAdditionalNote,
 }: Props) {
   const setAnswer = useProjectsStore((s) => s.setAnswer);
   return (
@@ -55,6 +61,11 @@ export function SectionQuestions({
                 : undefined
             }
             onRemoveDraftAdjustment={onRemoveDraftAdjustment}
+            sharedReadOnly={sharedReadOnly}
+            additionalNote={project.sharedAdditionalNotes?.[q.id]}
+            onChangeAdditionalNote={
+              onChangeAdditionalNote ? (v) => onChangeAdditionalNote(q.id, v) : undefined
+            }
           />
         ))}
         {extras}

@@ -4,6 +4,7 @@ import {
   ROLE_USERS,
   type Attachment,
   type FinalProject,
+  type Invoice,
   type MctiParecer,
   type Project,
 } from "./types";
@@ -89,6 +90,7 @@ export const INITIAL_PROJECTS: Project[] = [
     area: RELATOR_SETOR,
     status: "revisao",
     sharedWithArea: true,
+    everSharedWithArea: true,
     sharedFilial: "Filial Rio de Janeiro/RJ",
     sharedSetor: "Engenharia de Produto",
     sharedReviewer: "Ricardo Alves",
@@ -130,6 +132,7 @@ export const INITIAL_PROJECTS: Project[] = [
     area: RELATOR_SETOR,
     status: "revisao",
     sharedWithArea: true,
+    everSharedWithArea: true,
     sharedFilial: "Filial Campinas/SP",
     sharedSetor: "Automação",
     sharedReviewer: "Patrícia Gomes",
@@ -223,6 +226,30 @@ export const INITIAL_PROJECTS: Project[] = [
     lastAdjustmentNote:
       "Barreiras e Desafios Tecnológicos — Testes realizados.: Descreva os protocolos de teste utilizados e os resultados quantitativos obtidos.",
   }),
+  emptyProject({
+    name: "Painel de Controle para Linha de Extrusão",
+    filial: "Filial Rio de Janeiro/RJ",
+    area: "Engenharia de Produto",
+    responsible: "João Silva",
+    status: "revisao",
+    // Origem compartilhada já aceita: sharedWithArea volta a "false" (fluxo de
+    // aceite concluído), mas everSharedWithArea permanece — o texto abaixo
+    // continua sendo tratado como somente leitura para o Revisor, com uma
+    // observação adicional já registrada como exemplo.
+    sharedWithArea: false,
+    everSharedWithArea: true,
+    updatedAt: daysAgo(2),
+    startDate: daysAgo(70),
+    endDate: daysFromNow(100),
+    answers: {
+      inov_3:
+        "O objetivo do projeto é desenvolver um painel de controle inteligente para a linha de extrusão, reduzindo o tempo de setup entre lotes de produção.",
+    },
+    sharedAdditionalNotes: {
+      inov_3:
+        "Revisor: confirmar com a área de origem se o painel também precisa se integrar ao sistema de supervisório já existente na planta de Engenharia de Produto.",
+    },
+  }),
 ];
 
 const masterProjectId = nextId("proj");
@@ -288,6 +315,55 @@ function fullAnswers(): Record<string, string> {
   return map;
 }
 
+// --- Notas fiscais compartilhadas entre projetos (Despesas — Etapa 6) -----
+// Registradas uma vez (busca por CNPJ ou leitura da chave de acesso) e
+// reutilizáveis por qualquer projeto do Responsável Financeiro. O quanto já
+// foi consumido de cada item nunca é armazenado aqui — é sempre somado a
+// partir dos lançamentos dos próprios projetos (ver src/lib/invoices.ts).
+const invInovaTechId = nextId("inv");
+const invInovaTechItemConsultoriaId = nextId("item");
+const invInovaTechItemAutomacaoId = nextId("item");
+const invAlfaId = nextId("inv");
+const invAlfaItemId = nextId("item");
+
+export const INITIAL_INVOICES: Invoice[] = [
+  {
+    id: invInovaTechId,
+    cnpj: MOCK_SUPPLIERS[0].cnpj,
+    companyName: MOCK_SUPPLIERS[0].name,
+    invoiceNumber: "NF-000123",
+    accessKey: "35240613456789000123550010000001231987654321",
+    items: [
+      {
+        id: invInovaTechItemConsultoriaId,
+        description: "Consultoria técnica em IA aplicada",
+        totalValue: 80000,
+      },
+      {
+        id: invInovaTechItemAutomacaoId,
+        description: "Consultoria em automação de testes",
+        totalValue: 20000,
+      },
+    ],
+    createdAt: daysAgo(60),
+  },
+  {
+    id: invAlfaId,
+    cnpj: MOCK_SUPPLIERS[3].cnpj,
+    companyName: MOCK_SUPPLIERS[3].name,
+    invoiceNumber: "NF-000456",
+    accessKey: "35240613456789000456550010000004561987654321",
+    items: [
+      {
+        id: invAlfaItemId,
+        description: "Componentes eletrônicos para protótipo",
+        totalValue: 12000,
+      },
+    ],
+    createdAt: daysAgo(45),
+  },
+];
+
 const testProjectEvidences: Attachment[] = [
   {
     id: nextId("att"),
@@ -339,20 +415,24 @@ INITIAL_PROJECTS.push(
         company: MOCK_SUPPLIERS[0].name,
         cnpj: MOCK_SUPPLIERS[0].cnpj,
         invoice: "NF-000123",
-        invoiceTotal: 45000,
+        invoiceTotal: 80000,
         usedInProject: 45000,
+        invoiceId: invInovaTechId,
+        itemId: invInovaTechItemConsultoriaId,
       },
     ],
     materials: [
       {
         id: nextId("mat"),
-        supplier: MOCK_SUPPLIERS[1].name,
-        cnpj: MOCK_SUPPLIERS[1].cnpj,
+        supplier: MOCK_SUPPLIERS[3].name,
+        cnpj: MOCK_SUPPLIERS[3].cnpj,
         invoice: "NF-000456",
         grossValue: 12000,
         netValue: 10500,
         materialDescription: "Componentes eletrônicos para protótipo",
         usageDescription: "Montagem do protótipo funcional de validação",
+        invoiceId: invAlfaId,
+        itemId: invAlfaItemId,
       },
     ],
   }),

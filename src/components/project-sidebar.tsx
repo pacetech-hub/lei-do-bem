@@ -8,9 +8,18 @@ interface Props {
   onChange: (s: SectionKey) => void;
   completion: Record<SectionKey, number>; // 0..100
   overall: number;
+  // Lista de etapas a exibir — algumas áreas não veem todas (ex.: Relator
+  // não lança despesas, então "Despesas" nem aparece na navegação dele).
+  sections?: typeof SECTIONS;
 }
 
-export function ProjectSidebar({ active, onChange, completion, overall }: Props) {
+export function ProjectSidebar({
+  active,
+  onChange,
+  completion,
+  overall,
+  sections = SECTIONS,
+}: Props) {
   return (
     <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 shrink-0 border-r border-border bg-sidebar lg:block">
       <div className="flex h-full flex-col">
@@ -25,7 +34,7 @@ export function ProjectSidebar({ active, onChange, completion, overall }: Props)
         </div>
 
         <nav className="flex-1 overflow-y-auto p-2">
-          {SECTIONS.map((s, idx) => {
+          {sections.map((s, idx) => {
             const pct = completion[s.key] ?? 0;
             const state: "done" | "active" | "pending" =
               s.key === active ? "active" : pct >= 100 ? "done" : "pending";

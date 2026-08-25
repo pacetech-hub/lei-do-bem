@@ -4,6 +4,7 @@ import type {
   Attachment,
   EmployeeExpense,
   FinalProject,
+  Invoice,
   MaterialExpense,
   MctiParecer,
   MctiParecerResult,
@@ -11,12 +12,18 @@ import type {
   ProjectStatus,
   ThirdPartyExpense,
 } from "./types";
-import { INITIAL_PROJECTS, INITIAL_PARECERES, INITIAL_FINAL_PROJECTS } from "./mock";
+import {
+  INITIAL_PROJECTS,
+  INITIAL_PARECERES,
+  INITIAL_FINAL_PROJECTS,
+  INITIAL_INVOICES,
+} from "./mock";
 
 interface ProjectsState {
   projects: Project[];
   pareceres: MctiParecer[];
   finalProjects: FinalProject[];
+  invoices: Invoice[];
   createProject: (
     p: Omit<
       Project,
@@ -52,6 +59,9 @@ interface ProjectsState {
   addMaterial: (id: string, e: MaterialExpense) => void;
   removeMaterial: (id: string, eid: string) => void;
   setStatus: (id: string, status: ProjectStatus) => void;
+  // Nota fiscal compartilhada entre projetos (busca por CNPJ ou leitura de
+  // chave) — registrada uma vez, reutilizável por qualquer projeto.
+  addInvoice: (inv: Omit<Invoice, "id" | "createdAt">) => string;
 }
 
 const nowIso = () => new Date().toISOString();
@@ -62,6 +72,13 @@ export const useProjectsStore = create<ProjectsState>()(
       projects: INITIAL_PROJECTS,
       pareceres: INITIAL_PARECERES,
       finalProjects: INITIAL_FINAL_PROJECTS,
+      invoices: INITIAL_INVOICES,
+      addInvoice: (inv) => {
+        const id = crypto.randomUUID();
+        const invoice: Invoice = { ...inv, id, createdAt: nowIso() };
+        set((s) => ({ invoices: [invoice, ...s.invoices] }));
+        return id;
+      },
       createFinalProject: (p) => {
         const id = crypto.randomUUID();
         const finalProject: FinalProject = {

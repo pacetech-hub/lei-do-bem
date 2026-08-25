@@ -124,7 +124,7 @@ export interface Attachment {
   id: string;
   name: string;
   type: string;
-  category?: "fotos" | "nota_fiscal" | "relatorio" | "apresentacao" | "outros";
+  category?: "fotos" | "relatorio" | "apresentacao" | "outros";
   uploadedAt: string;
   uploadedBy: string;
   size?: number;
@@ -147,7 +147,11 @@ export interface ThirdPartyExpense {
   invoice: string;
   invoiceTotal: number;
   usedInProject: number;
-  allocatedElsewhere?: number; // mock — quanto já foi alocado em outros projetos
+  allocatedElsewhere?: number; // legado — lançamentos antigos sem invoiceId/itemId
+  // Referência à nota/item compartilhados (ver Invoice) — presente em todo
+  // lançamento feito pelo novo fluxo de busca por CNPJ.
+  invoiceId?: string;
+  itemId?: string;
 }
 
 export interface MaterialExpense {
@@ -159,6 +163,32 @@ export interface MaterialExpense {
   netValue: number;
   materialDescription: string;
   usageDescription: string;
+  invoiceId?: string;
+  itemId?: string;
+}
+
+// Item de uma nota fiscal — o "consumido" por cada projeto não é armazenado
+// aqui: é sempre derivado somando usedInProject/netValue de todos os
+// ThirdPartyExpense/MaterialExpense que referenciam este item (ver
+// src/lib/invoices.ts), para nunca haver dois números que possam divergir.
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  totalValue: number;
+}
+
+// Nota fiscal compartilhada entre projetos: cadastrada uma vez (por busca de
+// CNPJ ou leitura da chave de acesso) e reutilizável por qualquer projeto do
+// Responsável Financeiro, mostrando quanto de cada item ainda está
+// disponível.
+export interface Invoice {
+  id: string;
+  cnpj: string;
+  companyName: string;
+  invoiceNumber: string;
+  accessKey: string;
+  items: InvoiceItem[];
+  createdAt: string;
 }
 
 export interface Project {
@@ -191,6 +221,16 @@ export interface Project {
   sharedReviewer?: string;
   sharedStatus?: "pendente" | "aceito" | "recusado";
   sharedDeclineReason?: string;
+  // Marca permanente: este projeto já foi compartilhado com outra área em
+  // algum momento (nunca é limpo, mesmo após aceitar/recusar) — usado pelo
+  // Revisor para tratar o texto já escrito pelo Relator original como
+  // somente leitura para sempre, com um campo próprio de acréscimos.
+  everSharedWithArea?: boolean;
+  // Observações que o Revisor acrescenta em projetos de origem compartilhada,
+  // por questionId — nunca sobrescreve o texto original em `answers`.
+  sharedAdditionalNotes?: Record<string, string>;
+  // Tags livres atribuídas pelo Revisor na Revisão Final (não obrigatório).
+  tags?: string[];
   // Ciclo do Jurídico (ver LegalStatus)
   legalStatus?: LegalStatus;
   legalAnalysisNote?: string;
@@ -312,6 +352,10 @@ export const SECTION_FIELD_OPTIONS: Partial<Record<SectionKey, Question[]>> = {
   barreiras: QUESTIONS_BARREIRAS,
   metodologia: QUESTIONS_METODOLOGIA,
 };
+
+// Sugestões para o campo de tags do projeto (Etapa 7) — não é uma lista
+// fechada, o Revisor pode digitar qualquer outra tag.
+export const SUGGESTED_PROJECT_TAGS = ["Financeiro", "WMS", "Compras", "Robótica", "Logística"];
 
 export const AREAS = [
   "Pesquisa & Desenvolvimento",

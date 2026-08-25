@@ -267,17 +267,17 @@ export function ProjectsList({
     return projects.filter((p) => getFilial(p) === scopedFilial && p.area === scopedSetor);
   }, [projects, isJuridico, isScoped, scopedFilial, scopedSetor]);
 
-  // Top-level rows for hierarchical dashboards. Para Revisor/Financeiro/Jurídico:
-  // independentes + mestres (dependentes ficam aninhados dentro do mestre). Para o
-  // Relator, o Projeto Mestre em si não aparece na lista — ele só lida com
-  // iniciativas individuais, então mostramos independentes e dependentes como
-  // linhas soltas (agrupar é uma ação do Revisor/Jurídico, não do Relator).
+  // Top-level rows for hierarchical dashboards. Só o Jurídico ainda agrupa —
+  // para ele, independentes + mestres (dependentes ficam aninhados dentro do
+  // mestre). Para Relator/Revisor/Financeiro, o Projeto Mestre em si não
+  // aparece na lista: mostramos independentes e dependentes como linhas
+  // soltas.
   const topLevelScoped = useMemo(
     () =>
       scopedProjects.filter((p) =>
-        isRelator ? p.projectType !== "mestre" : p.projectType !== "dependente",
+        isJuridico ? p.projectType !== "dependente" : p.projectType !== "mestre",
       ),
-    [scopedProjects, isRelator],
+    [scopedProjects, isJuridico],
   );
 
   const dependentsByMaster = useMemo(() => {

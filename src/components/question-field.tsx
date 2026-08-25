@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertTriangle, Paperclip, Save, Sparkles, ScanSearch, X, FileText } from "lucide-react";
+import { AlertTriangle, Mic, Paperclip, Save, Sparkles, X, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,12 @@ interface Props {
   draftAdjustments?: AdjustmentItem[];
   onAddDraftAdjustment?: (comment: string) => void;
   onRemoveDraftAdjustment?: (id: string) => void;
+  // Projeto de origem compartilhada (Revisor): o texto original nunca é
+  // editável, mesmo em modo de revisão — só um campo de observações abaixo,
+  // permanentemente, para nunca sobrescrever o que a outra área escreveu.
+  sharedReadOnly?: boolean;
+  additionalNote?: string;
+  onChangeAdditionalNote?: (v: string) => void;
 }
 
 export function QuestionField({
@@ -45,13 +51,17 @@ export function QuestionField({
   draftAdjustments,
   onAddDraftAdjustment,
   onRemoveDraftAdjustment,
+  sharedReadOnly = false,
+  additionalNote,
+  onChangeAdditionalNote,
 }: Props) {
   const [aiOpen, setAiOpen] = useState(false);
-  const [aiMode, setAiMode] = useState<"improve" | "analyze">("improve");
+  const [aiMode, setAiMode] = useState<"improve" | "analyze">("analyze");
   const [editingText, setEditingText] = useState(false);
   const [draftText, setDraftText] = useState(value);
   const [requestingAdjustment, setRequestingAdjustment] = useState(false);
   const [adjustmentComment, setAdjustmentComment] = useState("");
+  const [transcribing, setTranscribing] = useState(false);
   const addAttachment = useProjectsStore((s) => s.addAttachment);
   const removeAttachment = useProjectsStore((s) => s.removeAttachment);
 
@@ -59,6 +69,7 @@ export function QuestionField({
   const isReview = mode === "review";
   const isLocked = mode === "locked";
   const canTypeDirectly = isEditable || editingText;
+  const showAsText = isLocked || sharedReadOnly;
   const displayedValue = editingText ? draftText : value;
   const charCount = displayedValue.length;
   const meetsMin = charCount >= minChars;
@@ -75,9 +86,19 @@ export function QuestionField({
     });
   };
 
-  const openAi = (nextAiMode: "improve" | "analyze") => {
-    setAiMode(nextAiMode);
+  const openAi = () => {
+    setAiMode("analyze");
     setAiOpen(true);
+  };
+
+  const handleTranscribeAudio = () => {
+    setTranscribing(true);
+    window.setTimeout(() => {
+      const mockTranscript =
+        "Transcrição automática do áudio gravado: revise o texto abaixo e ajuste conforme necessário antes de enviar.";
+      onChange(value.trim() ? `${value}\n\n${mockTranscript}` : mockTranscript);
+      setTranscribing(false);
+    }, 1500);
   };
 
   const startEditingText = () => {
@@ -108,6 +129,7 @@ export function QuestionField({
   };
 
   const hasHighlight = Boolean(flagComment) || Boolean(draftAdjustments?.length);
+  const showSharedNote = sharedReadOnly && (isReview || Boolean(additionalNote));
 
   return (
     <div
@@ -147,90 +169,91 @@ export function QuestionField({
         </div>
       )}
 
-      <div className="mb-2 flex items-start justify-between gap-4">
-        <Label htmlFor={questionId} className="text-sm font-semibold text-foreground">
-          {label}
-        </Label>
+      <Label htmlFor={questionId} className="mb-2 block text-sm font-semibold text-foreground">
+        {label}
+      </Label>
 
-        {isEditable && (
-          <div className="flex shrink-0 gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="h-7 gap-2 px-2 text-xs text-primary hover:bg-primary/5 hover:text-primary"
-              onClick={() => openAi("improve")}
-            >
-              <Sparkles className="size-3.5" /> Melhorar com IA
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="h-7 gap-2 px-2 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => openAi("analyze")}
-            >
-              <ScanSearch className="size-3.5" /> Analisar
-            </Button>
-          </div>
-        )}
+      {!showAsText && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          {isEditable && (
+            <>
+              <Button type="button" size="sm" className="gap-2" onClick={openAi}>
+                <Sparkles className="size-4" /> Analisar com IA
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                disabled={transcribing}
+                onClick={handleTranscribeAudio}
+              >
+                <Mic className={cn("size-4", transcribing && "animate-pulse text-primary")} />
+                {transcribing ? "Gravando…" : "Transcrever áudio"}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                onClick={handleAttach}
+              >
+                <Paperclip className="size-4" /> Anexar documento
+              </Button>
+            </>
+          )}
 
-        {isReview && editingText && (
-          <div className="flex shrink-0 gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="h-7 gap-2 px-2 text-xs"
-              onClick={cancelEditingText}
-            >
-              <X className="size-3.5" /> Cancelar
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              className="h-7 gap-2 px-2 text-xs"
-              onClick={saveEditingText}
-            >
-              <Save className="size-3.5" /> Salvar
-            </Button>
-          </div>
-        )}
+          {isReview && editingText && (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="gap-2"
+                onClick={cancelEditingText}
+              >
+                <X className="size-4" /> Cancelar
+              </Button>
+              <Button type="button" size="sm" className="gap-2" onClick={saveEditingText}>
+                <Save className="size-4" /> Salvar
+              </Button>
+            </>
+          )}
 
-        {isReview && !editingText && !requestingAdjustment && (
-          <div className="flex shrink-0 flex-wrap justify-end gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-7 gap-2 px-2 text-xs"
-              onClick={handleAttach}
-            >
-              <Paperclip className="size-3.5" /> Anexar documento
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-7 gap-2 px-2 text-xs"
-              onClick={startEditingText}
-            >
-              Ajustar texto
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-7 gap-2 px-2 text-xs text-status-adjust-fg hover:text-status-adjust-fg"
-              onClick={startRequestingAdjustment}
-            >
-              Solicitar ajuste
-            </Button>
-          </div>
-        )}
-      </div>
+          {isReview && !editingText && !requestingAdjustment && (
+            <>
+              <Button type="button" size="sm" className="gap-2" onClick={openAi}>
+                <Sparkles className="size-4" /> Analisar com IA
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                onClick={handleAttach}
+              >
+                <Paperclip className="size-4" /> Anexar documento
+              </Button>
+              {!sharedReadOnly && (
+                <Button type="button" size="sm" variant="outline" onClick={startEditingText}>
+                  Ajustar texto
+                </Button>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="text-status-adjust-fg hover:text-status-adjust-fg"
+                onClick={startRequestingAdjustment}
+              >
+                Solicitar ajuste
+              </Button>
+            </>
+          )}
+        </div>
+      )}
 
-      {isLocked ? (
+      {showAsText ? (
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
           {value.trim() || (
             <span className="text-muted-foreground">Nenhuma resposta registrada.</span>
@@ -252,6 +275,28 @@ export function QuestionField({
             !canTypeDirectly && "cursor-default resize-none bg-surface-muted/50",
           )}
         />
+      )}
+
+      {showSharedNote && (
+        <div className="mt-3 space-y-2 rounded-md border border-dashed border-border bg-surface-muted/40 p-3">
+          <Label
+            htmlFor={`${questionId}-shared-note`}
+            className="text-xs font-semibold text-muted-foreground"
+          >
+            Observações adicionais do Revisor
+          </Label>
+          {isReview ? (
+            <Textarea
+              id={`${questionId}-shared-note`}
+              value={additionalNote ?? ""}
+              onChange={(e) => onChangeAdditionalNote?.(e.target.value)}
+              rows={3}
+              placeholder="Acrescente informações sem alterar o texto original do Relator…"
+            />
+          ) : (
+            <p className="whitespace-pre-wrap text-sm text-foreground">{additionalNote}</p>
+          )}
+        </div>
       )}
 
       {requestingAdjustment && (
@@ -286,25 +331,12 @@ export function QuestionField({
         </div>
       )}
 
-      {!isLocked && (
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-3 text-xs">
-            <span className={meetsMin ? "text-muted-foreground" : "text-primary"}>
-              {charCount.toLocaleString("pt-BR")} caracteres
-              {!meetsMin && ` · sugerido: ${minChars}+`}
-            </span>
-          </div>
-          {isEditable && (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-7 gap-2 text-xs"
-              onClick={handleAttach}
-            >
-              <Paperclip className="size-3.5" /> Anexar documento
-            </Button>
-          )}
+      {!showAsText && (
+        <div className="mt-2 flex items-center gap-3 text-xs">
+          <span className={meetsMin ? "text-muted-foreground" : "text-primary"}>
+            {charCount.toLocaleString("pt-BR")} caracteres
+            {!meetsMin && ` · sugerido: ${minChars}+`}
+          </span>
         </div>
       )}
 
@@ -348,6 +380,35 @@ export function QuestionField({
           </SheetHeader>
 
           <div className="mt-4 space-y-4 px-4 text-sm">
+            {isEditable && (
+              <div className="inline-flex rounded-md border border-border bg-surface-muted p-1">
+                <button
+                  type="button"
+                  onClick={() => setAiMode("analyze")}
+                  className={cn(
+                    "rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
+                    aiMode === "analyze"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Somente analisar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiMode("improve")}
+                  className={cn(
+                    "rounded-sm px-3 py-1.5 text-xs font-medium transition-colors",
+                    aiMode === "improve"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Melhorar com IA
+                </button>
+              </div>
+            )}
+
             <div className="rounded-md border border-border bg-surface-muted p-3">
               <div className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Pergunta

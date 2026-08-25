@@ -67,6 +67,7 @@ import {
   type Project,
   type SectionKey,
 } from "@/lib/types";
+import { ProjectTagsInline } from "@/components/sections/section-revisao";
 
 import { JuridicoProcessPanel } from "@/components/juridico-process-panel";
 import { SectionGerais } from "@/components/sections/section-gerais";
@@ -137,6 +138,18 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
           ? "review"
           : "locked"
         : "editable";
+  // O Relator não lança despesas (isso é do Responsável Financeiro) — a
+  // etapa nem aparece na navegação dele, renumerando as demais etapas.
+  const visibleSections = isRelator ? SECTIONS.filter((s) => s.key !== "despesas") : SECTIONS;
+  // Projeto de origem compartilhada: para o Revisor, o texto já escrito por
+  // quem criou o projeto em outra área nunca é editável, mesmo depois do
+  // aceite — só um campo de observações adicionais, permanentemente.
+  const sharedReadOnly = isRevisor && Boolean(project.everSharedWithArea);
+  const handleChangeAdditionalNote = (fieldId: string, value: string) => {
+    updateProject(project.id, {
+      sharedAdditionalNotes: { ...project.sharedAdditionalNotes, [fieldId]: value },
+    });
+  };
 
   // Persistido no projeto (não em estado local) para sobreviver a navegações
   // enquanto o Revisor ainda não enviou os ajustes registrados durante a leitura.
@@ -202,7 +215,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   }, [project]);
 
   const overall = Math.round(
-    Object.values(completion).reduce((a, b) => a + b, 0) / SECTIONS.length,
+    visibleSections.reduce((sum, s) => sum + completion[s.key], 0) / visibleSections.length,
   );
 
   const canSubmit =
@@ -348,6 +361,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
     }
     updateProject(project.id, {
       sharedWithArea: true,
+      everSharedWithArea: true,
       sharedFilial: shareFilial,
       sharedSetor: shareSetor,
       sharedReviewer: shareReviewer,
@@ -423,13 +437,14 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
           onChange={setSection}
           completion={completion}
           overall={overall}
+          sections={visibleSections}
         />
 
         <main className="flex-1 pb-32">
           {/* Ficha header */}
           <div className="border-b border-border bg-surface">
             <div className="px-6 py-5 lg:px-10">
-              {canShare && (
+              {canShare && !(project.sharedWithArea && project.sharedStatus === "pendente") && (
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface-muted/60 px-4 py-3 text-xs text-muted-foreground">
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                     <span>
@@ -549,6 +564,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                     {isJuridico && finalProjects.some((f) => f.projectIds.includes(project.id)) && (
                       <ProjetoFinalTag />
                     )}
+                    <ProjectTagsInline tags={project.tags} />
                   </div>
                   <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">
                     {project.name}
@@ -562,7 +578,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
             {/* Section pills (mobile) */}
             <div className="scrollbar-thin flex gap-1 overflow-x-auto border-t border-border px-6 py-2 lg:hidden">
-              {SECTIONS.map((s) => (
+              {visibleSections.map((s) => (
                 <button
                   key={s.key}
                   type="button"
@@ -696,6 +712,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   addFieldDraftItem("inovador", fieldId, fieldLabel, comment)
                 }
                 onRemoveDraftAdjustment={removeAdjustItem}
+                sharedReadOnly={sharedReadOnly}
+                onChangeAdditionalNote={handleChangeAdditionalNote}
               />
             )}
             {section === "barreiras" && (
@@ -711,6 +729,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   addFieldDraftItem("barreiras", fieldId, fieldLabel, comment)
                 }
                 onRemoveDraftAdjustment={removeAdjustItem}
+                sharedReadOnly={sharedReadOnly}
+                onChangeAdditionalNote={handleChangeAdditionalNote}
               />
             )}
             {section === "metodologia" && (
@@ -726,6 +746,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   addFieldDraftItem("metodologia", fieldId, fieldLabel, comment)
                 }
                 onRemoveDraftAdjustment={removeAdjustItem}
+                sharedReadOnly={sharedReadOnly}
+                onChangeAdditionalNote={handleChangeAdditionalNote}
                 extras={
                   isFinanceiro ? undefined : (
                     <div className="rounded-lg border border-dashed border-border bg-surface p-4">
@@ -762,6 +784,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 canSubmit={canSubmit}
                 hideSubmitCta={isRevisor || isFinanceiro}
                 pendingItems={generalPendingItems("revisao")}
+                mode={mode}
+                sections={visibleSections}
               />
             )}
           </div>

@@ -4,7 +4,6 @@ import {
   CloudUpload,
   FileText,
   Image as ImageIcon,
-  Receipt,
   Presentation,
   Files,
   Trash2,
@@ -36,7 +35,6 @@ const CATEGORIES: {
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
   { key: "fotos", label: "Fotos", icon: ImageIcon },
-  { key: "nota_fiscal", label: "Nota fiscal", icon: Receipt },
   { key: "relatorio", label: "Relatório", icon: FileText },
   { key: "apresentacao", label: "Apresentação", icon: Presentation },
   { key: "outros", label: "Outros documentos", icon: Files },
@@ -84,8 +82,8 @@ export function SectionEvidencias({
       <header className="mb-6">
         <h2 className="text-lg font-semibold tracking-tight">Evidências</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Anexe documentos que comprovem as atividades de inovação: fotos, notas fiscais,
-          relatórios, apresentações e outros.
+          Anexe documentos que comprovem as atividades de inovação: fotos, relatórios, apresentações
+          e outros.
         </p>
       </header>
 

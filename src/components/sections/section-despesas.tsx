@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertTriangle, Plus, Search, Trash2, Info } from "lucide-react";
+import { AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MOCK_EMPLOYEES, MOCK_SUPPLIERS } from "@/lib/mock";
-import type { AdjustmentItem, Project } from "@/lib/types";
+import { MOCK_EMPLOYEES } from "@/lib/mock";
+import { InvoiceItemPicker } from "@/components/sections/invoice-item-picker";
+import { getItemConsumed } from "@/lib/invoices";
+import type { AdjustmentItem, Invoice, InvoiceItem, Project } from "@/lib/types";
 import { useProjectsStore } from "@/lib/store";
 import { toast } from "sonner";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+// Regra provisória — o percentual final de horas elegíveis ainda não foi
+// definido pelo negócio. Fácil de ajustar quando a regra for fechada.
+const ELIGIBLE_HOURS_RATIO = 0.3;
 
 function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: boolean }) {
   const addEmployee = useProjectsStore((s) => s.addEmployee);
@@ -27,7 +33,7 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
   const [found, setFound] = useState<(typeof MOCK_EMPLOYEES)[number] | null>(null);
   const [activity, setActivity] = useState("");
   const [totalHours, setTotalHours] = useState("");
-  const [eligibleHours, setEligibleHours] = useState("");
+  const eligibleHours = totalHours ? Math.round(Number(totalHours) * ELIGIBLE_HOURS_RATIO) : 0;
 
   const search = () => {
     const e = MOCK_EMPLOYEES.find((x) => x.code === badge.trim());
@@ -44,26 +50,19 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
       toast.warning("Preencha atividade e horas totais.");
       return;
     }
-    const total = Number(totalHours);
-    const eligible = Number(eligibleHours || totalHours);
-    if (eligible > total) {
-      toast.error("Horas elegíveis não podem exceder o total.");
-      return;
-    }
     addEmployee(project.id, {
       id: crypto.randomUUID(),
       code: found.code,
       name: found.name,
       role: found.role,
       activity,
-      totalHours: total,
-      eligibleHours: eligible,
+      totalHours: Number(totalHours),
+      eligibleHours,
     });
     setBadge("");
     setFound(null);
     setActivity("");
     setTotalHours("");
-    setEligibleHours("");
     toast.success("Colaborador adicionado.");
   };
 
@@ -117,7 +116,7 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Horas totais no ano</Label>
+                  <Label>Horas totais do trimestre</Label>
                   <Input
                     type="number"
                     min="0"
@@ -127,12 +126,12 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
                 </div>
                 <div className="space-y-2">
                   <Label>Horas elegíveis</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={eligibleHours}
-                    onChange={(e) => setEligibleHours(e.target.value)}
-                  />
+                  <p className="flex h-9 items-center text-sm text-muted-foreground">
+                    {eligibleHours}h{" "}
+                    <span className="ml-1 text-xs">
+                      ({Math.round(ELIGIBLE_HOURS_RATIO * 100)}% do total)
+                    </span>
+                  </p>
                 </div>
                 <div className="flex items-end">
                   <Button className="w-full gap-2" onClick={submit}>
@@ -203,113 +202,83 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
 function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boolean }) {
   const addThirdParty = useProjectsStore((s) => s.addThirdParty);
   const removeThirdParty = useProjectsStore((s) => s.removeThirdParty);
-  const [company, setCompany] = useState<string>(MOCK_SUPPLIERS[0].name);
-  const [invoice, setInvoice] = useState("");
-  const [total, setTotal] = useState("");
+  const allProjects = useProjectsStore((s) => s.projects);
+  const [selection, setSelection] = useState<{ invoice: Invoice; item: InvoiceItem } | null>(null);
   const [used, setUsed] = useState("");
-  const [allocatedElsewhere, setAllocatedElsewhere] = useState("");
+  // Força o InvoiceItemPicker (não controlado) a remontar do zero após um
+  // lançamento, já que ele mantém a seleção em estado próprio.
+  const [pickerKey, setPickerKey] = useState(0);
 
-  const supplier = MOCK_SUPPLIERS.find((s) => s.name === company)!;
+  const clearSelection = () => {
+    setSelection(null);
+    setUsed("");
+  };
 
   const submit = () => {
-    const t = Number(total);
-    const u = Number(used);
-    const a = Number(allocatedElsewhere || 0);
-    if (!invoice || !t || !u) {
-      toast.warning("Preencha nota fiscal, valor total e valor utilizado.");
+    if (!selection) {
+      toast.warning("Busque o CNPJ e selecione um item da nota fiscal.");
       return;
     }
-    if (u + a > t) {
-      toast.error("Valor excede o total da nota", {
-        description: `Utilizado (${brl(u)}) + já alocado em outros projetos (${brl(a)}) ultrapassa o total (${brl(t)}).`,
+    const u = Number(used);
+    if (!u) {
+      toast.warning("Informe o valor consumido neste projeto.");
+      return;
+    }
+    const consumedSoFar = getItemConsumed(allProjects, selection.item.id);
+    const available = selection.item.totalValue - consumedSoFar;
+    if (u > available) {
+      toast.error("Valor excede o saldo disponível do item", {
+        description: `Disponível: ${brl(available)}.`,
       });
       return;
     }
     addThirdParty(project.id, {
       id: crypto.randomUUID(),
-      company: supplier.name,
-      cnpj: supplier.cnpj,
-      invoice,
-      invoiceTotal: t,
+      company: selection.invoice.companyName,
+      cnpj: selection.invoice.cnpj,
+      invoice: selection.invoice.invoiceNumber,
+      invoiceTotal: selection.item.totalValue,
       usedInProject: u,
-      allocatedElsewhere: a,
+      invoiceId: selection.invoice.id,
+      itemId: selection.item.id,
     });
-    setInvoice("");
-    setTotal("");
-    setUsed("");
-    setAllocatedElsewhere("");
+    clearSelection();
+    setPickerKey((k) => k + 1);
     toast.success("Serviço adicionado.");
+  };
+
+  // Quanto já foi consumido por OUTROS projetos (exclui o próprio lançamento).
+  const otherProjectsConsumption = (e: Project["thirdParties"][number]) => {
+    if (!e.itemId) return e.allocatedElsewhere ?? 0;
+    return getItemConsumed(allProjects, e.itemId) - e.usedInProject;
   };
 
   return (
     <div className="space-y-4">
       {!readOnly && (
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <h4 className="mb-3 text-sm font-semibold">Adicionar serviço de terceiro</h4>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Empresa fornecedora</Label>
-              <select
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-              >
-                {MOCK_SUPPLIERS.map((s) => (
-                  <option key={s.cnpj} value={s.name}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+        <div className="space-y-3 rounded-lg border border-border bg-surface p-4">
+          <h4 className="text-sm font-semibold">Adicionar serviço de terceiro</h4>
+          <InvoiceItemPicker
+            key={pickerKey}
+            onSelect={(invoice, item) => setSelection({ invoice, item })}
+            onClear={clearSelection}
+          />
+          {selection && (
+            <div className="flex items-end gap-3">
+              <div className="flex-1 space-y-2">
+                <Label>Valor consumido neste projeto (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={used}
+                  onChange={(e) => setUsed(e.target.value)}
+                />
+              </div>
+              <Button className="gap-2" onClick={submit}>
+                <Plus className="size-4" /> Adicionar
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label>CNPJ</Label>
-              <Input value={supplier.cnpj} disabled />
-            </div>
-            <div className="space-y-2">
-              <Label>Nota fiscal</Label>
-              <Input
-                value={invoice}
-                onChange={(e) => setInvoice(e.target.value)}
-                placeholder="Ex.: NF 12345"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Valor total da nota (R$)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={total}
-                onChange={(e) => setTotal(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Valor utilizado neste projeto (R$)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={used}
-                onChange={(e) => setUsed(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                Já alocado em outros projetos (R$)
-                <Info className="size-3.5 text-muted-foreground" />
-              </Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={allocatedElsewhere}
-                onChange={(e) => setAllocatedElsewhere(e.target.value)}
-                placeholder="0,00"
-              />
-            </div>
-          </div>
-          <div className="mt-3 flex justify-end">
-            <Button className="gap-2" onClick={submit}>
-              <Plus className="size-4" /> Adicionar
-            </Button>
-          </div>
+          )}
         </div>
       )}
 
@@ -347,7 +316,7 @@ function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boo
                   {brl(e.usedInProject)}
                 </TableCell>
                 <TableCell className="text-right tabular-nums text-muted-foreground">
-                  {brl(e.allocatedElsewhere ?? 0)}
+                  {brl(otherProjectsConsumption(e))}
                 </TableCell>
                 {!readOnly && (
                   <TableCell>
@@ -373,105 +342,96 @@ function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boo
 function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: boolean }) {
   const addMaterial = useProjectsStore((s) => s.addMaterial);
   const removeMaterial = useProjectsStore((s) => s.removeMaterial);
-  const [supplier, setSupplier] = useState<string>(MOCK_SUPPLIERS[0].name);
-  const [invoice, setInvoice] = useState("");
-  const [gross, setGross] = useState("");
-  const [net, setNet] = useState("");
-  const [desc, setDesc] = useState("");
+  const allProjects = useProjectsStore((s) => s.projects);
+  const [selection, setSelection] = useState<{ invoice: Invoice; item: InvoiceItem } | null>(null);
+  const [used, setUsed] = useState("");
   const [usage, setUsage] = useState("");
-  const s = MOCK_SUPPLIERS.find((x) => x.name === supplier)!;
+  // Força o InvoiceItemPicker (não controlado) a remontar do zero após um
+  // lançamento, já que ele mantém a seleção em estado próprio.
+  const [pickerKey, setPickerKey] = useState(0);
+
+  const clearSelection = () => {
+    setSelection(null);
+    setUsed("");
+    setUsage("");
+  };
 
   const submit = () => {
-    if (!invoice || !gross || !desc) {
-      toast.warning("Preencha os campos obrigatórios.");
+    if (!selection) {
+      toast.warning("Busque o CNPJ e selecione um item da nota fiscal.");
+      return;
+    }
+    const net = Number(used);
+    if (!net) {
+      toast.warning("Informe o valor líquido consumido neste projeto.");
+      return;
+    }
+    const consumedSoFar = getItemConsumed(allProjects, selection.item.id);
+    const available = selection.item.totalValue - consumedSoFar;
+    if (net > available) {
+      toast.error("Valor excede o saldo disponível do item", {
+        description: `Disponível: ${brl(available)}.`,
+      });
       return;
     }
     addMaterial(project.id, {
       id: crypto.randomUUID(),
-      supplier: s.name,
-      cnpj: s.cnpj,
-      invoice,
-      grossValue: Number(gross),
-      netValue: Number(net || gross),
-      materialDescription: desc,
+      supplier: selection.invoice.companyName,
+      cnpj: selection.invoice.cnpj,
+      invoice: selection.invoice.invoiceNumber,
+      grossValue: selection.item.totalValue,
+      netValue: net,
+      materialDescription: selection.item.description,
       usageDescription: usage,
+      invoiceId: selection.invoice.id,
+      itemId: selection.item.id,
     });
-    setInvoice("");
-    setGross("");
-    setNet("");
-    setDesc("");
-    setUsage("");
+    clearSelection();
+    setPickerKey((k) => k + 1);
     toast.success("Material adicionado.");
+  };
+
+  const otherProjectsConsumption = (m: Project["materials"][number]) => {
+    if (!m.itemId) return 0;
+    return getItemConsumed(allProjects, m.itemId) - m.netValue;
   };
 
   return (
     <div className="space-y-4">
       {!readOnly && (
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <h4 className="mb-3 text-sm font-semibold">Adicionar material</h4>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Fornecedor</Label>
-              <select
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-              >
-                {MOCK_SUPPLIERS.map((x) => (
-                  <option key={x.cnpj} value={x.name}>
-                    {x.name}
-                  </option>
-                ))}
-              </select>
+        <div className="space-y-3 rounded-lg border border-border bg-surface p-4">
+          <h4 className="text-sm font-semibold">Adicionar material</h4>
+          <InvoiceItemPicker
+            key={pickerKey}
+            onSelect={(invoice, item) => setSelection({ invoice, item })}
+            onClear={clearSelection}
+          />
+          {selection && (
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Valor líquido consumido neste projeto (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={used}
+                  onChange={(e) => setUsed(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Descrição da utilização no projeto</Label>
+                <Input
+                  value={usage}
+                  onChange={(e) => setUsage(e.target.value)}
+                  placeholder="Ex.: Prototipagem de módulo de aquisição de dados"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Button className="gap-2" onClick={submit}>
+                  <Plus className="size-4" /> Adicionar
+                </Button>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>CNPJ</Label>
-              <Input value={s.cnpj} disabled />
-            </div>
-            <div className="space-y-2">
-              <Label>Nota fiscal</Label>
-              <Input value={invoice} onChange={(e) => setInvoice(e.target.value)} />
-            </div>
-            <div className="space-y-2 md:col-span-1">
-              <Label>Valor bruto (R$)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={gross}
-                onChange={(e) => setGross(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Valor líquido (R$)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={net}
-                onChange={(e) => setNet(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label>Descrição do material</Label>
-              <Input
-                value={desc}
-                onChange={(e) => setDesc(e.target.value)}
-                placeholder="Ex.: Placa FPGA modelo XYZ"
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label>Descrição da utilização no projeto</Label>
-              <Input
-                value={usage}
-                onChange={(e) => setUsage(e.target.value)}
-                placeholder="Ex.: Prototipagem de módulo de aquisição de dados"
-              />
-            </div>
-          </div>
-          <div className="mt-3 flex justify-end">
-            <Button className="gap-2" onClick={submit}>
-              <Plus className="size-4" /> Adicionar
-            </Button>
-          </div>
+          )}
         </div>
       )}
 
@@ -484,6 +444,7 @@ function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: bool
               <TableHead>Material</TableHead>
               <TableHead className="text-right">Bruto</TableHead>
               <TableHead className="text-right">Líquido</TableHead>
+              <TableHead className="text-right">Outros projetos</TableHead>
               {!readOnly && <TableHead className="w-10" />}
             </TableRow>
           </TableHeader>
@@ -491,7 +452,7 @@ function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: bool
             {project.materials.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={readOnly ? 5 : 6}
+                  colSpan={readOnly ? 6 : 7}
                   className="h-20 text-center text-sm text-muted-foreground"
                 >
                   Nenhum material cadastrado.
@@ -506,6 +467,9 @@ function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: bool
                 <TableCell className="text-right tabular-nums">{brl(m.grossValue)}</TableCell>
                 <TableCell className="text-right tabular-nums font-medium">
                   {brl(m.netValue)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">
+                  {brl(otherProjectsConsumption(m))}
                 </TableCell>
                 {!readOnly && (
                   <TableCell>
