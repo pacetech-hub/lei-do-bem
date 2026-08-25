@@ -710,7 +710,7 @@ export function ProjectsList({
           <div className="mb-3 flex items-center gap-2">
             <ListChecks className="size-4 text-primary" />
             <h2 className="text-sm font-semibold text-foreground">
-              Projetos que precisam da sua revisão
+              {isRevisor ? "Iniciativas" : "Projetos"} que precisam da sua revisão
             </h2>
             <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold tabular-nums text-primary">
               {priorityRows.length}
@@ -718,7 +718,8 @@ export function ProjectsList({
           </div>
           {priorityRows.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Nenhum projeto aguardando sua revisão no momento.
+              {isRevisor ? "Nenhuma iniciativa" : "Nenhum projeto"} aguardando sua revisão no
+              momento.
             </p>
           ) : (
             <>
@@ -729,8 +730,8 @@ export function ProjectsList({
               </div>
               {priorityRows.length > priorityRowsShown.length && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Mostrando {priorityRowsShown.length} de {priorityRows.length} projetos. Use a
-                  tabela abaixo para ver os demais.
+                  Mostrando {priorityRowsShown.length} de {priorityRows.length}{" "}
+                  {isRevisor ? "iniciativas" : "projetos"}. Use a tabela abaixo para ver os demais.
                 </p>
               )}
             </>
@@ -756,7 +757,7 @@ export function ProjectsList({
                   : "border-transparent opacity-70 hover:opacity-100",
               )}
             >
-              Todos os projetos
+              {isRevisor ? "Todas as iniciativas" : "Todos os projetos"}
               <span className="rounded-full bg-background/70 px-2 py-1 text-xs font-semibold tabular-nums">
                 {totalCount}
               </span>
@@ -828,7 +829,9 @@ export function ProjectsList({
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar por nome do projeto…"
+            placeholder={
+              isRevisor ? "Buscar por nome da iniciativa…" : "Buscar por nome do projeto…"
+            }
             className="h-9 pl-8"
           />
         </div>
@@ -955,7 +958,7 @@ export function ProjectsList({
           </Button>
         )}
         <div className="ml-auto text-xs text-muted-foreground">
-          {shownCount} de {totalCount} projetos
+          {shownCount} de {totalCount} {isRevisor ? "iniciativas" : "projetos"}
         </div>
       </div>
 
@@ -992,7 +995,7 @@ export function ProjectsList({
                         : "w-[30%]"
                 }
               >
-                {isRelator ? "Iniciativa" : "Projeto"}
+                {isRelator || isRevisor ? "Iniciativa" : "Projeto"}
               </TableHead>
               {showReviewCols && <TableHead className="w-[130px] text-left">Status</TableHead>}
               {showReviewCols && <TableHead className="w-[14%]">Relator</TableHead>}
@@ -1018,7 +1021,8 @@ export function ProjectsList({
                       colSpan={colCount}
                       className="h-24 text-center text-sm text-muted-foreground"
                     >
-                      Nenhum projeto encontrado com os filtros atuais.
+                      {isRevisor ? "Nenhuma iniciativa encontrada" : "Nenhum projeto encontrado"}{" "}
+                      com os filtros atuais.
                     </TableCell>
                   </TableRow>
                 )}

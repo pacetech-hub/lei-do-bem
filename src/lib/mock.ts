@@ -315,6 +315,32 @@ function fullAnswers(): Record<string, string> {
   return map;
 }
 
+// Textos variados para simular respostas "aleatórias" em projetos que já
+// deveriam estar com a ficha completa (Pronto, Submetido, Aprovado,
+// Indeferido). Não usa Math.random(): este módulo roda tanto no servidor
+// quanto no cliente, e um valor diferente a cada avaliação causaria
+// "hydration mismatch" — o seed escolhe determinísticamente dentro do pool.
+const RANDOM_ANSWER_POOL = [
+  "A iniciativa consolida um conjunto de estudos técnicos conduzidos internamente, com testes de bancada que validaram as hipóteses iniciais e orientaram os ajustes de escopo ao longo do desenvolvimento.",
+  "O time avaliou soluções disponíveis no mercado antes de decidir pelo desenvolvimento próprio, já que nenhuma alternativa atendia às restrições operacionais e de integração exigidas pela planta.",
+  "Foram realizados ciclos iterativos de prototipagem, com medições comparativas entre a abordagem anterior e a nova solução, documentando ganhos de desempenho e pontos de atenção remanescentes.",
+  "A equipe multidisciplinar reuniu competências de engenharia, dados e operação para mapear os requisitos técnicos, priorizando entregas que reduzissem risco tecnológico nas etapas seguintes.",
+  "O desenvolvimento exigiu adaptação de processos já existentes, com testes de integração em ambiente controlado antes da validação em escala real junto às áreas envolvidas.",
+  "Os resultados obtidos até o momento indicam ganhos consistentes frente à linha de base, ainda que alguns parâmetros continuem sendo monitorados para garantir estabilidade em produção.",
+  "A metodologia adotada seguiu ciclos curtos de experimentação, com revisões periódicas de escopo e registro sistemático das decisões técnicas tomadas em cada etapa.",
+  "Entre as principais dificuldades enfrentadas está a escassez de referências técnicas específicas para o contexto da empresa, o que exigiu validação experimental própria.",
+  "O conhecimento gerado ao longo do projeto já vem sendo incorporado a outras iniciativas da área, servindo como base técnica para desdobramentos futuros.",
+  "A avaliação de riscos identificou pontos críticos relacionados à integração com sistemas legados, mitigados por meio de testes incrementais e planos de contingência.",
+];
+
+function randomAnswers(seed: number): Record<string, string> {
+  const map: Record<string, string> = {};
+  ALL_REQUIRED_QUESTIONS.forEach((id, idx) => {
+    map[id] = RANDOM_ANSWER_POOL[(seed + idx) % RANDOM_ANSWER_POOL.length];
+  });
+  return map;
+}
+
 // --- Notas fiscais compartilhadas entre projetos (Despesas — Etapa 6) -----
 // Registradas uma vez (busca por CNPJ ou leitura da chave de acesso) e
 // reutilizáveis por qualquer projeto do Responsável Financeiro. O quanto já
@@ -513,6 +539,80 @@ for (let i = 0; i < EXTRA_NAMES.length; i++) {
     }),
   );
 }
+
+// Projetos "Pronto"/"Submetido" já concluíram o preenchimento da ficha do
+// Relator — completa a resposta de todas as perguntas obrigatórias (100%
+// preenchido) sempre que ainda estiverem vazias.
+INITIAL_PROJECTS.forEach((p, idx) => {
+  if ((p.status === "pronto" || p.status === "submetido") && Object.keys(p.answers).length === 0) {
+    p.answers = randomAnswers(idx);
+  }
+});
+
+// Iniciativas concluídas em 2025 — já com desfecho final do Jurídico
+// (Aprovada ou Indeferida; nenhum outro status aparece para elas). Datas
+// fixas em ISO (não daysAgo/daysFromNow, que são relativas a "hoje") para
+// que o ano de 2025 apareça de forma estável no filtro de Ano do Revisor.
+INITIAL_PROJECTS.push(
+  emptyProject({
+    name: "Sistema de Empacotamento Automatizado com Visão 3D",
+    filial: RELATOR_FILIAL,
+    area: RELATOR_SETOR,
+    responsible: "Beatriz Lima",
+    status: "aprovado",
+    natureza: "produto",
+    atividade: "experimental",
+    hasPatent: true,
+    patentNumber: "BR102025000456-1",
+    createdAt: "2025-01-20T09:00:00.000Z",
+    startDate: "2025-01-20T09:00:00.000Z",
+    endDate: "2025-06-30T18:00:00.000Z",
+    updatedAt: "2025-07-08T14:30:00.000Z",
+    answers: randomAnswers(101),
+  }),
+  emptyProject({
+    name: "Liga Metálica de Baixo Custo para Componentes Estruturais",
+    filial: "Filial Campinas/SP",
+    area: "Automação",
+    responsible: "Carlos Silva",
+    status: "aprovado",
+    natureza: "processo",
+    atividade: "aplicada",
+    createdAt: "2025-03-05T09:00:00.000Z",
+    startDate: "2025-03-05T09:00:00.000Z",
+    endDate: "2025-09-15T18:00:00.000Z",
+    updatedAt: "2025-10-02T11:00:00.000Z",
+    answers: randomAnswers(102),
+  }),
+  emptyProject({
+    name: "Sistema de Climatização Inteligente por Zonas",
+    filial: RELATOR_FILIAL,
+    area: RELATOR_SETOR,
+    responsible: "Mariana Costa",
+    status: "indeferido",
+    natureza: "servico",
+    atividade: "basica",
+    createdAt: "2025-02-10T09:00:00.000Z",
+    startDate: "2025-02-10T09:00:00.000Z",
+    endDate: "2025-05-30T18:00:00.000Z",
+    updatedAt: "2025-06-18T16:00:00.000Z",
+    answers: randomAnswers(103),
+  }),
+  emptyProject({
+    name: "Plataforma de Recomendação para Manutenção de Frota",
+    filial: "Filial Porto Alegre/RS",
+    area: "Engenharia de Produto",
+    responsible: "João Silva",
+    status: "indeferido",
+    natureza: "produto",
+    atividade: "experimental",
+    createdAt: "2025-08-01T09:00:00.000Z",
+    startDate: "2025-08-01T09:00:00.000Z",
+    endDate: "2025-11-20T18:00:00.000Z",
+    updatedAt: "2025-12-05T10:00:00.000Z",
+    answers: randomAnswers(104),
+  }),
+);
 
 // --- Ciclo do Jurídico ---------------------------------------------------
 // A partir do momento em que o Revisor aprova e encaminha (status "pronto"),
