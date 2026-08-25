@@ -1,7 +1,5 @@
-import { useMemo } from "react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
-import { MasterProjectView } from "@/components/master-project-view";
 import { ProjectFicha } from "@/components/project-ficha";
 import { useProjectsStore } from "@/lib/store";
 
@@ -19,23 +17,12 @@ export const Route = createFileRoute("/revisor/projetos/$id")({
 function RevisorProjetoPage() {
   const { id } = Route.useParams();
   const project = useProjectsStore((s) => s.projects.find((p) => p.id === id));
-  const allProjects = useProjectsStore((s) => s.projects);
 
-  if (!project) {
+  // O conceito de Projeto Mestre/Dependente não existe para o Revisor — ele
+  // nunca acessa um projeto mestre, então essa URL simplesmente não existe.
+  if (!project || project.projectType === "mestre") {
     throw notFound();
   }
 
-  const dependents = useMemo(
-    () => allProjects.filter((p) => p.masterProjectId === project.id),
-    [allProjects, project],
-  );
-  const masterProject = project.masterProjectId
-    ? allProjects.find((p) => p.id === project.masterProjectId)
-    : undefined;
-
-  if (project.projectType === "mestre") {
-    return <MasterProjectView project={project} dependents={dependents} mode="revisor" />;
-  }
-
-  return <ProjectFicha project={project} mode="revisor" masterProject={masterProject} />;
+  return <ProjectFicha project={project} mode="revisor" />;
 }

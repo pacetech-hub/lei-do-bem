@@ -128,7 +128,9 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       : isJuridico
         ? "/juridico/projetos/$id"
         : "/projetos/$id";
-  const canReview = isRevisor && project.status === "revisao";
+  // Rascunho também é revisável: o Revisor deve poder solicitar ajustes ou
+  // aprovar mesmo antes do envio formal para revisão pelo Relator.
+  const canReview = isRevisor && (project.status === "revisao" || project.status === "rascunho");
   const canDecideJuridico = isJuridico && project.legalStatus === "aguardando_juridico";
   const fieldMode: FieldMode =
     isFinanceiro || isJuridico
@@ -534,7 +536,10 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 </div>
               )}
 
-              {project.projectType === "dependente" && (
+              {/* Para o Revisor, o conceito de Projeto Mestre/Dependente não existe:
+                  ele nunca acessa um projeto mestre e não deve ver nenhuma referência
+                  a agrupamento na ficha de um projeto dependente. */}
+              {!isRevisor && project.projectType === "dependente" && (
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                     <GitFork className="size-3.5" /> Projeto Dependente
