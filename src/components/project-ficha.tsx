@@ -110,10 +110,9 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const isRevisor = mode === "revisor";
   const isFinanceiro = mode === "financeiro";
   const isJuridico = mode === "juridico";
-  // Compartilhar uma iniciativa com outra área é permitido tanto para quem a
-  // criou (Relator) quanto para o Revisor que percebe que ela pertence a
-  // outra área — mesmo conceito e mesmos campos nos dois casos.
-  const canShare = isRevisor || isRelator;
+  // Compartilhar uma iniciativa com outra área é uma decisão do Revisor, que
+  // percebe que ela pertence a outra área — o Relator não tem essa opção.
+  const canShare = isRevisor;
   // Candidatos a "Relator responsável" no aceite: quem já é responsável por
   // algum projeto na área de destino, sem repetição.
   const candidateRelators = useMemo(() => {
