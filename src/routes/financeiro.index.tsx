@@ -5,8 +5,11 @@ import { ProjectsList } from "@/components/projects-list";
 export const Route = createFileRoute("/financeiro/")({
   head: () => ({
     meta: [
-      { title: "Projetos — Financeiro | Lei do Bem" },
-      { name: "description", content: "Acompanhamento financeiro dos projetos do seu setor." },
+      { title: "Iniciativas — Financeiro | Lei do Bem" },
+      {
+        name: "description",
+        content: "Acompanhamento financeiro das iniciativas da sua Diretoria.",
+      },
     ],
   }),
   component: FinanceiroPage,
@@ -17,8 +20,8 @@ function FinanceiroPage() {
     <div className="min-h-screen bg-background">
       <AppHeader current="Financeiro" role="financeiro" />
       <ProjectsList
-        title="Meus Projetos"
-        description="Acompanhe as despesas dos projetos do seu setor."
+        title="Minhas Iniciativas"
+        description="Acompanhe as despesas das iniciativas da sua Diretoria."
         scopedFilial="Matriz — São Paulo/SP"
         scopedSetor="Pesquisa & Desenvolvimento"
         variant="financeiro"

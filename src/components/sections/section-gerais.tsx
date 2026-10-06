@@ -138,7 +138,7 @@ export function SectionGerais({
       return;
     }
     if (!form.area) {
-      toast.error("Selecione a Diretoria do projeto.");
+      toast.error("Selecione a Diretoria da iniciativa.");
       return;
     }
     if (!form.startDate || !form.endDate) {
@@ -176,7 +176,7 @@ export function SectionGerais({
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Informações Gerais</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Dados de identificação do projeto informados na criação.
+            Dados de identificação da iniciativa informados na criação.
           </p>
         </div>
         {mode === "locked" ? null : !editing ? (
@@ -197,7 +197,7 @@ export function SectionGerais({
 
       {!editing ? (
         <dl className="rounded-lg border border-border bg-surface px-5">
-          <Row label="Nome do projeto" value={project.name} flag={flagFor("name")} />
+          <Row label="Nome da iniciativa" value={project.name} flag={flagFor("name")} />
           <Row label="Diretoria" value={project.area} flag={flagFor("area")} />
           <Row label="Responsável" value={project.responsible} flag={flagFor("responsible")} />
           <Row
@@ -223,7 +223,7 @@ export function SectionGerais({
         <div className="space-y-5 rounded-lg border border-border bg-surface p-5">
           <div className="space-y-2">
             <Label htmlFor="ge-name">
-              Nome do projeto <span className="text-primary">*</span>
+              Nome da iniciativa <span className="text-primary">*</span>
             </Label>
             <Input
               id="ge-name"

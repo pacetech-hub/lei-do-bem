@@ -4,7 +4,6 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { AppHeader } from "@/components/app-header";
-import { EditGroupingDialog } from "@/components/create-grouping-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -22,7 +21,7 @@ import { STATUS_LABEL, type Project } from "@/lib/types";
 interface MasterProjectViewProps {
   project: Project;
   dependents: Project[];
-  mode?: "relator" | "revisor" | "financeiro" | "juridico";
+  mode?: "relator" | "revisor" | "financeiro";
 }
 
 export function MasterProjectView({
@@ -33,14 +32,11 @@ export function MasterProjectView({
   const navigate = useNavigate();
   const isRevisor = mode === "revisor";
   const isFinanceiro = mode === "financeiro";
-  const isJuridico = mode === "juridico";
   const fichaRoute = isRevisor
     ? "/revisor/projetos/$id"
     : isFinanceiro
       ? "/financeiro/projetos/$id"
-      : isJuridico
-        ? "/juridico/projetos/$id"
-        : "/projetos/$id";
+      : "/projetos/$id";
 
   const statusSummary = summarizeDependentStatuses(dependents);
   const overallProgress = dependents.length
@@ -59,7 +55,7 @@ export function MasterProjectView({
             <FolderTree className="size-3.5" /> Mestre
           </span>
           <span>
-            {dependents.length} projeto{dependents.length === 1 ? "" : "s"} dependente
+            {dependents.length} iniciativa{dependents.length === 1 ? "" : "s"} dependente
             {dependents.length === 1 ? "" : "s"}
           </span>
         </div>
@@ -71,10 +67,9 @@ export function MasterProjectView({
               {project.area} · Responsável: {project.responsible}
             </p>
           </div>
-          {isJuridico && <EditGroupingDialog master={project} />}
         </div>
 
-        {/* Informações do Projeto Mestre */}
+        {/* Informações da Iniciativa Mestre */}
         <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-lg border border-border bg-surface p-4">
             <div className="text-xs text-muted-foreground">Status geral</div>
@@ -97,7 +92,7 @@ export function MasterProjectView({
             </div>
             {hasAjustes && (
               <p className="mt-2 text-xs font-medium text-status-adjust-fg">
-                Há projetos dependentes com ajuste solicitado
+                Há iniciativas dependentes com ajuste solicitado
               </p>
             )}
           </div>
@@ -113,7 +108,7 @@ export function MasterProjectView({
           </div>
 
           <div className="rounded-lg border border-border bg-surface p-4">
-            <div className="text-xs text-muted-foreground">Projetos dependentes</div>
+            <div className="text-xs text-muted-foreground">Iniciativas dependentes</div>
             <div className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
               {dependents.length}
             </div>
@@ -128,9 +123,9 @@ export function MasterProjectView({
           </div>
         </div>
 
-        {/* Projetos Dependentes */}
+        {/* Iniciativas Dependentes */}
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">Projetos Dependentes</h2>
+          <h2 className="text-sm font-semibold text-foreground">Iniciativas Dependentes</h2>
         </div>
 
         <div className="overflow-hidden rounded-lg border border-border bg-surface">
@@ -138,7 +133,7 @@ export function MasterProjectView({
             <TableHeader>
               <TableRow className="bg-surface-muted hover:bg-surface-muted">
                 <TableHead className="w-[130px]">Trimestre</TableHead>
-                <TableHead className="w-[80%]">Projeto</TableHead>
+                <TableHead className="w-[80%]">Iniciativa</TableHead>
                 <TableHead className="w-[160px] text-left">Status</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
@@ -147,7 +142,7 @@ export function MasterProjectView({
               {dependents.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center text-sm text-muted-foreground">
-                    Nenhum projeto dependente ainda.
+                    Nenhuma iniciativa dependente ainda.
                   </TableCell>
                 </TableRow>
               )}
@@ -186,22 +181,8 @@ export function MasterProjectView({
 
         <div className="mt-6">
           <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-            <Link
-              to={
-                isRevisor
-                  ? "/revisor"
-                  : isFinanceiro
-                    ? "/financeiro"
-                    : isJuridico
-                      ? "/juridico"
-                      : "/dashboard"
-              }
-            >
-              {isRevisor
-                ? "Voltar para Revisão de Projetos"
-                : isJuridico
-                  ? "Voltar para a Central Jurídica"
-                  : "Voltar para Meus Projetos"}
+            <Link to={isRevisor ? "/revisor" : isFinanceiro ? "/financeiro" : "/dashboard"}>
+              {isRevisor ? "Voltar para Revisão de Iniciativas" : "Voltar para Minhas Iniciativas"}
             </Link>
           </Button>
         </div>

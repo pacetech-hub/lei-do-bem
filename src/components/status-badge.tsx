@@ -5,10 +5,7 @@ export const STATUS_BADGE_CLASS: Record<ProjectStatus, string> = {
   rascunho: "bg-status-draft text-status-draft-fg",
   ajustes: "bg-status-adjust text-status-adjust-fg",
   revisao: "bg-status-review text-status-review-fg",
-  pronto: "bg-status-ready text-status-ready-fg",
-  submetido: "bg-status-submitted text-status-submitted-fg",
-  aprovado: "bg-status-approved text-status-approved-fg",
-  indeferido: "bg-status-rejected text-status-rejected-fg",
+  enviado_controladoria: "bg-status-ready text-status-ready-fg",
 };
 
 export function StatusBadge({ status, className }: { status: ProjectStatus; className?: string }) {

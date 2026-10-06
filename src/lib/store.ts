@@ -2,28 +2,27 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type {
   Attachment,
+  DespesaAdjustmentItem,
   EmployeeExpense,
-  FinalProject,
   Invoice,
+  JobRole,
   MaterialExpense,
-  MctiParecer,
-  MctiParecerResult,
   Project,
   ProjectStatus,
+  QuestionRecord,
+  ResourceEntry,
   ThirdPartyExpense,
 } from "./types";
-import {
-  INITIAL_PROJECTS,
-  INITIAL_PARECERES,
-  INITIAL_FINAL_PROJECTS,
-  INITIAL_INVOICES,
-} from "./mock";
+import { INITIAL_PROJECTS, INITIAL_INVOICES, INITIAL_JOB_ROLES, INITIAL_QUESTIONS } from "./mock";
 
 interface ProjectsState {
   projects: Project[];
-  pareceres: MctiParecer[];
-  finalProjects: FinalProject[];
   invoices: Invoice[];
+  // Configuração Geral — cadastros básicos (ver types.ts para o motivo de
+  // ainda não integrarem com a ficha/cálculo de despesas).
+  questions: QuestionRecord[];
+  jobRoles: JobRole[];
+  researcherCodes: string[];
   createProject: (
     p: Omit<
       Project,
@@ -36,19 +35,10 @@ interface ProjectsState {
       | "employees"
       | "thirdParties"
       | "materials"
+      | "resources"
     >,
   ) => string;
   updateProject: (id: string, patch: Partial<Project>) => void;
-  createFinalProject: (
-    p: Omit<FinalProject, "id" | "createdAt" | "updatedAt" | "status">,
-  ) => string;
-  updateFinalProject: (id: string, patch: Partial<FinalProject>) => void;
-  addParecer: (p: MctiParecer) => void;
-  updateParecerResult: (
-    parecerId: string,
-    projectId: string,
-    patch: Partial<MctiParecerResult>,
-  ) => void;
   setAnswer: (id: string, questionId: string, value: string) => void;
   addAttachment: (id: string, bucket: string, att: Attachment) => void;
   removeAttachment: (id: string, bucket: string, attId: string) => void;
@@ -62,6 +52,21 @@ interface ProjectsState {
   // Nota fiscal compartilhada entre projetos (busca por CNPJ ou leitura de
   // chave) — registrada uma vez, reutilizável por qualquer projeto.
   addInvoice: (inv: Omit<Invoice, "id" | "createdAt">) => string;
+  // Recursos (profissionais/terceiros) cadastrados pelo Relator na iniciativa.
+  addResource: (id: string, r: ResourceEntry) => void;
+  updateResource: (id: string, rid: string, patch: Partial<ResourceEntry>) => void;
+  removeResource: (id: string, rid: string) => void;
+  // Ajuste do Revisor sobre uma despesa específica, devolvida ao Financeiro.
+  addDespesaAdjustment: (id: string, item: DespesaAdjustmentItem) => void;
+  resolveDespesaAdjustment: (id: string, adjustmentId: string) => void;
+  // Configuração Geral
+  addQuestion: (q: QuestionRecord) => void;
+  updateQuestion: (id: string, patch: Partial<QuestionRecord>) => void;
+  removeQuestion: (id: string) => void;
+  addJobRole: (r: JobRole) => void;
+  updateJobRole: (id: string, patch: Partial<JobRole>) => void;
+  removeJobRole: (id: string) => void;
+  setResearcher: (code: string, isResearcher: boolean) => void;
 }
 
 const nowIso = () => new Date().toISOString();
@@ -70,47 +75,16 @@ export const useProjectsStore = create<ProjectsState>()(
   persist(
     (set) => ({
       projects: INITIAL_PROJECTS,
-      pareceres: INITIAL_PARECERES,
-      finalProjects: INITIAL_FINAL_PROJECTS,
       invoices: INITIAL_INVOICES,
+      questions: INITIAL_QUESTIONS,
+      jobRoles: INITIAL_JOB_ROLES,
+      researcherCodes: [],
       addInvoice: (inv) => {
         const id = crypto.randomUUID();
         const invoice: Invoice = { ...inv, id, createdAt: nowIso() };
         set((s) => ({ invoices: [invoice, ...s.invoices] }));
         return id;
       },
-      createFinalProject: (p) => {
-        const id = crypto.randomUUID();
-        const finalProject: FinalProject = {
-          ...p,
-          id,
-          status: "rascunho",
-          createdAt: nowIso(),
-          updatedAt: nowIso(),
-        };
-        set((s) => ({ finalProjects: [finalProject, ...s.finalProjects] }));
-        return id;
-      },
-      updateFinalProject: (id, patch) =>
-        set((s) => ({
-          finalProjects: s.finalProjects.map((f) =>
-            f.id === id ? { ...f, ...patch, updatedAt: nowIso() } : f,
-          ),
-        })),
-      addParecer: (p) => set((s) => ({ pareceres: [p, ...s.pareceres] })),
-      updateParecerResult: (parecerId, projectId, patch) =>
-        set((s) => ({
-          pareceres: s.pareceres.map((parecer) =>
-            parecer.id === parecerId
-              ? {
-                  ...parecer,
-                  results: parecer.results.map((r) =>
-                    r.projectId === projectId ? { ...r, ...patch } : r,
-                  ),
-                }
-              : parecer,
-          ),
-        })),
       createProject: (p) => {
         const id = crypto.randomUUID();
         const project: Project = {
@@ -124,6 +98,7 @@ export const useProjectsStore = create<ProjectsState>()(
           employees: [],
           thirdParties: [],
           materials: [],
+          resources: [],
         };
         set((s) => ({ projects: [project, ...s.projects] }));
         return id;
@@ -224,9 +199,79 @@ export const useProjectsStore = create<ProjectsState>()(
             p.id === id ? { ...p, status, updatedAt: nowIso() } : p,
           ),
         })),
+      addResource: (id, r) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === id ? { ...p, resources: [...p.resources, r], updatedAt: nowIso() } : p,
+          ),
+        })),
+      updateResource: (id, rid, patch) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  resources: p.resources.map((r) => (r.id === rid ? { ...r, ...patch } : r)),
+                  updatedAt: nowIso(),
+                }
+              : p,
+          ),
+        })),
+      removeResource: (id, rid) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === id
+              ? { ...p, resources: p.resources.filter((r) => r.id !== rid), updatedAt: nowIso() }
+              : p,
+          ),
+        })),
+      addDespesaAdjustment: (id, item) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  despesaAdjustments: [...(p.despesaAdjustments ?? []), item],
+                  updatedAt: nowIso(),
+                }
+              : p,
+          ),
+        })),
+      resolveDespesaAdjustment: (id, adjustmentId) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  despesaAdjustments: (p.despesaAdjustments ?? []).filter(
+                    (a) => a.id !== adjustmentId,
+                  ),
+                  updatedAt: nowIso(),
+                }
+              : p,
+          ),
+        })),
+      addQuestion: (q) => set((s) => ({ questions: [...s.questions, q] })),
+      updateQuestion: (id, patch) =>
+        set((s) => ({
+          questions: s.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)),
+        })),
+      removeQuestion: (id) => set((s) => ({ questions: s.questions.filter((q) => q.id !== id) })),
+      addJobRole: (r) => set((s) => ({ jobRoles: [...s.jobRoles, r] })),
+      updateJobRole: (id, patch) =>
+        set((s) => ({
+          jobRoles: s.jobRoles.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+        })),
+      removeJobRole: (id) => set((s) => ({ jobRoles: s.jobRoles.filter((r) => r.id !== id) })),
+      setResearcher: (code, isResearcher) =>
+        set((s) => ({
+          researcherCodes: isResearcher
+            ? Array.from(new Set([...s.researcherCodes, code]))
+            : s.researcherCodes.filter((c) => c !== code),
+        })),
     }),
     {
-      name: "leidobem-projects-v3",
+      name: "leidobem-projects-v4",
       // Hydration on client only
       skipHydration: false,
     },

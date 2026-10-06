@@ -8,8 +8,8 @@ import { useProjectsStore } from "@/lib/store";
 export const Route = createFileRoute("/projetos/$id")({
   head: ({ params }) => ({
     meta: [
-      { title: `Projeto ${params.id.slice(0, 6)} — Lei do Bem` },
-      { name: "description", content: "Ficha técnica do projeto de inovação." },
+      { title: `Iniciativa ${params.id.slice(0, 6)} — Lei do Bem` },
+      { name: "description", content: "Ficha técnica da iniciativa de inovação." },
       { name: "robots", content: "noindex" },
     ],
   }),

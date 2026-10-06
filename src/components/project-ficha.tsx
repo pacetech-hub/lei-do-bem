@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   ClipboardList,
-  Pencil,
   Plus,
   Save,
   Send,
@@ -51,7 +50,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useProjectsStore } from "@/lib/store";
-import { FILIAIS, getFilial, quarterLabel, ProjetoFinalTag } from "@/components/projects-list";
+import { FILIAIS, getFilial, quarterLabel } from "@/components/projects-list";
 import { REVISOR_NAMES } from "@/lib/mock";
 import {
   ALL_REQUIRED_QUESTIONS,
@@ -69,24 +68,23 @@ import {
 } from "@/lib/types";
 import { ProjectTagsInline } from "@/components/sections/section-revisao";
 
-import { JuridicoProcessPanel } from "@/components/juridico-process-panel";
 import { SectionGerais } from "@/components/sections/section-gerais";
 import { SectionQuestions } from "@/components/sections/section-questions";
 import { SectionEvidencias } from "@/components/sections/section-evidencias";
 import { SectionDespesas } from "@/components/sections/section-despesas";
+import { SectionRecursos } from "@/components/sections/section-recursos";
 import { SectionRevisao } from "@/components/sections/section-revisao";
 import type { FieldMode } from "@/components/question-field";
 
 interface ProjectFichaProps {
   project: Project;
-  mode: "relator" | "revisor" | "financeiro" | "juridico";
+  mode: "relator" | "revisor" | "financeiro";
   masterProject?: Project;
 }
 
 export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps) {
   const navigate = useNavigate();
   const updateProject = useProjectsStore((s) => s.updateProject);
-  const finalProjects = useProjectsStore((s) => s.finalProjects);
   const allProjects = useProjectsStore((s) => s.projects);
   const [section, setSection] = useState<SectionKey>("gerais");
   const [adjustOpen, setAdjustOpen] = useState(false);
@@ -102,20 +100,16 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const [acceptRelator, setAcceptRelator] = useState("");
   const [declineShareOpen, setDeclineShareOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
-  const [juridicoAdjustOpen, setJuridicoAdjustOpen] = useState(false);
-  const [juridicoAdjustNote, setJuridicoAdjustNote] = useState("");
-  const [juridicoApproveOpen, setJuridicoApproveOpen] = useState(false);
 
   const isRelator = mode === "relator";
   const isRevisor = mode === "revisor";
   const isFinanceiro = mode === "financeiro";
-  const isJuridico = mode === "juridico";
   // Compartilhar uma iniciativa com outra Diretoria é uma decisão do Revisor,
   // que percebe que ela pertence a outra Diretoria — o Relator não tem essa
   // opção.
   const canShare = isRevisor;
   // Candidatos a "Relator responsável" no aceite: quem já é responsável por
-  // algum projeto na Diretoria de destino, sem repetição.
+  // alguma iniciativa na Diretoria de destino, sem repetição.
   const candidateRelators = useMemo(() => {
     const inTargetArea = allProjects.filter((p: Project) => p.area === project.sharedSetor);
     const pool = inTargetArea.length > 0 ? inTargetArea : allProjects;
@@ -125,21 +119,17 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
     ? "/revisor/projetos/$id"
     : isFinanceiro
       ? "/financeiro/projetos/$id"
-      : isJuridico
-        ? "/juridico/projetos/$id"
-        : "/projetos/$id";
+      : "/projetos/$id";
   // Rascunho também é revisável: o Revisor deve poder solicitar ajustes ou
   // aprovar mesmo antes do envio formal para revisão pelo Relator.
   const canReview = isRevisor && (project.status === "revisao" || project.status === "rascunho");
-  const canDecideJuridico = isJuridico && project.legalStatus === "aguardando_juridico";
-  const fieldMode: FieldMode =
-    isFinanceiro || isJuridico
-      ? "locked"
-      : isRevisor
-        ? canReview
-          ? "review"
-          : "locked"
-        : "editable";
+  const fieldMode: FieldMode = isFinanceiro
+    ? "locked"
+    : isRevisor
+      ? canReview
+        ? "review"
+        : "locked"
+      : "editable";
   // O Relator não lança despesas (isso é do Responsável Financeiro) — a
   // etapa nem aparece na navegação dele, renumerando as demais etapas.
   const visibleSections = isRelator ? SECTIONS.filter((s) => s.key !== "despesas") : SECTIONS;
@@ -247,7 +237,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       draftAdjustmentItems: [],
       lastAdjustmentNote: undefined,
     });
-    toast.success("Projeto enviado para revisão");
+    toast.success("Iniciativa enviada para revisão");
   };
 
   const resetAdjustPicker = () => {
@@ -312,7 +302,9 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
         )
         .join("\n"),
     });
-    toast.success("Ajustes solicitados", { description: "O projeto foi devolvido ao Relator." });
+    toast.success("Ajustes solicitados", {
+      description: "A iniciativa foi devolvida ao Relator.",
+    });
     setAdjustOpen(false);
     resetAdjustPicker();
     navigate({ to: "/revisor" });
@@ -320,40 +312,14 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
   const handleApprove = () => {
     updateProject(project.id, {
-      status: "pronto",
-      legalStatus: "aguardando_juridico",
+      status: "enviado_controladoria",
       reviewedBy: ROLE_USERS.revisor.name,
       reviewedAt: new Date().toISOString(),
       draftAdjustmentItems: [],
     });
-    toast.success("Projeto encaminhado ao Jurídico");
+    toast.success("Iniciativa encaminhada para a Controladoria");
     setApproveOpen(false);
     navigate({ to: "/revisor" });
-  };
-
-  const handleJuridicoRequestAdjustment = () => {
-    if (!juridicoAdjustNote.trim()) {
-      toast.error("Descreva o motivo do ajuste.");
-      return;
-    }
-    updateProject(project.id, {
-      status: "ajustes",
-      legalStatus: undefined,
-      lastAdjustmentNote: juridicoAdjustNote.trim(),
-    });
-    toast.success("Ajustes solicitados", { description: "O projeto retornou para o Relator." });
-    setJuridicoAdjustOpen(false);
-    setJuridicoAdjustNote("");
-    navigate({ to: "/juridico" });
-  };
-
-  const handleJuridicoApproveForFinal = () => {
-    updateProject(project.id, { legalStatus: "pronto_submissao" });
-    toast.success("Projeto aprovado", {
-      description: "Disponível para consolidação em um Projeto Final.",
-    });
-    setJuridicoApproveOpen(false);
-    navigate({ to: "/juridico" });
   };
 
   const handleShare = () => {
@@ -369,8 +335,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       sharedReviewer: shareReviewer,
       sharedStatus: "pendente",
     });
-    toast.success("Projeto compartilhado", {
-      description: `Compartilhado com ${shareSetor} — ${shareReviewer}.`,
+    toast.success("Iniciativa compartilhada", {
+      description: `Compartilhada com ${shareSetor} — ${shareReviewer}.`,
     });
     setShareOpen(false);
     setShareFilial("");
@@ -395,7 +361,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       sharedDeclineReason: undefined,
     });
     toast.success("Compartilhamento aceito", {
-      description: `${acceptRelator} agora é responsável pelo projeto, que segue o fluxo normal de revisão.`,
+      description: `${acceptRelator} agora é responsável pela iniciativa, que segue o fluxo normal de revisão.`,
     });
     setAcceptShareOpen(false);
     setAcceptRelator("");
@@ -412,7 +378,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       sharedDeclineReason: declineReason.trim(),
     });
     toast.success("Compartilhamento recusado", {
-      description: "O projeto foi devolvido à Diretoria de origem com a justificativa informada.",
+      description:
+        "A iniciativa foi devolvida à Diretoria de origem com a justificativa informada.",
     });
     setDeclineShareOpen(false);
     setDeclineReason("");
@@ -479,7 +446,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                     className="h-7 shrink-0 gap-2 text-xs"
                     onClick={() => setShareOpen(true)}
                   >
-                    <Share2 className="size-3.5" /> Compartilhar projeto
+                    <Share2 className="size-3.5" /> Compartilhar iniciativa
                   </Button>
                 </div>
               )}
@@ -489,7 +456,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                   <div className="flex items-start gap-2 text-sm text-foreground">
                     <Share2 className="mt-1 size-4 shrink-0 text-primary" />
                     <span>
-                      Este projeto foi compartilhado com{" "}
+                      Esta iniciativa foi compartilhada com{" "}
                       <span className="font-medium">{project.sharedSetor}</span>
                       {project.sharedFilial && <> · {project.sharedFilial}</>}. Você pode aceitar ou
                       recusar a revisão.
@@ -519,7 +486,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                       {project.sharedSetor && (
                         <>
                           <span className="font-medium">{project.sharedSetor}</span> recusou a
-                          revisão deste projeto.{" "}
+                          revisão desta iniciativa.{" "}
                         </>
                       )}
                       Motivo: {project.sharedDeclineReason}
@@ -536,18 +503,15 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 </div>
               )}
 
-              {/* Para o Revisor, o conceito de Projeto Mestre/Dependente não existe:
-                  ele nunca acessa um projeto mestre e não deve ver nenhuma referência
-                  a agrupamento na ficha de um projeto dependente. */}
               {!isRevisor && project.projectType === "dependente" && (
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                    <GitFork className="size-3.5" /> Projeto Dependente
+                    <GitFork className="size-3.5" /> Iniciativa Dependente
                   </span>
                   {masterProject && (
                     <>
                       <span className="text-xs text-muted-foreground">
-                        Projeto Mestre:{" "}
+                        Iniciativa Mestre:{" "}
                         <span className="font-medium text-foreground">{masterProject.name}</span>
                       </span>
                       <Link
@@ -555,7 +519,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                         params={{ id: masterProject.id }}
                         className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        <ArrowLeft className="size-3.5" /> Voltar para Projeto Mestre
+                        <ArrowLeft className="size-3.5" /> Voltar para Iniciativa Mestre
                       </Link>
                     </>
                   )}
@@ -566,9 +530,6 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <StatusBadge status={project.status} />
-                    {isJuridico && finalProjects.some((f) => f.projectIds.includes(project.id)) && (
-                      <ProjetoFinalTag />
-                    )}
                     <ProjectTagsInline tags={project.tags} />
                   </div>
                   <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">
@@ -603,8 +564,6 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
           {/* Section body */}
           <div className="px-6 py-8 lg:px-10">
-            {isJuridico && <JuridicoProcessPanel project={project} />}
-
             {isRevisor && canReview && draftItems.length > 0 && (
               <div className="mb-8 rounded-lg border border-primary/20 bg-primary/5 p-5">
                 <div className="mb-3 flex items-center gap-2">
@@ -708,7 +667,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
               <SectionQuestions
                 project={project}
                 title="Elemento Tecnologicamente Novo ou Inovador"
-                description="Descreva com riqueza de detalhes a novidade tecnológica do projeto, seus objetivos e o cenário que motivou o desenvolvimento."
+                description="Descreva com riqueza de detalhes a novidade tecnológica da iniciativa, seus objetivos e o cenário que motivou o desenvolvimento."
                 questions={QUESTIONS_INOVADOR}
                 pendingItems={pendingBySection.get("inovador")}
                 mode={fieldMode}
@@ -760,7 +719,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                         <CloudUpload className="size-4 text-primary" /> Upload de cronograma
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Anexe o cronograma consolidado do projeto (PDF, XLSX ou imagem).
+                        Anexe o cronograma consolidado da iniciativa (PDF, XLSX ou imagem).
                       </p>
                     </div>
                   )
@@ -774,11 +733,13 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 readOnly={fieldMode === "locked"}
               />
             )}
+            {section === "recursos" && <SectionRecursos project={project} readOnly={!isRelator} />}
             {section === "despesas" && (
               <SectionDespesas
                 project={project}
                 pendingItems={generalPendingItems("despesas")}
                 readOnly={!isFinanceiro}
+                canRequestAdjustment={isRevisor}
               />
             )}
             {section === "revisao" && (
@@ -825,7 +786,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                       disabled={!canReview}
                       onClick={() => setApproveOpen(true)}
                     >
-                      <CheckCircle2 className="size-4" /> Aprovar e enviar para o Jurídico
+                      <CheckCircle2 className="size-4" /> Encaminhar para a Controladoria
                     </Button>
                   </>
                 ) : isFinanceiro ? (
@@ -835,24 +796,6 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                     </Button>
                     <Button className="gap-2" onClick={handleFinanceiroSubmit}>
                       <Send className="size-4" /> Enviar para revisão
-                    </Button>
-                  </>
-                ) : isJuridico ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      disabled={!canDecideJuridico}
-                      onClick={() => setJuridicoAdjustOpen(true)}
-                    >
-                      <Pencil className="size-4" /> Enviar para ajustes
-                    </Button>
-                    <Button
-                      className="gap-2"
-                      disabled={!canDecideJuridico}
-                      onClick={() => setJuridicoApproveOpen(true)}
-                    >
-                      <Send className="size-4" /> Aprovar para criar projeto final
                     </Button>
                   </>
                 ) : (
@@ -883,8 +826,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             <DialogHeader>
               <DialogTitle>Enviar para ajustes</DialogTitle>
               <DialogDescription>
-                Aponte a etapa e, quando houver, o campo específico que precisa ser corrigido. O
-                projeto voltará para o Relator com o status "Ajuste solicitado".
+                Aponte a etapa e, quando houver, o campo específico que precisa ser corrigido. A
+                iniciativa voltará para o Relator com o status "Ajuste solicitado".
               </DialogDescription>
             </DialogHeader>
 
@@ -999,17 +942,17 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
         <AlertDialog open={approveOpen} onOpenChange={setApproveOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Encaminhar projeto para o Jurídico?</AlertDialogTitle>
+              <AlertDialogTitle>Encaminhar iniciativa para a Controladoria?</AlertDialogTitle>
               <AlertDialogDescription>
-                A revisão deste projeto será concluída e o projeto será encaminhado para análise
-                jurídica. Após o encaminhamento, o projeto não poderá mais ser editado pelo Revisor,
-                a menos que seja devolvido para ajustes.
+                A revisão desta iniciativa será concluída e ela será encaminhada para a
+                Controladoria. Após o encaminhamento, a iniciativa não poderá mais ser editada pelo
+                Revisor, a menos que seja devolvida para ajustes.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction onClick={handleApprove}>
-                Aprovar e enviar para o Jurídico
+                Encaminhar para a Controladoria
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -1020,10 +963,10 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
         <Dialog open={shareOpen} onOpenChange={setShareOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Compartilhar projeto</DialogTitle>
+              <DialogTitle>Compartilhar iniciativa</DialogTitle>
               <DialogDescription>
-                Selecione a filial, a Diretoria e o revisor responsável para compartilhar este
-                projeto. Quem receber poderá aceitar ou recusar a revisão.
+                Selecione a filial, a Diretoria e o revisor responsável para compartilhar esta
+                iniciativa. Quem receber poderá aceitar ou recusar a revisão.
               </DialogDescription>
             </DialogHeader>
 
@@ -1097,7 +1040,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             <DialogHeader>
               <DialogTitle>Aceitar compartilhamento</DialogTitle>
               <DialogDescription>
-                Selecione qual Relator ficará responsável pelos ajustes deste projeto na sua
+                Selecione qual Relator ficará responsável pelos ajustes desta iniciativa na sua
                 Diretoria.
               </DialogDescription>
             </DialogHeader>
@@ -1138,7 +1081,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             <DialogHeader>
               <DialogTitle>Recusar compartilhamento</DialogTitle>
               <DialogDescription>
-                O projeto será devolvido à Diretoria de origem. Descreva o motivo para que ela
+                A iniciativa será devolvida à Diretoria de origem. Descreva o motivo para que ela
                 entenda o que precisa ser ajustado antes de encaminhar novamente.
               </DialogDescription>
             </DialogHeader>
@@ -1148,7 +1091,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 id="decline-reason"
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
-                placeholder="Ex.: Este projeto não é da nossa Diretoria; encaminhar para Automação."
+                placeholder="Ex.: Esta iniciativa não é da nossa Diretoria; encaminhar para Automação."
                 rows={4}
               />
             </div>
@@ -1162,62 +1105,6 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      )}
-
-      {isJuridico && (
-        <Dialog
-          open={juridicoAdjustOpen}
-          onOpenChange={(open) => {
-            setJuridicoAdjustOpen(open);
-            if (!open) setJuridicoAdjustNote("");
-          }}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Enviar para ajustes</DialogTitle>
-              <DialogDescription>
-                Descreva o motivo do ajuste. O projeto voltará para o Relator com o status "Ajuste
-                solicitado".
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-2">
-              <Label htmlFor="juridico-adjust-note">O que precisa ser corrigido?</Label>
-              <Textarea
-                id="juridico-adjust-note"
-                value={juridicoAdjustNote}
-                onChange={(e) => setJuridicoAdjustNote(e.target.value)}
-                placeholder="Ex.: Falta comprovante de submissão dos documentos financeiros."
-                rows={4}
-              />
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setJuridicoAdjustOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleJuridicoRequestAdjustment}>Enviar para ajustes</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {isJuridico && (
-        <AlertDialog open={juridicoApproveOpen} onOpenChange={setJuridicoApproveOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Aprovar projeto para o Projeto Final?</AlertDialogTitle>
-              <AlertDialogDescription>
-                O projeto passa a ficar disponível para consolidação em um Projeto Final. O projeto
-                original continua existindo e nenhuma informação dele é alterada ou perdida.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleJuridicoApproveForFinal}>
-                Aprovar para criar projeto final
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       )}
     </div>
   );

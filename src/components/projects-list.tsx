@@ -6,7 +6,6 @@ import {
   FileEdit,
   FileWarning,
   FileClock,
-  FileCheck2,
   Send,
   ArrowUpRight,
   Building2,
@@ -107,15 +106,7 @@ function compareProjects(a: Project, b: Project, sortKey: SortKey) {
   }
 }
 
-const STATUS_ORDER: ProjectStatus[] = [
-  "rascunho",
-  "revisao",
-  "ajustes",
-  "pronto",
-  "submetido",
-  "aprovado",
-  "indeferido",
-];
+const STATUS_ORDER: ProjectStatus[] = ["rascunho", "revisao", "ajustes", "enviado_controladoria"];
 
 export function summarizeDependentStatuses(deps: Project[]) {
   const c: Partial<Record<ProjectStatus, number>> = {};
@@ -125,23 +116,12 @@ export function summarizeDependentStatuses(deps: Project[]) {
   return STATUS_ORDER.filter((s) => c[s]).map((s) => ({ status: s, count: c[s] as number }));
 }
 
-// Tag de projeto (não é status): indica que o projeto foi compartilhado com a
+// Tag de iniciativa (não é status): indica que ela foi compartilhada com a
 // Diretoria do Revisor, mesmo sem ele ser o revisor titular.
 function SharedWithAreaTag() {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
       <Share2 className="size-3" /> Compartilhado com a sua Diretoria
-    </span>
-  );
-}
-
-// Tag de projeto (não é status): indica que o projeto já faz parte de um
-// Projeto Final consolidado. Não existe mais uma área separada de listagem
-// de "Projetos Finais" — a identificação acontece no próprio projeto.
-export function ProjetoFinalTag() {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-      <FolderTree className="size-3" /> Projeto Final
     </span>
   );
 }
@@ -162,37 +142,25 @@ const DEFAULT_SUMMARY: SummaryCard[] = [
     accent: "text-status-adjust-fg",
   },
   { key: "revisao", label: "Em revisão", icon: FileClock, accent: "text-status-review-fg" },
-  { key: "pronto", label: "Prontos", icon: FileCheck2, accent: "text-status-ready-fg" },
-  { key: "submetido", label: "Submetidos", icon: Send, accent: "text-status-submitted-fg" },
+  {
+    key: "enviado_controladoria",
+    label: "Enviado para Controladoria",
+    icon: Send,
+    accent: "text-status-ready-fg",
+  },
 ];
 
 const RELATOR_STATUS_FILTERS: Array<{ key: ProjectStatus; label: string }> = [
   { key: "rascunho", label: "Rascunhos" },
   { key: "revisao", label: "Em revisão" },
   { key: "ajustes", label: "Ajuste solicitado" },
-  { key: "pronto", label: "Prontos" },
-  { key: "submetido", label: "Submetidos" },
-  { key: "aprovado", label: "Aprovados" },
-  { key: "indeferido", label: "Indeferidos" },
+  { key: "enviado_controladoria", label: "Enviado para Controladoria" },
 ];
 
 const REVISOR_STATUS_FILTERS: Array<{ key: ProjectStatus; label: string }> = [
   { key: "revisao", label: "Em revisão" },
   { key: "ajustes", label: "Ajuste solicitado" },
-  { key: "pronto", label: "Prontos" },
-  { key: "submetido", label: "Submetidos" },
-  { key: "aprovado", label: "Aprovados" },
-  { key: "indeferido", label: "Indeferidos" },
-];
-
-// Uma vez que um projeto chega ao Jurídico ele já está "pronto" (ou além) do
-// lado do Relator/Revisor — os demais status (rascunho/revisao/ajustes) nunca
-// aparecem aqui, então a pill correspondente nem faz sentido para esta área.
-const JURIDICO_STATUS_FILTERS: Array<{ key: ProjectStatus; label: string }> = [
-  { key: "pronto", label: "Prontos" },
-  { key: "submetido", label: "Submetidos" },
-  { key: "aprovado", label: "Aprovados" },
-  { key: "indeferido", label: "Indeferidos" },
+  { key: "enviado_controladoria", label: "Enviado para Controladoria" },
 ];
 
 type QuarterKey = "all" | "Q1" | "Q2" | "Q3" | "Q4";
@@ -205,14 +173,14 @@ interface ProjectsListProps {
   scopedSetor?: string;
   // Somente exibição (não filtra os projetos listados) — usado no Revisor,
   // que precisa ver a mesma Diretoria/Filial/Setor da sua base, mas continua
-  // revisando projetos de todas as filiais e Diretorias.
+  // revisando iniciativas de todas as filiais e Diretorias.
   infoFilial?: string;
   infoSetor?: string;
   paginated?: boolean;
   pageSize?: number;
-  variant?: "default" | "relator" | "revisor" | "financeiro" | "juridico";
+  variant?: "default" | "relator" | "revisor" | "financeiro";
   // Conteúdo extra específico da área, renderizado dentro do mesmo componente
-  // em vez de duplicar a lógica de filtro/tabela (ex.: cards de KPI do Jurídico).
+  // em vez de duplicar a lógica de filtro/tabela.
   extraTop?: React.ReactNode;
   // Ação extra no cabeçalho, ao lado do botão "Nova iniciativa".
   extraAction?: React.ReactNode;
@@ -233,8 +201,6 @@ export function ProjectsList({
   extraAction,
 }: ProjectsListProps) {
   const projects = useProjectsStore((s) => s.projects);
-  const finalProjects = useProjectsStore((s) => s.finalProjects);
-  const isInFinalProject = (id: string) => finalProjects.some((f) => f.projectIds.includes(id));
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">("all");
@@ -250,34 +216,30 @@ export function ProjectsList({
   const isRelator = variant === "relator";
   const isRevisor = variant === "revisor";
   const isFinanceiro = variant === "financeiro";
-  const isJuridico = variant === "juridico";
-  const isHierarchical = isRelator || isRevisor || isFinanceiro || isJuridico;
-  // Colunas Status/Relator/Diretoria/Filial: mesmo formato para Revisor e Jurídico.
-  const showReviewCols = isRevisor || isJuridico;
+  const isHierarchical = isRelator || isRevisor || isFinanceiro;
+  // "Iniciativa" é o termo usado por Relator/Revisor/Financeiro — só vira
+  // "Projeto" formalmente a partir do Jurídico/Controladoria.
+  const useIniciativa = isRelator || isRevisor || isFinanceiro;
+  // Colunas Status/Relator/Diretoria/Filial: formato de revisão, só para o Revisor.
+  const showReviewCols = isRevisor;
   const isScoped = Boolean(scopedFilial && scopedSetor);
   const showFilialSetorFilters = !isScoped && variant === "default";
   const showFilialColumn = !isScoped && !isHierarchical;
   const showSetorColumn = !isScoped && !isHierarchical;
 
   const scopedProjects = useMemo(() => {
-    // O Jurídico não é escopado por filial/setor: enxerga todo projeto que já
-    // chegou à sua etapa (tem legalStatus), de qualquer Diretoria/filial.
-    if (isJuridico) return projects.filter((p) => p.legalStatus);
     if (!isScoped) return projects;
     return projects.filter((p) => getFilial(p) === scopedFilial && p.area === scopedSetor);
-  }, [projects, isJuridico, isScoped, scopedFilial, scopedSetor]);
+  }, [projects, isScoped, scopedFilial, scopedSetor]);
 
-  // Top-level rows for hierarchical dashboards. Só o Jurídico ainda agrupa —
-  // para ele, independentes + mestres (dependentes ficam aninhados dentro do
-  // mestre). Para Relator/Revisor/Financeiro, o Projeto Mestre em si não
-  // aparece na lista: mostramos independentes e dependentes como linhas
-  // soltas.
+  // Linhas de topo dos dashboards hierárquicos: o Projeto Mestre em si não
+  // aparece na lista (ninguém mais cria agrupamentos — isso ficou só com o
+  // Jurídico, que agora é uma estrutura à parte) — mostramos independentes e
+  // dependentes como linhas soltas; agrupamentos já existentes continuam
+  // acessíveis a partir de um dependente ("Voltar para Iniciativa Mestre").
   const topLevelScoped = useMemo(
-    () =>
-      scopedProjects.filter((p) =>
-        isJuridico ? p.projectType !== "dependente" : p.projectType !== "mestre",
-      ),
-    [scopedProjects, isJuridico],
+    () => scopedProjects.filter((p) => p.projectType !== "mestre"),
+    [scopedProjects],
   );
 
   const dependentsByMaster = useMemo(() => {
@@ -297,10 +259,7 @@ export function ProjectsList({
       rascunho: 0,
       ajustes: 0,
       revisao: 0,
-      pronto: 0,
-      submetido: 0,
-      aprovado: 0,
-      indeferido: 0,
+      enviado_controladoria: 0,
     };
     const base = isHierarchical ? topLevelScoped : scopedProjects;
     base.forEach((p) => {
@@ -410,11 +369,11 @@ export function ProjectsList({
     sortKey !== "updated_desc";
 
   const colCount = showReviewCols
-    ? 7 // Trimestre, Projeto, Status, Relator, Diretoria, Filial, seta
+    ? 7 // Trimestre, Iniciativa, Status, Relator, Diretoria, Filial, seta
     : isRelator
-      ? 4 // Trimestre, Projeto, Status, seta
+      ? 4 // Trimestre, Iniciativa, Status, seta
       : isFinanceiro
-        ? 5 // Trimestre, Projeto, Responsável, Status, seta
+        ? 5 // Trimestre, Iniciativa, Responsável, Status, seta
         : 4 + (showFilialColumn ? 1 : 0) + (showSetorColumn ? 1 : 0) + 1; // + seta
 
   const shownCount = isHierarchical ? hierarchicalRows.length : filtered.length;
@@ -435,9 +394,7 @@ export function ProjectsList({
         ? "/revisor/projetos/$id"
         : isFinanceiro
           ? "/financeiro/projetos/$id"
-          : isJuridico
-            ? "/juridico/projetos/$id"
-            : "/projetos/$id",
+          : "/projetos/$id",
       params: { id },
     });
 
@@ -468,11 +425,6 @@ export function ProjectsList({
                     <SharedWithAreaTag />
                   </div>
                 )}
-                {isJuridico && isInFinalProject(p.id) && (
-                  <div className="mb-2 pl-6">
-                    <ProjetoFinalTag />
-                  </div>
-                )}
                 <div className="flex flex-wrap items-center gap-3">
                   {isExpanded ? (
                     <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
@@ -485,7 +437,7 @@ export function ProjectsList({
                 <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 pl-6 text-xs text-muted-foreground">
                   <span className="font-medium text-foreground/80">Mestre</span>
                   <span>
-                    · {dependents.length} projeto{dependents.length === 1 ? "" : "s"} dependente
+                    · {dependents.length} iniciativa{dependents.length === 1 ? "" : "s"} dependente
                     {dependents.length === 1 ? "" : "s"}
                   </span>
                   {showReviewCols &&
@@ -493,9 +445,7 @@ export function ProjectsList({
                       <span
                         key={seg.status}
                         className={
-                          seg.status === "ajustes" || seg.status === "indeferido"
-                            ? "font-semibold text-status-adjust-fg"
-                            : ""
+                          seg.status === "ajustes" ? "font-semibold text-status-adjust-fg" : ""
                         }
                       >
                         · {seg.count} {STATUS_LABEL[seg.status].toLowerCase()}
@@ -509,11 +459,6 @@ export function ProjectsList({
                 {isRevisor && p.sharedWithArea && (
                   <div className="mb-2">
                     <SharedWithAreaTag />
-                  </div>
-                )}
-                {isJuridico && isInFinalProject(p.id) && (
-                  <div className="mb-2">
-                    <ProjetoFinalTag />
                   </div>
                 )}
                 <div className="flex flex-wrap items-center gap-2">
@@ -600,11 +545,6 @@ export function ProjectsList({
                   {isRevisor && d.sharedWithArea && (
                     <div className="mb-2 pl-4">
                       <SharedWithAreaTag />
-                    </div>
-                  )}
-                  {isJuridico && isInFinalProject(d.id) && (
-                    <div className="mb-2 pl-4">
-                      <ProjetoFinalTag />
                     </div>
                   )}
                   <div className="flex items-center gap-3 border-l-2 border-border pl-4">
@@ -697,7 +637,7 @@ export function ProjectsList({
           <div className="h-4 w-px bg-border" />
           <div className="flex items-center gap-2 text-sm">
             <Briefcase className="size-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Setor:</span>
+            <span className="text-muted-foreground">Diretoria:</span>
             <span className="font-medium text-foreground">{scopedSetor ?? infoSetor}</span>
           </div>
         </div>
@@ -710,7 +650,7 @@ export function ProjectsList({
           <div className="mb-3 flex items-center gap-2">
             <ListChecks className="size-4 text-primary" />
             <h2 className="text-sm font-semibold text-foreground">
-              {isRevisor ? "Iniciativas" : "Projetos"} que precisam da sua revisão
+              {useIniciativa ? "Iniciativas" : "Projetos"} que precisam da sua revisão
             </h2>
             <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold tabular-nums text-primary">
               {priorityRows.length}
@@ -718,7 +658,7 @@ export function ProjectsList({
           </div>
           {priorityRows.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              {isRevisor ? "Nenhuma iniciativa" : "Nenhum projeto"} aguardando sua revisão no
+              {useIniciativa ? "Nenhuma iniciativa" : "Nenhum projeto"} aguardando sua revisão no
               momento.
             </p>
           ) : (
@@ -731,7 +671,8 @@ export function ProjectsList({
               {priorityRows.length > priorityRowsShown.length && (
                 <p className="mt-2 text-xs text-muted-foreground">
                   Mostrando {priorityRowsShown.length} de {priorityRows.length}{" "}
-                  {isRevisor ? "iniciativas" : "projetos"}. Use a tabela abaixo para ver os demais.
+                  {useIniciativa ? "iniciativas" : "projetos"}. Use a tabela abaixo para ver os
+                  demais.
                 </p>
               )}
             </>
@@ -757,17 +698,12 @@ export function ProjectsList({
                   : "border-transparent opacity-70 hover:opacity-100",
               )}
             >
-              {isRevisor ? "Todas as iniciativas" : "Todos os projetos"}
+              {useIniciativa ? "Todas as iniciativas" : "Todos os projetos"}
               <span className="rounded-full bg-background/70 px-2 py-1 text-xs font-semibold tabular-nums">
                 {totalCount}
               </span>
             </button>
-            {(isRevisor
-              ? REVISOR_STATUS_FILTERS
-              : isJuridico
-                ? JURIDICO_STATUS_FILTERS
-                : RELATOR_STATUS_FILTERS
-            ).map((f) => {
+            {(isRevisor ? REVISOR_STATUS_FILTERS : RELATOR_STATUS_FILTERS).map((f) => {
               const active = statusFilter === f.key;
               return (
                 <button
@@ -830,7 +766,7 @@ export function ProjectsList({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={
-              isRevisor ? "Buscar por nome da iniciativa…" : "Buscar por nome do projeto…"
+              useIniciativa ? "Buscar por nome da iniciativa…" : "Buscar por nome do projeto…"
             }
             className="h-9 pl-8"
           />
@@ -870,10 +806,10 @@ export function ProjectsList({
             </Select>
             <Select value={setorFilter} onValueChange={setSetorFilter}>
               <SelectTrigger className="h-9 w-[220px]">
-                <SelectValue placeholder="Setor" />
+                <SelectValue placeholder="Diretoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os setores</SelectItem>
+                <SelectItem value="all">Todas as diretorias</SelectItem>
                 {AREAS.map((a) => (
                   <SelectItem key={a} value={a}>
                     {a}
@@ -958,7 +894,7 @@ export function ProjectsList({
           </Button>
         )}
         <div className="ml-auto text-xs text-muted-foreground">
-          {shownCount} de {totalCount} {isRevisor ? "iniciativas" : "projetos"}
+          {shownCount} de {totalCount} {useIniciativa ? "iniciativas" : "projetos"}
         </div>
       </div>
 
@@ -995,7 +931,7 @@ export function ProjectsList({
                         : "w-[30%]"
                 }
               >
-                {isRelator || isRevisor ? "Iniciativa" : "Projeto"}
+                {useIniciativa ? "Iniciativa" : "Projeto"}
               </TableHead>
               {showReviewCols && <TableHead className="w-[130px] text-left">Status</TableHead>}
               {showReviewCols && <TableHead className="w-[14%]">Relator</TableHead>}
@@ -1003,7 +939,7 @@ export function ProjectsList({
               {showReviewCols && <TableHead className="w-[16%]">Filial</TableHead>}
               {isFinanceiro && <TableHead className="w-[15%]">Responsável</TableHead>}
               {showFilialColumn && <TableHead>Filial</TableHead>}
-              {showSetorColumn && <TableHead>Setor</TableHead>}
+              {showSetorColumn && <TableHead>Diretoria</TableHead>}
               {!isHierarchical && <TableHead>Responsável</TableHead>}
               {!isHierarchical && <TableHead>Última atualização</TableHead>}
               {isRelator && <TableHead className="w-[20%] text-left">Status</TableHead>}
@@ -1021,7 +957,9 @@ export function ProjectsList({
                       colSpan={colCount}
                       className="h-24 text-center text-sm text-muted-foreground"
                     >
-                      {isRevisor ? "Nenhuma iniciativa encontrada" : "Nenhum projeto encontrado"}{" "}
+                      {useIniciativa
+                        ? "Nenhuma iniciativa encontrada"
+                        : "Nenhum projeto encontrado"}{" "}
                       com os filtros atuais.
                     </TableCell>
                   </TableRow>

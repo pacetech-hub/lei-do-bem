@@ -1,16 +1,43 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { JuridicoDashboard } from "@/components/juridico-dashboard";
+import { FolderKanban, GitFork, FileStack } from "lucide-react";
+import { RoleStubIndex } from "@/components/role-stub";
 
 export const Route = createFileRoute("/juridico/")({
   head: () => ({
     meta: [
-      { title: "Central Jurídica — Lei do Bem" },
-      {
-        name: "description",
-        content:
-          "Gerencie o portfólio de projetos, controle submissões ao MCTI e conduza ajustes e defesas.",
-      },
+      { title: "Jurídico | Lei do Bem" },
+      { name: "description", content: "Estrutura do Jurídico — funcionalidades a definir." },
     ],
   }),
-  component: JuridicoDashboard,
+  component: JuridicoPage,
 });
+
+function JuridicoPage() {
+  return (
+    <RoleStubIndex
+      role="juridico"
+      roleLabel="Jurídico"
+      description="Estrutura inicial do Jurídico. As funcionalidades de cada área serão definidas posteriormente."
+      items={[
+        {
+          label: "Agrupamentos",
+          description: "Agrupamento de projetos para submissão conjunta.",
+          to: "/juridico/agrupamentos",
+          icon: GitFork,
+        },
+        {
+          label: "Pré-projetos",
+          description: "Projetos encaminhados pelo Revisor, aguardando tratamento jurídico.",
+          to: "/juridico/pre-projetos",
+          icon: FileStack,
+        },
+        {
+          label: "Projetos",
+          description: "Projetos já formalizados pelo Jurídico.",
+          to: "/juridico/projetos",
+          icon: FolderKanban,
+        },
+      ]}
+    />
+  );
+}

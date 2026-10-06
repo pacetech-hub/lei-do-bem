@@ -166,7 +166,9 @@ function NovoProjetoPage() {
       atividade: v.atividade,
       projectType: "independente",
     });
-    toast.success("Rascunho salvo", { description: "Você pode retomar o projeto pelo dashboard." });
+    toast.success("Rascunho salvo", {
+      description: "Você pode retomar a iniciativa pelo dashboard.",
+    });
     navigate({ to: "/dashboard" });
     void id;
   };

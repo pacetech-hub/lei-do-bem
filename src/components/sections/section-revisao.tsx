@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle2, AlertCircle, AlertTriangle, Send, Tag, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, AlertTriangle, Link2, Send, Tag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -46,7 +46,7 @@ function ProjectTagsEditor({ project, editable }: { project: Project; editable: 
   return (
     <div className="mb-6 rounded-lg border border-border bg-surface p-5">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Tags do projeto</h3>
+        <h3 className="text-sm font-semibold text-foreground">Tags da iniciativa</h3>
         <span className="text-xs text-muted-foreground">Não obrigatório</span>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -118,6 +118,84 @@ function ProjectTagsEditor({ project, editable }: { project: Project; editable: 
   );
 }
 
+// Vínculo simples entre a iniciativa atual e uma iniciativa/projeto já
+// existente — não é um agrupamento Mestre/Dependente (isso foi removido do
+// Revisor), apenas uma referência de "estão relacionados".
+function ProjectLinkEditor({ project, editable }: { project: Project; editable: boolean }) {
+  const updateProject = useProjectsStore((s) => s.updateProject);
+  const allProjects = useProjectsStore((s) => s.projects);
+  const [query, setQuery] = useState("");
+
+  const linked = project.linkedProjectId
+    ? allProjects.find((p) => p.id === project.linkedProjectId)
+    : undefined;
+
+  const matches =
+    query.trim().length >= 2
+      ? allProjects
+          .filter(
+            (p) => p.id !== project.id && p.name.toLowerCase().includes(query.trim().toLowerCase()),
+          )
+          .slice(0, 6)
+      : [];
+
+  const link = (id: string) => {
+    updateProject(project.id, { linkedProjectId: id });
+    setQuery("");
+  };
+  const unlink = () => updateProject(project.id, { linkedProjectId: undefined });
+
+  if (!editable && !linked) return null;
+
+  return (
+    <div className="mb-6 rounded-lg border border-border bg-surface p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-foreground">Vínculo com outra iniciativa</h3>
+        <span className="text-xs text-muted-foreground">Não obrigatório</span>
+      </div>
+
+      {linked ? (
+        <div className="flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground">
+            <Link2 className="size-3" /> Vinculado a: {linked.name}
+          </span>
+          {editable && (
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={unlink}>
+              Remover vínculo
+            </Button>
+          )}
+        </div>
+      ) : editable ? (
+        <div className="space-y-2">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar iniciativa ou projeto já existente pelo nome…"
+            className="h-9 text-sm"
+          />
+          {matches.length > 0 && (
+            <div className="space-y-1 rounded-md border border-border bg-surface-muted/50 p-1">
+              {matches.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => link(p.id)}
+                  className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm hover:bg-surface"
+                >
+                  <span>{p.name}</span>
+                  <span className="text-xs text-muted-foreground">Vincular</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <span className="text-sm text-muted-foreground">Nenhum vínculo registrado.</span>
+      )}
+    </div>
+  );
+}
+
 interface Props {
   project: Project;
   completion: Record<SectionKey, number>;
@@ -125,7 +203,7 @@ interface Props {
   canSubmit: boolean;
   hideSubmitCta?: boolean;
   pendingItems?: AdjustmentItem[];
-  mode?: "relator" | "revisor" | "financeiro" | "juridico";
+  mode?: "relator" | "revisor" | "financeiro";
   // Etapas a listar — o Relator não lança despesas, então "Despesas" nem
   // aparece aqui (ver project-ficha.tsx: visibleSections).
   sections?: SectionDef[];
@@ -150,7 +228,7 @@ export function SectionRevisao({
       <header className="mb-6">
         <h2 className="text-lg font-semibold tracking-tight">Revisão Final</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Confira o preenchimento de cada seção antes de enviar o projeto para revisão.
+          Confira o preenchimento de cada seção antes de enviar a iniciativa para revisão.
         </p>
       </header>
 
@@ -177,6 +255,7 @@ export function SectionRevisao({
       </div>
 
       <ProjectTagsEditor project={project} editable={mode === "revisor"} />
+      <ProjectLinkEditor project={project} editable={mode === "revisor"} />
 
       <div className="space-y-3">
         {sections
@@ -216,8 +295,8 @@ export function SectionRevisao({
             <div className="flex-1">
               <div className="text-sm font-semibold">Enviar para revisão</div>
               <p className="mt-1 text-sm text-muted-foreground">
-                Use o botão em destaque "Enviar para Revisão" no rodapé da página. O projeto será
-                avaliado pela equipe responsável e você poderá continuar editando caso ele retorne
+                Use o botão em destaque "Enviar para Revisão" no rodapé da página. A iniciativa será
+                avaliada pela equipe responsável e você poderá continuar editando caso ela retorne
                 com status "Ajuste solicitado".
               </p>
             </div>

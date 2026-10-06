@@ -1,20 +1,10 @@
-export type ProjectStatus =
-  | "rascunho"
-  | "ajustes"
-  | "revisao"
-  | "pronto"
-  | "submetido"
-  | "aprovado"
-  | "indeferido";
+export type ProjectStatus = "rascunho" | "ajustes" | "revisao" | "enviado_controladoria";
 
 export const STATUS_LABEL: Record<ProjectStatus, string> = {
   rascunho: "Rascunho",
   ajustes: "Ajuste solicitado",
   revisao: "Em revisão",
-  pronto: "Pronto",
-  submetido: "Submetido",
-  aprovado: "Aprovado",
-  indeferido: "Indeferido",
+  enviado_controladoria: "Enviado para Controladoria",
 };
 
 export type Natureza = "produto" | "processo" | "servico";
@@ -27,88 +17,6 @@ export const PROJECT_TYPE_LABEL: Record<ProjectType, string> = {
   mestre: "Projeto Mestre",
   dependente: "Projeto Dependente",
 };
-
-// Estágio do projeto dentro do ciclo do Jurídico, independente do ProjectStatus
-// usado pelo Relator/Revisor. Só existe a partir do momento em que o Revisor
-// aprova e encaminha o projeto (ProjectStatus "pronto").
-export type LegalStatus =
-  | "aguardando_juridico"
-  | "pronto_submissao"
-  | "submetido"
-  | "ajustes_mcti"
-  | "aprovado"
-  | "indeferido";
-
-export const LEGAL_STATUS_LABEL: Record<LegalStatus, string> = {
-  aguardando_juridico: "Aguardando análise jurídica",
-  pronto_submissao: "Pronto para submissão",
-  submetido: "Em análise pelo MCTI",
-  ajustes_mcti: "Ajuste solicitado (MCTI)",
-  aprovado: "Aprovado",
-  indeferido: "Indeferido",
-};
-
-// Reaproveita a paleta de cores dos status já existentes (bg/fg suaves).
-export const LEGAL_STATUS_BADGE_CLASS: Record<LegalStatus, string> = {
-  aguardando_juridico: "bg-status-review text-status-review-fg",
-  pronto_submissao: "bg-status-ready text-status-ready-fg",
-  submetido: "bg-status-submitted text-status-submitted-fg",
-  ajustes_mcti: "bg-status-adjust text-status-adjust-fg",
-  aprovado: "bg-status-approved text-status-approved-fg",
-  indeferido: "bg-status-rejected text-status-rejected-fg",
-};
-
-// Projetos nesses estágios exigem alguma ação do Jurídico.
-export const LEGAL_STATUS_ACTIONABLE: LegalStatus[] = [
-  "aguardando_juridico",
-  "pronto_submissao",
-  "ajustes_mcti",
-];
-
-// Projetos nesses estágios estão concluídos e ficam no histórico.
-export const LEGAL_STATUS_FINALIZED: LegalStatus[] = ["aprovado", "indeferido"];
-
-export interface MctiParecerResult {
-  projectId: string;
-  projectName: string;
-  suggested: "aprovado" | "ajustes_mcti";
-  reason?: string;
-  confirmed: boolean;
-}
-
-export interface MctiParecer {
-  id: string;
-  // Um único parecer anual — o MCTI não é mais tratado por trimestre.
-  year: number;
-  fileName: string;
-  uploadedAt: string;
-  uploadedBy: string;
-  results: MctiParecerResult[];
-}
-
-// Projeto Final Jurídico: entidade separada que consolida, uma vez por ano,
-// os projetos já aprovados para a submissão oficial ao MCTI. Não substitui
-// os projetos originais — apenas referencia seus ids.
-export type FinalProjectStatus = "rascunho" | "em_revisao" | "enviado";
-
-export const FINAL_PROJECT_STATUS_LABEL: Record<FinalProjectStatus, string> = {
-  rascunho: "Rascunho",
-  em_revisao: "Em revisão final",
-  enviado: "Enviado ao MCTI",
-};
-
-export interface FinalProject {
-  id: string;
-  year: number;
-  name: string;
-  projectIds: string[];
-  status: FinalProjectStatus;
-  notes?: string;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  submittedAt?: string;
-}
 
 // Item estruturado de um pedido de ajuste do Revisor: aponta para a etapa e,
 // quando aplicável, o campo/pergunta específico dentro dela.
@@ -167,6 +75,32 @@ export interface MaterialExpense {
   itemId?: string;
 }
 
+// Pedido de ajuste do Revisor sobre uma despesa específica (terceiro ou
+// material) já lançada pelo Responsável Financeiro. Não altera o status do
+// projeto nem a fila de pendências do Relator — só sinaliza a linha para o
+// Financeiro revisar/corrigir.
+export interface DespesaAdjustmentItem {
+  id: string;
+  expenseType: "thirdParty" | "material";
+  expenseId: string;
+  comment: string;
+  createdAt: string;
+}
+
+// Recurso (profissional ou terceiro) cadastrado pelo Relator na iniciativa,
+// disponível para o Responsável Financeiro vincular uma despesa depois.
+export interface ResourceEntry {
+  id: string;
+  type: "funcionario" | "terceiro";
+  name: string;
+  code?: string; // crachá — só para funcionário
+  role?: string; // função — só para funcionário
+  filial?: string;
+  area: string; // Diretoria
+  active: boolean;
+  createdAt: string;
+}
+
 // Item de uma nota fiscal — o "consumido" por cada projeto não é armazenado
 // aqui: é sempre derivado somando usedInProject/netValue de todos os
 // ThirdPartyExpense/MaterialExpense que referenciam este item (ver
@@ -187,6 +121,9 @@ export interface Invoice {
   companyName: string;
   invoiceNumber: string;
   accessKey: string;
+  // Data de emissão da nota fiscal (diferente de createdAt, que é o momento
+  // do registro no sistema) — permite ordenar as notas por data.
+  issueDate: string;
   items: InvoiceItem[];
   createdAt: string;
 }
@@ -232,15 +169,9 @@ export interface Project {
   sharedAdditionalNotes?: Record<string, string>;
   // Tags livres atribuídas pelo Revisor na Revisão Final (não obrigatório).
   tags?: string[];
-  // Ciclo do Jurídico (ver LegalStatus)
-  legalStatus?: LegalStatus;
-  legalAnalysisNote?: string;
-  submissionDate?: string;
-  submissionDoc?: string;
-  submissionNote?: string;
-  mctiParecerId?: string;
-  mctiResult?: "aprovado" | "ajustes_mcti";
-  mctiReason?: string;
+  // Vínculo simples com outra iniciativa/projeto já existente, criado pelo
+  // Revisor — não é um agrupamento Mestre/Dependente, apenas uma referência.
+  linkedProjectId?: string;
   createdAt: string;
   updatedAt: string;
   // Answers keyed by question id
@@ -250,6 +181,10 @@ export interface Project {
   employees: EmployeeExpense[];
   thirdParties: ThirdPartyExpense[];
   materials: MaterialExpense[];
+  // Recursos (profissionais/terceiros) cadastrados pelo Relator na etapa
+  // Recursos, disponíveis para o Financeiro referenciar em Despesas.
+  resources: ResourceEntry[];
+  despesaAdjustments?: DespesaAdjustmentItem[];
 }
 
 export type SectionKey =
@@ -258,6 +193,7 @@ export type SectionKey =
   | "barreiras"
   | "metodologia"
   | "evidencias"
+  | "recursos"
   | "despesas"
   | "revisao";
 
@@ -273,6 +209,7 @@ export const SECTIONS: SectionDef[] = [
   { key: "barreiras", label: "Barreiras e Desafios Tecnológicos", short: "Barreiras" },
   { key: "metodologia", label: "Metodologia e Métodos Utilizados", short: "Metodologia" },
   { key: "evidencias", label: "Evidências", short: "Evidências" },
+  { key: "recursos", label: "Recursos", short: "Recursos" },
   { key: "despesas", label: "Despesas", short: "Despesas" },
   { key: "revisao", label: "Revisão Final", short: "Revisão" },
 ];
@@ -334,7 +271,7 @@ export const ALL_REQUIRED_QUESTIONS = [
 // Campos editáveis da seção "Informações Gerais", usados para que o Revisor
 // aponte um campo específico ao solicitar ajustes.
 export const GERAIS_FIELDS: Question[] = [
-  { id: "name", label: "Nome do projeto" },
+  { id: "name", label: "Nome da iniciativa" },
   { id: "area", label: "Diretoria" },
   { id: "responsible", label: "Responsável" },
   { id: "startDate", label: "Data de início" },
@@ -367,7 +304,13 @@ export const AREAS = [
   "Automação",
 ];
 
-export type UserRole = "relator" | "financeiro" | "revisor" | "juridico";
+export type UserRole =
+  | "relator"
+  | "financeiro"
+  | "revisor"
+  | "controladoria"
+  | "juridico"
+  | "configuracaoGeral";
 
 // Um usuário fixo por perfil de acesso, exibido no cabeçalho da área
 // correspondente. Troca automaticamente conforme o perfil selecionado na
@@ -376,9 +319,29 @@ export const ROLE_USERS: Record<UserRole, { name: string; area: string; initials
   relator: { name: "Ana Souza", area: "Pesquisa & Desenvolvimento", initials: "AS" },
   financeiro: { name: "Carlos Oliveira", area: "Financeiro", initials: "CO" },
   revisor: { name: "Mariana Costa", area: "Pesquisa & Desenvolvimento", initials: "MC" },
+  controladoria: { name: "Fernando Dias", area: "Controladoria", initials: "FD" },
   juridico: { name: "Ricardo Almeida", area: "Jurídico", initials: "RA" },
+  configuracaoGeral: { name: "Camila Rocha", area: "Configuração Geral", initials: "CR" },
 };
 
 // Alias para o perfil de Relator — mantido para os fluxos que só existem
 // dentro dessa área (criação de iniciativa, upload de evidências etc.).
 export const CURRENT_USER = ROLE_USERS.relator;
+
+// --- Configuração Geral (estrutura básica — ver AGENTS/plano da sessão) ---
+// Cadastro de perguntas: semeado a partir de QUESTIONS_INOVADOR/BARREIRAS/
+// METODOLOGIA para já conter as perguntas atuais. Não integra com a ficha
+// (section-questions.tsx continua lendo as listas estáticas) — isso fica
+// para uma próxima etapa.
+export interface QuestionRecord extends Question {
+  sectionKey: SectionKey;
+}
+
+// Cadastro de cargos: percentual de horas elegíveis para inovação por cargo.
+// Também não integra ainda com o cálculo em section-despesas.tsx (que segue
+// usando o percentual fixo ELIGIBLE_HOURS_RATIO).
+export interface JobRole {
+  id: string;
+  name: string;
+  eligibleHoursPercent: number;
+}

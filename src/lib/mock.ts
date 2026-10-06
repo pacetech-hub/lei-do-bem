@@ -1,12 +1,14 @@
 import {
   AREAS,
   ALL_REQUIRED_QUESTIONS,
-  ROLE_USERS,
+  QUESTIONS_INOVADOR,
+  QUESTIONS_BARREIRAS,
+  QUESTIONS_METODOLOGIA,
   type Attachment,
-  type FinalProject,
   type Invoice,
-  type MctiParecer,
+  type JobRole,
   type Project,
+  type QuestionRecord,
 } from "./types";
 
 export interface MockEmployee {
@@ -74,6 +76,7 @@ function emptyProject(over: Partial<Project>): Project {
     employees: [],
     thirdParties: [],
     materials: [],
+    resources: [],
   };
   return { ...base, ...over };
 }
@@ -81,8 +84,8 @@ function emptyProject(over: Partial<Project>): Project {
 const RELATOR_FILIAL = "Matriz — São Paulo/SP";
 const RELATOR_SETOR = "Pesquisa & Desenvolvimento";
 
-// 12 projetos compartilhados entre Relator e Responsável Financeiro
-// (mesma filial e setor).
+// 12 iniciativas compartilhadas entre Relator e Responsável Financeiro
+// (mesma filial e Diretoria).
 export const INITIAL_PROJECTS: Project[] = [
   emptyProject({
     name: "Plataforma de Manutenção Preditiva por IA",
@@ -144,7 +147,7 @@ export const INITIAL_PROJECTS: Project[] = [
     name: "Sistema de Visão Computacional para Qualidade",
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
-    status: "pronto",
+    status: "enviado_controladoria",
     updatedAt: daysAgo(10),
     endDate: daysFromNow(15),
   }),
@@ -152,7 +155,7 @@ export const INITIAL_PROJECTS: Project[] = [
     name: "Modelagem Preditiva de Demanda Energética",
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
-    status: "submetido",
+    status: "enviado_controladoria",
     updatedAt: daysAgo(25),
     endDate: daysAgo(5),
   }),
@@ -160,7 +163,7 @@ export const INITIAL_PROJECTS: Project[] = [
     name: "Novo Catalisador para Redução de Emissões",
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
-    status: "aprovado",
+    status: "enviado_controladoria",
     updatedAt: daysAgo(60),
     endDate: daysAgo(30),
     hasPatent: true,
@@ -170,7 +173,7 @@ export const INITIAL_PROJECTS: Project[] = [
     name: "Protocolo de Comunicação Industrial Proprietário",
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
-    status: "indeferido",
+    status: "enviado_controladoria",
     updatedAt: daysAgo(80),
     endDate: daysAgo(45),
   }),
@@ -202,7 +205,7 @@ export const INITIAL_PROJECTS: Project[] = [
     name: "Redução de Consumo Hídrico no Processo Têxtil",
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
-    status: "pronto",
+    status: "enviado_controladoria",
     updatedAt: daysAgo(12),
     endDate: daysFromNow(20),
   }),
@@ -295,7 +298,7 @@ INITIAL_PROJECTS.push(
     area: RELATOR_SETOR,
     projectType: "dependente",
     masterProjectId,
-    status: "pronto",
+    status: "enviado_controladoria",
     updatedAt: daysAgo(8),
     startDate: daysAgo(130),
     endDate: daysFromNow(40),
@@ -315,11 +318,11 @@ function fullAnswers(): Record<string, string> {
   return map;
 }
 
-// Textos variados para simular respostas "aleatórias" em projetos que já
-// deveriam estar com a ficha completa (Pronto, Submetido, Aprovado,
-// Indeferido). Não usa Math.random(): este módulo roda tanto no servidor
-// quanto no cliente, e um valor diferente a cada avaliação causaria
-// "hydration mismatch" — o seed escolhe determinísticamente dentro do pool.
+// Textos variados para simular respostas "aleatórias" em iniciativas que já
+// deveriam estar com a ficha completa (Enviado para Controladoria). Não usa
+// Math.random(): este módulo roda tanto no servidor quanto no cliente, e um
+// valor diferente a cada avaliação causaria "hydration mismatch" — o seed
+// escolhe determinísticamente dentro do pool.
 const RANDOM_ANSWER_POOL = [
   "A iniciativa consolida um conjunto de estudos técnicos conduzidos internamente, com testes de bancada que validaram as hipóteses iniciais e orientaram os ajustes de escopo ao longo do desenvolvimento.",
   "O time avaliou soluções disponíveis no mercado antes de decidir pelo desenvolvimento próprio, já que nenhuma alternativa atendia às restrições operacionais e de integração exigidas pela planta.",
@@ -341,11 +344,11 @@ function randomAnswers(seed: number): Record<string, string> {
   return map;
 }
 
-// --- Notas fiscais compartilhadas entre projetos (Despesas — Etapa 6) -----
-// Registradas uma vez (busca por CNPJ ou leitura da chave de acesso) e
-// reutilizáveis por qualquer projeto do Responsável Financeiro. O quanto já
-// foi consumido de cada item nunca é armazenado aqui — é sempre somado a
-// partir dos lançamentos dos próprios projetos (ver src/lib/invoices.ts).
+// --- Notas fiscais compartilhadas entre projetos (Despesas) ---------------
+// Registradas uma vez (leitura da chave de acesso ou busca por CNPJ) e
+// reutilizáveis por qualquer iniciativa do Responsável Financeiro. O quanto
+// já foi consumido de cada item nunca é armazenado aqui — é sempre somado a
+// partir dos lançamentos das próprias iniciativas (ver src/lib/invoices.ts).
 const invInovaTechId = nextId("inv");
 const invInovaTechItemConsultoriaId = nextId("item");
 const invInovaTechItemAutomacaoId = nextId("item");
@@ -359,6 +362,7 @@ export const INITIAL_INVOICES: Invoice[] = [
     companyName: MOCK_SUPPLIERS[0].name,
     invoiceNumber: "NF-000123",
     accessKey: "35240613456789000123550010000001231987654321",
+    issueDate: daysAgo(62),
     items: [
       {
         id: invInovaTechItemConsultoriaId,
@@ -379,6 +383,7 @@ export const INITIAL_INVOICES: Invoice[] = [
     companyName: MOCK_SUPPLIERS[3].name,
     invoiceNumber: "NF-000456",
     accessKey: "35240613456789000456550010000004561987654321",
+    issueDate: daysAgo(47),
     items: [
       {
         id: invAlfaItemId,
@@ -513,10 +518,7 @@ const STATUSES: Array<Project["status"]> = [
   "rascunho",
   "ajustes",
   "revisao",
-  "pronto",
-  "submetido",
-  "aprovado",
-  "indeferido",
+  "enviado_controladoria",
 ];
 const RELATOR_NAMES = ["Ana Souza", "João Silva", "Carlos Silva", "Mariana Costa", "Beatriz Lima"];
 export const REVISOR_NAMES = ["Fernanda Ramos", "Ricardo Alves", "Patrícia Gomes"];
@@ -540,26 +542,25 @@ for (let i = 0; i < EXTRA_NAMES.length; i++) {
   );
 }
 
-// Projetos "Pronto"/"Submetido" já concluíram o preenchimento da ficha do
-// Relator — completa a resposta de todas as perguntas obrigatórias (100%
-// preenchido) sempre que ainda estiverem vazias.
+// Iniciativas "Enviado para Controladoria" já concluíram o preenchimento da
+// ficha do Relator — completa a resposta de todas as perguntas obrigatórias
+// (100% preenchido) sempre que ainda estiverem vazias.
 INITIAL_PROJECTS.forEach((p, idx) => {
-  if ((p.status === "pronto" || p.status === "submetido") && Object.keys(p.answers).length === 0) {
+  if (p.status === "enviado_controladoria" && Object.keys(p.answers).length === 0) {
     p.answers = randomAnswers(idx);
   }
 });
 
-// Iniciativas concluídas em 2025 — já com desfecho final do Jurídico
-// (Aprovada ou Indeferida; nenhum outro status aparece para elas). Datas
-// fixas em ISO (não daysAgo/daysFromNow, que são relativas a "hoje") para
-// que o ano de 2025 apareça de forma estável no filtro de Ano do Revisor.
+// Iniciativas concluídas em 2025 — já fora da responsabilidade do Revisor.
+// Datas fixas em ISO (não daysAgo/daysFromNow, que são relativas a "hoje")
+// para que o ano de 2025 apareça de forma estável no filtro de Ano.
 INITIAL_PROJECTS.push(
   emptyProject({
     name: "Sistema de Empacotamento Automatizado com Visão 3D",
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
     responsible: "Beatriz Lima",
-    status: "aprovado",
+    status: "enviado_controladoria",
     natureza: "produto",
     atividade: "experimental",
     hasPatent: true,
@@ -575,7 +576,7 @@ INITIAL_PROJECTS.push(
     filial: "Filial Campinas/SP",
     area: "Automação",
     responsible: "Carlos Silva",
-    status: "aprovado",
+    status: "enviado_controladoria",
     natureza: "processo",
     atividade: "aplicada",
     createdAt: "2025-03-05T09:00:00.000Z",
@@ -589,7 +590,7 @@ INITIAL_PROJECTS.push(
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
     responsible: "Mariana Costa",
-    status: "indeferido",
+    status: "enviado_controladoria",
     natureza: "servico",
     atividade: "basica",
     createdAt: "2025-02-10T09:00:00.000Z",
@@ -603,7 +604,7 @@ INITIAL_PROJECTS.push(
     filial: "Filial Porto Alegre/RS",
     area: "Engenharia de Produto",
     responsible: "João Silva",
-    status: "indeferido",
+    status: "enviado_controladoria",
     natureza: "produto",
     atividade: "experimental",
     createdAt: "2025-08-01T09:00:00.000Z",
@@ -614,104 +615,20 @@ INITIAL_PROJECTS.push(
   }),
 );
 
-// --- Ciclo do Jurídico ---------------------------------------------------
-// A partir do momento em que o Revisor aprova e encaminha (status "pronto"),
-// o projeto passa a ter também um legalStatus, que segue o próprio ciclo do
-// Jurídico (aguardando análise > pronto para submissão > submetido > parecer
-// do MCTI). Projetos "aprovado"/"indeferido" já representam o desfecho final.
-let legalCounter = 0;
-INITIAL_PROJECTS.forEach((p) => {
-  if (p.status === "aprovado") {
-    p.legalStatus = "aprovado";
-  } else if (p.status === "indeferido") {
-    p.legalStatus = "indeferido";
-  } else if (p.status === "submetido") {
-    legalCounter++;
-    p.legalStatus = legalCounter % 4 === 0 ? "ajustes_mcti" : "submetido";
-    if (p.legalStatus === "ajustes_mcti") {
-      p.mctiReason = "Complementar informações sobre os testes realizados.";
-    }
-  } else if (p.status === "pronto") {
-    legalCounter++;
-    p.legalStatus = legalCounter % 2 === 0 ? "pronto_submissao" : "aguardando_juridico";
-  }
+// --- Configuração Geral — cadastros básicos ------------------------------
 
-  if (p.legalStatus) {
-    p.reviewedBy = p.reviewedBy ?? REVISOR_NAMES[legalCounter % REVISOR_NAMES.length];
-    p.reviewedAt = p.reviewedAt ?? p.updatedAt;
-  }
-  if (
-    p.legalStatus &&
-    p.legalStatus !== "aguardando_juridico" &&
-    p.legalStatus !== "pronto_submissao"
-  ) {
-    p.submissionDate = p.submissionDate ?? p.updatedAt;
-    p.submissionDoc = p.submissionDoc ?? "comprovante-submissao-mcti.pdf";
-  }
-});
-
-// --- Parecer do MCTI (exemplo) -------------------------------------------
-const seedParecerId = nextId("parecer");
-const seedParecerCandidates = INITIAL_PROJECTS.filter(
-  (p) => p.legalStatus === "aprovado" || p.legalStatus === "ajustes_mcti",
-).slice(0, 10);
-
-seedParecerCandidates.forEach((p) => {
-  p.mctiParecerId = seedParecerId;
-  p.mctiResult = p.legalStatus as "aprovado" | "ajustes_mcti";
-});
-
-export const INITIAL_PARECERES: MctiParecer[] = [
-  {
-    id: seedParecerId,
-    year: today.getFullYear(),
-    fileName: "parecer-mcti-anual.pdf",
-    uploadedAt: daysAgo(15),
-    uploadedBy: ROLE_USERS.juridico.name,
-    results: seedParecerCandidates.map((p) => ({
-      projectId: p.id,
-      projectName: p.name,
-      suggested: p.mctiResult as "aprovado" | "ajustes_mcti",
-      reason: p.mctiReason,
-      confirmed: true,
-    })),
-  },
+// Semeado a partir das perguntas que já existem no sistema (QUESTIONS_*), só
+// para que o cadastro já nasça com o conteúdo atual. Ver comentário em
+// types.ts: ainda não integra com a ficha.
+export const INITIAL_QUESTIONS: QuestionRecord[] = [
+  ...QUESTIONS_INOVADOR.map((q) => ({ ...q, sectionKey: "inovador" as const })),
+  ...QUESTIONS_BARREIRAS.map((q) => ({ ...q, sectionKey: "barreiras" as const })),
+  ...QUESTIONS_METODOLOGIA.map((q) => ({ ...q, sectionKey: "metodologia" as const })),
 ];
 
-// --- Projeto Final Jurídico ------------------------------------------------
-// Janela anual em que o Jurídico pode consolidar projetos aprovados em um
-// Projeto Final para envio ao MCTI. Somente informativo por ora — sem tela de
-// configuração; para testar o estado "aberto", ajuste as datas abaixo.
-export interface ConsolidationWindow {
-  year: number;
-  opensAt: string;
-  closesAt: string;
-}
-
-export const CONSOLIDATION_WINDOW: ConsolidationWindow = {
-  year: today.getFullYear(),
-  opensAt: new Date(today.getFullYear(), 0, 1).toISOString(),
-  closesAt: new Date(today.getFullYear(), 2, 31, 23, 59, 59).toISOString(),
-};
-
-export function isConsolidationWindowOpen(window = CONSOLIDATION_WINDOW): boolean {
-  const now = today.getTime();
-  return now >= new Date(window.opensAt).getTime() && now <= new Date(window.closesAt).getTime();
-}
-
-const approvedForFinal = INITIAL_PROJECTS.filter((p) => p.legalStatus === "aprovado").slice(0, 5);
-
-export const INITIAL_FINAL_PROJECTS: FinalProject[] = [
-  {
-    id: nextId("final"),
-    year: today.getFullYear() - 1,
-    name: `Projeto Final Jurídico ${today.getFullYear() - 1}`,
-    projectIds: approvedForFinal.map((p) => p.id),
-    status: "enviado",
-    notes: "Consolidação anual enviada ao MCTI dentro do prazo.",
-    createdBy: "Camila Torres",
-    createdAt: daysAgo(200),
-    updatedAt: daysAgo(190),
-    submittedAt: daysAgo(190),
-  },
+export const INITIAL_JOB_ROLES: JobRole[] = [
+  { id: nextId("cargo"), name: "Pesquisador", eligibleHoursPercent: 100 },
+  { id: nextId("cargo"), name: "Industriário", eligibleHoursPercent: 30 },
+  { id: nextId("cargo"), name: "Engenheiro", eligibleHoursPercent: 50 },
+  { id: nextId("cargo"), name: "Analista", eligibleHoursPercent: 30 },
 ];

@@ -1,10 +1,19 @@
 import { useState } from "react";
-import { AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
+import { AlertTriangle, MessageSquareWarning, Plus, Search, Trash2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -16,11 +25,57 @@ import {
 import { MOCK_EMPLOYEES } from "@/lib/mock";
 import { InvoiceItemPicker } from "@/components/sections/invoice-item-picker";
 import { getItemConsumed } from "@/lib/invoices";
-import type { AdjustmentItem, Invoice, InvoiceItem, Project } from "@/lib/types";
+import type {
+  AdjustmentItem,
+  DespesaAdjustmentItem,
+  Invoice,
+  InvoiceItem,
+  Project,
+} from "@/lib/types";
 import { useProjectsStore } from "@/lib/store";
 import { toast } from "sonner";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+// Botão por linha, visível só para o Revisor em modo leitura: registra um
+// pedido de ajuste sobre aquela despesa específica, sem alterar o status do
+// projeto nem a fila do Relator — só sinaliza a linha para o Financeiro.
+function RequestAdjustmentButton({ onSubmit }: { onSubmit: (comment: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [comment, setComment] = useState("");
+
+  const submit = () => {
+    if (!comment.trim()) {
+      toast.error("Descreva o que precisa ser corrigido nesta despesa.");
+      return;
+    }
+    onSubmit(comment.trim());
+    setComment("");
+    setOpen(false);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button size="icon" variant="ghost" className="size-8" aria-label="Solicitar ajuste">
+          <MessageSquareWarning className="size-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 space-y-2">
+        <Label>Solicitar ajuste nesta despesa</Label>
+        <Textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Descreva o que precisa ser corrigido."
+          rows={3}
+        />
+        <Button size="sm" className="w-full" onClick={submit}>
+          Enviar ao Financeiro
+        </Button>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 // Regra provisória — o percentual final de horas elegíveis ainda não foi
 // definido pelo negócio. Fácil de ajustar quando a regra for fechada.
@@ -30,10 +85,12 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
   const addEmployee = useProjectsStore((s) => s.addEmployee);
   const removeEmployee = useProjectsStore((s) => s.removeEmployee);
   const [badge, setBadge] = useState("");
-  const [found, setFound] = useState<(typeof MOCK_EMPLOYEES)[number] | null>(null);
+  const [found, setFound] = useState<{ code: string; name: string; role: string } | null>(null);
   const [activity, setActivity] = useState("");
   const [totalHours, setTotalHours] = useState("");
   const eligibleHours = totalHours ? Math.round(Number(totalHours) * ELIGIBLE_HOURS_RATIO) : 0;
+
+  const registeredResources = project.resources.filter((r) => r.type === "funcionario" && r.active);
 
   const search = () => {
     const e = MOCK_EMPLOYEES.find((x) => x.code === badge.trim());
@@ -43,6 +100,13 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
       return;
     }
     setFound(e);
+  };
+
+  const pickResource = (resourceId: string) => {
+    const r = registeredResources.find((x) => x.id === resourceId);
+    if (!r) return;
+    setFound({ code: r.code ?? "", name: r.name, role: r.role ?? "" });
+    setBadge(r.code ?? "");
   };
 
   const submit = () => {
@@ -81,6 +145,23 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
 
           <div className="rounded-lg border border-border bg-surface p-4">
             <h4 className="mb-3 text-sm font-semibold">Adicionar colaborador</h4>
+            {registeredResources.length > 0 && (
+              <div className="mb-3 space-y-2">
+                <Label>Recurso cadastrado pelo Relator (opcional)</Label>
+                <Select value="" onValueChange={pickResource}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecionar um recurso já cadastrado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {registeredResources.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name} — {r.role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="grid gap-3 md:grid-cols-[220px_1fr_auto]">
               <div className="space-y-2">
                 <Label>Crachá</Label>
@@ -100,7 +181,7 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
                 <Input
                   value={found ? `${found.name} — ${found.role}` : ""}
                   disabled
-                  placeholder="Busque pelo crachá…"
+                  placeholder="Busque pelo crachá ou selecione um recurso…"
                 />
               </div>
             </div>
@@ -199,9 +280,18 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
   );
 }
 
-function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boolean }) {
+function ThirdPartyTab({
+  project,
+  readOnly,
+  canRequestAdjustment,
+}: {
+  project: Project;
+  readOnly?: boolean;
+  canRequestAdjustment?: boolean;
+}) {
   const addThirdParty = useProjectsStore((s) => s.addThirdParty);
   const removeThirdParty = useProjectsStore((s) => s.removeThirdParty);
+  const addDespesaAdjustment = useProjectsStore((s) => s.addDespesaAdjustment);
   const allProjects = useProjectsStore((s) => s.projects);
   const [selection, setSelection] = useState<{ invoice: Invoice; item: InvoiceItem } | null>(null);
   const [used, setUsed] = useState("");
@@ -221,7 +311,7 @@ function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boo
     }
     const u = Number(used);
     if (!u) {
-      toast.warning("Informe o valor consumido neste projeto.");
+      toast.warning("Informe o valor consumido nesta iniciativa.");
       return;
     }
     const consumedSoFar = getItemConsumed(allProjects, selection.item.id);
@@ -253,6 +343,17 @@ function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boo
     return getItemConsumed(allProjects, e.itemId) - e.usedInProject;
   };
 
+  const requestAdjustment = (expenseId: string, comment: string) => {
+    addDespesaAdjustment(project.id, {
+      id: crypto.randomUUID(),
+      expenseType: "thirdParty",
+      expenseId,
+      comment,
+      createdAt: new Date().toISOString(),
+    });
+    toast.success("Ajuste solicitado ao Financeiro.");
+  };
+
   return (
     <div className="space-y-4">
       {!readOnly && (
@@ -266,7 +367,7 @@ function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boo
           {selection && (
             <div className="flex items-end gap-3">
               <div className="flex-1 space-y-2">
-                <Label>Valor consumido neste projeto (R$)</Label>
+                <Label>Valor consumido nesta iniciativa (R$)</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -293,13 +394,14 @@ function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boo
               <TableHead className="text-right">Utilizado</TableHead>
               <TableHead className="text-right">Outros projetos</TableHead>
               {!readOnly && <TableHead className="w-10" />}
+              {canRequestAdjustment && <TableHead className="w-10" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {project.thirdParties.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={readOnly ? 6 : 7}
+                  colSpan={6 + (!readOnly || canRequestAdjustment ? 1 : 0)}
                   className="h-20 text-center text-sm text-muted-foreground"
                 >
                   Nenhum serviço de terceiro cadastrado.
@@ -330,6 +432,13 @@ function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boo
                     </Button>
                   </TableCell>
                 )}
+                {canRequestAdjustment && (
+                  <TableCell>
+                    <RequestAdjustmentButton
+                      onSubmit={(comment) => requestAdjustment(e.id, comment)}
+                    />
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -339,9 +448,18 @@ function ThirdPartyTab({ project, readOnly }: { project: Project; readOnly?: boo
   );
 }
 
-function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: boolean }) {
+function MaterialsTab({
+  project,
+  readOnly,
+  canRequestAdjustment,
+}: {
+  project: Project;
+  readOnly?: boolean;
+  canRequestAdjustment?: boolean;
+}) {
   const addMaterial = useProjectsStore((s) => s.addMaterial);
   const removeMaterial = useProjectsStore((s) => s.removeMaterial);
+  const addDespesaAdjustment = useProjectsStore((s) => s.addDespesaAdjustment);
   const allProjects = useProjectsStore((s) => s.projects);
   const [selection, setSelection] = useState<{ invoice: Invoice; item: InvoiceItem } | null>(null);
   const [used, setUsed] = useState("");
@@ -363,7 +481,7 @@ function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: bool
     }
     const net = Number(used);
     if (!net) {
-      toast.warning("Informe o valor líquido consumido neste projeto.");
+      toast.warning("Informe o valor líquido consumido nesta iniciativa.");
       return;
     }
     const consumedSoFar = getItemConsumed(allProjects, selection.item.id);
@@ -396,6 +514,17 @@ function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: bool
     return getItemConsumed(allProjects, m.itemId) - m.netValue;
   };
 
+  const requestAdjustment = (expenseId: string, comment: string) => {
+    addDespesaAdjustment(project.id, {
+      id: crypto.randomUUID(),
+      expenseType: "material",
+      expenseId,
+      comment,
+      createdAt: new Date().toISOString(),
+    });
+    toast.success("Ajuste solicitado ao Financeiro.");
+  };
+
   return (
     <div className="space-y-4">
       {!readOnly && (
@@ -409,7 +538,7 @@ function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: bool
           {selection && (
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
-                <Label>Valor líquido consumido neste projeto (R$)</Label>
+                <Label>Valor líquido consumido nesta iniciativa (R$)</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -418,7 +547,7 @@ function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: bool
                 />
               </div>
               <div className="space-y-2">
-                <Label>Descrição da utilização no projeto</Label>
+                <Label>Descrição da utilização na iniciativa</Label>
                 <Input
                   value={usage}
                   onChange={(e) => setUsage(e.target.value)}
@@ -446,13 +575,14 @@ function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: bool
               <TableHead className="text-right">Líquido</TableHead>
               <TableHead className="text-right">Outros projetos</TableHead>
               {!readOnly && <TableHead className="w-10" />}
+              {canRequestAdjustment && <TableHead className="w-10" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {project.materials.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={readOnly ? 6 : 7}
+                  colSpan={6 + (!readOnly || canRequestAdjustment ? 1 : 0)}
                   className="h-20 text-center text-sm text-muted-foreground"
                 >
                   Nenhum material cadastrado.
@@ -483,6 +613,13 @@ function MaterialsTab({ project, readOnly }: { project: Project; readOnly?: bool
                     </Button>
                   </TableCell>
                 )}
+                {canRequestAdjustment && (
+                  <TableCell>
+                    <RequestAdjustmentButton
+                      onSubmit={(comment) => requestAdjustment(m.id, comment)}
+                    />
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -496,13 +633,29 @@ export function SectionDespesas({
   project,
   pendingItems,
   readOnly,
+  canRequestAdjustment,
 }: {
   project: Project;
   pendingItems?: AdjustmentItem[];
-  // Despesas só são editáveis pelo Responsável Financeiro — Relator, Revisor
-  // e Jurídico apenas visualizam os lançamentos já feitos.
+  // Despesas só são editáveis pelo Responsável Financeiro — Relator e Revisor
+  // apenas visualizam os lançamentos já feitos.
   readOnly?: boolean;
+  // Revisor em modo leitura: pode solicitar ajuste numa despesa específica,
+  // devolvendo-a ao Financeiro sem afetar o status da iniciativa.
+  canRequestAdjustment?: boolean;
 }) {
+  const resolveDespesaAdjustment = useProjectsStore((s) => s.resolveDespesaAdjustment);
+  const despesaAdjustments = project.despesaAdjustments ?? [];
+
+  const expenseLabel = (item: DespesaAdjustmentItem) => {
+    if (item.expenseType === "thirdParty") {
+      const e = project.thirdParties.find((x) => x.id === item.expenseId);
+      return e ? `Serviço de terceiro — ${e.company}` : "Serviço de terceiro";
+    }
+    const m = project.materials.find((x) => x.id === item.expenseId);
+    return m ? `Material — ${m.materialDescription}` : "Material";
+  };
+
   return (
     <div className="max-w-5xl">
       <header className="mb-6">
@@ -510,7 +663,7 @@ export function SectionDespesas({
         <p className="mt-1 text-sm text-muted-foreground">
           {readOnly
             ? "Despesas elegíveis lançadas pelo Responsável Financeiro: horas de funcionários, serviços de terceiros e materiais."
-            : "Registre as despesas elegíveis vinculadas ao projeto: horas de funcionários, serviços de terceiros e materiais."}
+            : "Registre as despesas elegíveis vinculadas à iniciativa: horas de funcionários, serviços de terceiros e materiais."}
         </p>
       </header>
 
@@ -525,6 +678,29 @@ export function SectionDespesas({
         </div>
       )}
 
+      {!readOnly && despesaAdjustments.length > 0 && (
+        <div className="mb-6 space-y-2 rounded-lg border border-status-adjust-fg/40 bg-status-adjust/5 p-4 text-sm text-status-adjust-fg">
+          <div className="flex items-center gap-2 font-medium">
+            <AlertTriangle className="size-4 shrink-0" /> Ajustes solicitados pelo Revisor
+          </div>
+          {despesaAdjustments.map((item) => (
+            <div key={item.id} className="flex items-start justify-between gap-3">
+              <p>
+                <span className="font-medium">{expenseLabel(item)}:</span> {item.comment}
+              </p>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 shrink-0 text-xs"
+                onClick={() => resolveDespesaAdjustment(project.id, item.id)}
+              >
+                Marcar como resolvido
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <Tabs defaultValue="funcionarios">
         <TabsList>
           <TabsTrigger value="funcionarios">Funcionários</TabsTrigger>
@@ -535,10 +711,18 @@ export function SectionDespesas({
           <EmployeesTab project={project} readOnly={readOnly} />
         </TabsContent>
         <TabsContent value="terceiros" className="mt-4">
-          <ThirdPartyTab project={project} readOnly={readOnly} />
+          <ThirdPartyTab
+            project={project}
+            readOnly={readOnly}
+            canRequestAdjustment={canRequestAdjustment}
+          />
         </TabsContent>
         <TabsContent value="materiais" className="mt-4">
-          <MaterialsTab project={project} readOnly={readOnly} />
+          <MaterialsTab
+            project={project}
+            readOnly={readOnly}
+            canRequestAdjustment={canRequestAdjustment}
+          />
         </TabsContent>
       </Tabs>
     </div>
