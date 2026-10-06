@@ -22,7 +22,7 @@ import { ROLE_USERS, type Project, type UserRole } from "@/lib/types";
 
 interface GroupingFormProps {
   master?: Project;
-  // Só é usado ao criar um agrupamento novo, para atribuir a área/responsável
+  // Só é usado ao criar um agrupamento novo, para atribuir a Diretoria/responsável
   // ao perfil de quem está agrupando (Revisor ou Jurídico).
   mode?: UserRole;
   onSaved: (masterId: string) => void;

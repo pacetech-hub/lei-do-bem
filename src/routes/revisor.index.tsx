@@ -21,7 +21,7 @@ function RevisorPage() {
       <AppHeader current="Revisor" role="revisor" />
       <ProjectsList
         title="Revisão de Iniciativas"
-        description="Acompanhe as iniciativas de todas as áreas e filiais que aguardam sua análise técnica."
+        description="Acompanhe as iniciativas de todas as Diretorias e filiais que aguardam sua análise técnica."
         variant="revisor"
         infoFilial="Matriz — São Paulo/SP"
         infoSetor="Pesquisa & Desenvolvimento"

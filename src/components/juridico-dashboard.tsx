@@ -134,7 +134,7 @@ export function JuridicoDashboard() {
                 <TableRow className="bg-surface-muted hover:bg-surface-muted">
                   <TableHead className="w-[130px]">Trimestre</TableHead>
                   <TableHead className="w-[28%]">Projeto</TableHead>
-                  <TableHead>Área</TableHead>
+                  <TableHead>Diretoria</TableHead>
                   <TableHead>Relator</TableHead>
                   <TableHead className="w-[190px]">Status</TableHead>
                   <TableHead className="w-10" />

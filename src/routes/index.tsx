@@ -22,7 +22,7 @@ const CARDS = [
     to: "/dashboard" as const,
     title: "Relator",
     description:
-      "Cadastre e preencha projetos de inovação da sua área, envie para revisão e acompanhe rascunhos.",
+      "Cadastre e preencha projetos de inovação da sua Diretoria, envie para revisão e acompanhe rascunhos.",
     icon: ClipboardList,
   },
   {
@@ -36,7 +36,7 @@ const CARDS = [
     to: "/revisor" as const,
     title: "Revisor",
     description:
-      "Analise os projetos de todas as áreas e filiais que aguardam revisão, aprovando ou solicitando ajustes.",
+      "Analise os projetos de todas as Diretorias e filiais que aguardam revisão, aprovando ou solicitando ajustes.",
     icon: ShieldCheck,
   },
   {

@@ -21,7 +21,7 @@ import { ROLE_USERS, type UserRole } from "@/lib/types";
 
 interface AppHeaderProps {
   current?: string;
-  // Perfil de acesso ativo, usado para exibir avatar + nome + área no
+  // Perfil de acesso ativo, usado para exibir avatar + nome + Diretoria no
   // cabeçalho. Omitido na tela inicial de seleção de perfis, que não
   // identifica nenhum usuário.
   role?: UserRole;

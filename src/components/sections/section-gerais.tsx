@@ -138,7 +138,7 @@ export function SectionGerais({
       return;
     }
     if (!form.area) {
-      toast.error("Selecione a área do projeto.");
+      toast.error("Selecione a Diretoria do projeto.");
       return;
     }
     if (!form.startDate || !form.endDate) {
@@ -198,7 +198,7 @@ export function SectionGerais({
       {!editing ? (
         <dl className="rounded-lg border border-border bg-surface px-5">
           <Row label="Nome do projeto" value={project.name} flag={flagFor("name")} />
-          <Row label="Área" value={project.area} flag={flagFor("area")} />
+          <Row label="Diretoria" value={project.area} flag={flagFor("area")} />
           <Row label="Responsável" value={project.responsible} flag={flagFor("responsible")} />
           <Row
             label="Data de início"
@@ -235,11 +235,11 @@ export function SectionGerais({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>
-                Área <span className="text-primary">*</span>
+                Diretoria <span className="text-primary">*</span>
               </Label>
               <Select value={form.area} onValueChange={(v) => setForm({ ...form, area: v })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a área" />
+                  <SelectValue placeholder="Selecione a diretoria" />
                 </SelectTrigger>
                 <SelectContent>
                   {AREAS.map((a) => (

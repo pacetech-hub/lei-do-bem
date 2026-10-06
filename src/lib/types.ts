@@ -213,15 +213,16 @@ export interface Project {
   // Ajustes registrados pelo Revisor durante a leitura, ainda não enviados ao
   // Relator (persistidos para sobreviver a navegações antes do envio final).
   draftAdjustmentItems?: AdjustmentItem[];
-  // Compartilhamento do projeto com outra filial/área/revisor (tag "Compartilhado
-  // com a sua área"). sharedStatus controla o aceite/recusa por quem recebeu.
+  // Compartilhamento do projeto com outra filial/Diretoria/revisor (tag
+  // "Compartilhado com a sua Diretoria"). sharedStatus controla o
+  // aceite/recusa por quem recebeu.
   sharedWithArea?: boolean;
   sharedFilial?: string;
   sharedSetor?: string;
   sharedReviewer?: string;
   sharedStatus?: "pendente" | "aceito" | "recusado";
   sharedDeclineReason?: string;
-  // Marca permanente: este projeto já foi compartilhado com outra área em
+  // Marca permanente: este projeto já foi compartilhado com outra Diretoria em
   // algum momento (nunca é limpo, mesmo após aceitar/recusar) — usado pelo
   // Revisor para tratar o texto já escrito pelo Relator original como
   // somente leitura para sempre, com um campo próprio de acréscimos.
@@ -334,7 +335,7 @@ export const ALL_REQUIRED_QUESTIONS = [
 // aponte um campo específico ao solicitar ajustes.
 export const GERAIS_FIELDS: Question[] = [
   { id: "name", label: "Nome do projeto" },
-  { id: "area", label: "Área" },
+  { id: "area", label: "Diretoria" },
   { id: "responsible", label: "Responsável" },
   { id: "startDate", label: "Data de início" },
   { id: "endDate", label: "Data prevista de término" },

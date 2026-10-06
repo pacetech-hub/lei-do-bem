@@ -247,7 +247,7 @@ export const INITIAL_PROJECTS: Project[] = [
     },
     sharedAdditionalNotes: {
       inov_3:
-        "Revisor: confirmar com a área de origem se o painel também precisa se integrar ao sistema de supervisório já existente na planta de Engenharia de Produto.",
+        "Revisor: confirmar com a Diretoria de origem se o painel também precisa se integrar ao sistema de supervisório já existente na planta de Engenharia de Produto.",
     },
   }),
 ];
@@ -325,11 +325,11 @@ const RANDOM_ANSWER_POOL = [
   "O time avaliou soluções disponíveis no mercado antes de decidir pelo desenvolvimento próprio, já que nenhuma alternativa atendia às restrições operacionais e de integração exigidas pela planta.",
   "Foram realizados ciclos iterativos de prototipagem, com medições comparativas entre a abordagem anterior e a nova solução, documentando ganhos de desempenho e pontos de atenção remanescentes.",
   "A equipe multidisciplinar reuniu competências de engenharia, dados e operação para mapear os requisitos técnicos, priorizando entregas que reduzissem risco tecnológico nas etapas seguintes.",
-  "O desenvolvimento exigiu adaptação de processos já existentes, com testes de integração em ambiente controlado antes da validação em escala real junto às áreas envolvidas.",
+  "O desenvolvimento exigiu adaptação de processos já existentes, com testes de integração em ambiente controlado antes da validação em escala real junto às Diretorias envolvidas.",
   "Os resultados obtidos até o momento indicam ganhos consistentes frente à linha de base, ainda que alguns parâmetros continuem sendo monitorados para garantir estabilidade em produção.",
   "A metodologia adotada seguiu ciclos curtos de experimentação, com revisões periódicas de escopo e registro sistemático das decisões técnicas tomadas em cada etapa.",
   "Entre as principais dificuldades enfrentadas está a escassez de referências técnicas específicas para o contexto da empresa, o que exigiu validação experimental própria.",
-  "O conhecimento gerado ao longo do projeto já vem sendo incorporado a outras iniciativas da área, servindo como base técnica para desdobramentos futuros.",
+  "O conhecimento gerado ao longo do projeto já vem sendo incorporado a outras iniciativas da Diretoria, servindo como base técnica para desdobramentos futuros.",
   "A avaliação de riscos identificou pontos críticos relacionados à integração com sistemas legados, mitigados por meio de testes incrementais e planos de contingência.",
 ];
 

@@ -112,7 +112,7 @@ function FinalProjectReview() {
             <TableHeader>
               <TableRow className="bg-surface-muted hover:bg-surface-muted">
                 <TableHead className="w-[35%]">Projeto</TableHead>
-                <TableHead>Área</TableHead>
+                <TableHead>Diretoria</TableHead>
                 <TableHead>Natureza</TableHead>
                 <TableHead className="text-right">Despesas consolidadas</TableHead>
               </TableRow>

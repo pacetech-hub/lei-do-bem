@@ -45,7 +45,7 @@ export function buildProjectHistory(
   if (project.sharedStatus === "recusado" && project.sharedDeclineReason) {
     events.push({
       date: project.updatedAt,
-      actor: project.sharedSetor ?? "Área de origem",
+      actor: project.sharedSetor ?? "Diretoria de origem",
       description: "recusou o compartilhamento do projeto",
     });
   }

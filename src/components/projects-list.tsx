@@ -126,11 +126,11 @@ export function summarizeDependentStatuses(deps: Project[]) {
 }
 
 // Tag de projeto (não é status): indica que o projeto foi compartilhado com a
-// área do Revisor, mesmo sem ele ser o revisor titular.
+// Diretoria do Revisor, mesmo sem ele ser o revisor titular.
 function SharedWithAreaTag() {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
-      <Share2 className="size-3" /> Compartilhado com a sua área
+      <Share2 className="size-3" /> Compartilhado com a sua Diretoria
     </span>
   );
 }
@@ -204,8 +204,8 @@ interface ProjectsListProps {
   scopedFilial?: string;
   scopedSetor?: string;
   // Somente exibição (não filtra os projetos listados) — usado no Revisor,
-  // que precisa ver a mesma área de Filial/Setor da sua base, mas continua
-  // revisando projetos de todas as filiais e áreas.
+  // que precisa ver a mesma Diretoria/Filial/Setor da sua base, mas continua
+  // revisando projetos de todas as filiais e Diretorias.
   infoFilial?: string;
   infoSetor?: string;
   paginated?: boolean;
@@ -252,7 +252,7 @@ export function ProjectsList({
   const isFinanceiro = variant === "financeiro";
   const isJuridico = variant === "juridico";
   const isHierarchical = isRelator || isRevisor || isFinanceiro || isJuridico;
-  // Colunas Status/Relator/Área/Filial: mesmo formato para Revisor e Jurídico.
+  // Colunas Status/Relator/Diretoria/Filial: mesmo formato para Revisor e Jurídico.
   const showReviewCols = isRevisor || isJuridico;
   const isScoped = Boolean(scopedFilial && scopedSetor);
   const showFilialSetorFilters = !isScoped && variant === "default";
@@ -261,7 +261,7 @@ export function ProjectsList({
 
   const scopedProjects = useMemo(() => {
     // O Jurídico não é escopado por filial/setor: enxerga todo projeto que já
-    // chegou à sua etapa (tem legalStatus), de qualquer área/filial.
+    // chegou à sua etapa (tem legalStatus), de qualquer Diretoria/filial.
     if (isJuridico) return projects.filter((p) => p.legalStatus);
     if (!isScoped) return projects;
     return projects.filter((p) => getFilial(p) === scopedFilial && p.area === scopedSetor);
@@ -410,7 +410,7 @@ export function ProjectsList({
     sortKey !== "updated_desc";
 
   const colCount = showReviewCols
-    ? 7 // Trimestre, Projeto, Status, Relator, Área, Filial, seta
+    ? 7 // Trimestre, Projeto, Status, Relator, Diretoria, Filial, seta
     : isRelator
       ? 4 // Trimestre, Projeto, Status, seta
       : isFinanceiro
@@ -999,7 +999,7 @@ export function ProjectsList({
               </TableHead>
               {showReviewCols && <TableHead className="w-[130px] text-left">Status</TableHead>}
               {showReviewCols && <TableHead className="w-[14%]">Relator</TableHead>}
-              {showReviewCols && <TableHead className="w-[16%]">Área</TableHead>}
+              {showReviewCols && <TableHead className="w-[16%]">Diretoria</TableHead>}
               {showReviewCols && <TableHead className="w-[16%]">Filial</TableHead>}
               {isFinanceiro && <TableHead className="w-[15%]">Responsável</TableHead>}
               {showFilialColumn && <TableHead>Filial</TableHead>}

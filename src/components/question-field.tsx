@@ -32,7 +32,7 @@ interface Props {
   onRemoveDraftAdjustment?: (id: string) => void;
   // Projeto de origem compartilhada (Revisor): o texto original nunca é
   // editável, mesmo em modo de revisão — só um campo de observações abaixo,
-  // permanentemente, para nunca sobrescrever o que a outra área escreveu.
+  // permanentemente, para nunca sobrescrever o que a outra Diretoria escreveu.
   sharedReadOnly?: boolean;
   additionalNote?: string;
   onChangeAdditionalNote?: (v: string) => void;

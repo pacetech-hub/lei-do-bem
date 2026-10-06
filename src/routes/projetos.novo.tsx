@@ -43,7 +43,7 @@ export const Route = createFileRoute("/projetos/novo")({
 const schema = z
   .object({
     name: z.string().trim().min(3, "Informe um nome com pelo menos 3 caracteres").max(160),
-    area: z.string().min(1, "Selecione a área"),
+    area: z.string().min(1, "Selecione a Diretoria"),
     natureza: z.enum(["produto", "processo", "servico"]),
     atividade: z.enum(["basica", "aplicada", "experimental"]),
     startDate: z.string().min(1, "Informe a data de início"),
@@ -151,7 +151,7 @@ function NovoProjetoPage() {
     const v = form.getValues();
     if (!v.name.trim() || !v.area) {
       form.trigger(["name", "area"]);
-      toast.error("Preencha o nome e a área para salvar o rascunho.");
+      toast.error("Preencha o nome e a Diretoria para salvar o rascunho.");
       return;
     }
     const id = createProject({
@@ -369,14 +369,14 @@ function NovoProjetoPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>
-                    Área da iniciativa <span className="text-primary">*</span>
+                    Diretoria da iniciativa <span className="text-primary">*</span>
                   </Label>
                   <Select
                     value={form.watch("area")}
                     onValueChange={(v) => form.setValue("area", v, { shouldValidate: true })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione a área" />
+                      <SelectValue placeholder="Selecione a diretoria" />
                     </SelectTrigger>
                     <SelectContent>
                       {AREAS.map((a) => (

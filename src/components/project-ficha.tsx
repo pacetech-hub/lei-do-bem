@@ -110,11 +110,12 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   const isRevisor = mode === "revisor";
   const isFinanceiro = mode === "financeiro";
   const isJuridico = mode === "juridico";
-  // Compartilhar uma iniciativa com outra área é uma decisão do Revisor, que
-  // percebe que ela pertence a outra área — o Relator não tem essa opção.
+  // Compartilhar uma iniciativa com outra Diretoria é uma decisão do Revisor,
+  // que percebe que ela pertence a outra Diretoria — o Relator não tem essa
+  // opção.
   const canShare = isRevisor;
   // Candidatos a "Relator responsável" no aceite: quem já é responsável por
-  // algum projeto na área de destino, sem repetição.
+  // algum projeto na Diretoria de destino, sem repetição.
   const candidateRelators = useMemo(() => {
     const inTargetArea = allProjects.filter((p: Project) => p.area === project.sharedSetor);
     const pool = inTargetArea.length > 0 ? inTargetArea : allProjects;
@@ -143,7 +144,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   // etapa nem aparece na navegação dele, renumerando as demais etapas.
   const visibleSections = isRelator ? SECTIONS.filter((s) => s.key !== "despesas") : SECTIONS;
   // Projeto de origem compartilhada: para o Revisor, o texto já escrito por
-  // quem criou o projeto em outra área nunca é editável, mesmo depois do
+  // quem criou o projeto em outra Diretoria nunca é editável, mesmo depois do
   // aceite — só um campo de observações adicionais, permanentemente.
   const sharedReadOnly = isRevisor && Boolean(project.everSharedWithArea);
   const handleChangeAdditionalNote = (fieldId: string, value: string) => {
@@ -357,7 +358,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
   const handleShare = () => {
     if (!shareFilial || !shareSetor || !shareReviewer) {
-      toast.error("Selecione a filial, a área e o revisor responsável.");
+      toast.error("Selecione a filial, a Diretoria e o revisor responsável.");
       return;
     }
     updateProject(project.id, {
@@ -402,7 +403,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
 
   const confirmDeclineShare = () => {
     if (!declineReason.trim()) {
-      toast.error("Descreva o motivo da recusa para a área de origem.");
+      toast.error("Descreva o motivo da recusa para a Diretoria de origem.");
       return;
     }
     updateProject(project.id, {
@@ -411,7 +412,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       sharedDeclineReason: declineReason.trim(),
     });
     toast.success("Compartilhamento recusado", {
-      description: "O projeto foi devolvido à área de origem com a justificativa informada.",
+      description: "O projeto foi devolvido à Diretoria de origem com a justificativa informada.",
     });
     setDeclineShareOpen(false);
     setDeclineReason("");
@@ -459,7 +460,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                       <span className="font-medium text-foreground">{project.responsible}</span>
                     </span>
                     <span>
-                      Área: <span className="font-medium text-foreground">{project.area}</span>
+                      Diretoria: <span className="font-medium text-foreground">{project.area}</span>
                     </span>
                     <span>
                       Filial:{" "}
@@ -1021,8 +1022,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             <DialogHeader>
               <DialogTitle>Compartilhar projeto</DialogTitle>
               <DialogDescription>
-                Selecione a filial, a área e o revisor responsável para compartilhar este projeto.
-                Quem receber poderá aceitar ou recusar a revisão.
+                Selecione a filial, a Diretoria e o revisor responsável para compartilhar este
+                projeto. Quem receber poderá aceitar ou recusar a revisão.
               </DialogDescription>
             </DialogHeader>
 
@@ -1043,10 +1044,10 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Área</Label>
+                <Label>Diretoria</Label>
                 <Select value={shareSetor} onValueChange={setShareSetor}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione a área" />
+                    <SelectValue placeholder="Selecione a diretoria" />
                   </SelectTrigger>
                   <SelectContent>
                     {AREAS.map((a) => (
@@ -1096,7 +1097,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             <DialogHeader>
               <DialogTitle>Aceitar compartilhamento</DialogTitle>
               <DialogDescription>
-                Selecione qual Relator ficará responsável pelos ajustes deste projeto na sua área.
+                Selecione qual Relator ficará responsável pelos ajustes deste projeto na sua
+                Diretoria.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
@@ -1136,8 +1138,8 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
             <DialogHeader>
               <DialogTitle>Recusar compartilhamento</DialogTitle>
               <DialogDescription>
-                O projeto será devolvido à área de origem. Descreva o motivo para que ela entenda o
-                que precisa ser ajustado antes de encaminhar novamente.
+                O projeto será devolvido à Diretoria de origem. Descreva o motivo para que ela
+                entenda o que precisa ser ajustado antes de encaminhar novamente.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
@@ -1146,7 +1148,7 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
                 id="decline-reason"
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
-                placeholder="Ex.: Este projeto não é da nossa área; encaminhar para Automação."
+                placeholder="Ex.: Este projeto não é da nossa Diretoria; encaminhar para Automação."
                 rows={4}
               />
             </div>
