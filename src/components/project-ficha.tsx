@@ -132,7 +132,12 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
       : "editable";
   // O Relator não lança despesas (isso é do Responsável Financeiro) — a
   // etapa nem aparece na navegação dele, renumerando as demais etapas.
-  const visibleSections = isRelator ? SECTIONS.filter((s) => s.key !== "despesas") : SECTIONS;
+  // O Responsável Financeiro não vê Recursos (isso é do Relator).
+  const visibleSections = isRelator
+    ? SECTIONS.filter((s) => s.key !== "despesas")
+    : isFinanceiro
+      ? SECTIONS.filter((s) => s.key !== "recursos")
+      : SECTIONS;
   // Projeto de origem compartilhada: para o Revisor, o texto já escrito por
   // quem criou o projeto em outra Diretoria nunca é editável, mesmo depois do
   // aceite — só um campo de observações adicionais, permanentemente.

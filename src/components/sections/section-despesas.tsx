@@ -280,7 +280,7 @@ function EmployeesTab({ project, readOnly }: { project: Project; readOnly?: bool
   );
 }
 
-function ThirdPartyTab({
+export function ThirdPartyTab({
   project,
   readOnly,
   canRequestAdjustment,
@@ -448,7 +448,7 @@ function ThirdPartyTab({
   );
 }
 
-function MaterialsTab({
+export function MaterialsTab({
   project,
   readOnly,
   canRequestAdjustment,
