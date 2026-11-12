@@ -153,7 +153,9 @@ export function JuridicoPreProjetosList() {
                 <TableCell className="py-4 text-sm text-muted-foreground">
                   {r.diretorias.join(", ") || "—"}
                 </TableCell>
-                <TableCell className="py-4 text-right text-sm tabular-nums">{r.quantidade}</TableCell>
+                <TableCell className="py-4 text-right text-sm tabular-nums">
+                  {r.quantidade}
+                </TableCell>
                 <TableCell className="py-4 text-right text-sm tabular-nums font-medium">
                   {brl(r.valorTotal)}
                 </TableCell>

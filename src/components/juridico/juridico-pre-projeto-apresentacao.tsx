@@ -35,7 +35,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useProjectsStore } from "@/lib/store";
-import { diretoriasDoAgrupamento, gerarPreProjetoConteudo, valorTotalIniciativas } from "@/lib/juridico";
+import {
+  diretoriasDoAgrupamento,
+  gerarPreProjetoConteudo,
+  valorTotalIniciativas,
+} from "@/lib/juridico";
 import { PreProjetoStatusBadge } from "@/components/juridico/juridico-status-badge";
 import { IniciativaDetailSheet } from "@/components/juridico/iniciativa-detail-sheet";
 import {
@@ -79,9 +83,10 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
   const registrarDecisaoComite = useProjectsStore((s) => s.registrarDecisaoComite);
 
   const agrupamento = agrupamentos.find((a) => a.id === preProjeto.agrupamentoId);
-  const iniciativaIds = agrupamento?.iniciativaIds ?? [];
+  const iniciativaIds = useMemo(() => agrupamento?.iniciativaIds ?? [], [agrupamento]);
   const membros = useMemo(
-    () => iniciativaIds.map((id) => projects.find((p) => p.id === id)).filter((p): p is Project => !!p),
+    () =>
+      iniciativaIds.map((id) => projects.find((p) => p.id === id)).filter((p): p is Project => !!p),
     [iniciativaIds, projects],
   );
   const diretorias = diretoriasDoAgrupamento(iniciativaIds, projects);
@@ -216,7 +221,12 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
         <section className="mb-6 rounded-lg border border-border bg-surface p-5">
           <div className="mb-2 flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-foreground">Resumo executivo</h2>
-            <Button variant="outline" size="sm" className="gap-2" onClick={() => setConfirmRegenOpen(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => setConfirmRegenOpen(true)}
+            >
               <Sparkles className="size-3.5" /> Atualizar com base no agrupamento
             </Button>
           </div>
@@ -324,7 +334,9 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
             <ul className="space-y-2">
               {decisoes.map((d) => (
                 <li key={d.id} className="rounded-md border border-border p-3 text-sm">
-                  <div className="font-medium text-foreground">{COMITE_DECISAO_LABEL[d.decisao]}</div>
+                  <div className="font-medium text-foreground">
+                    {COMITE_DECISAO_LABEL[d.decisao]}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     registrado por {d.responsavel} em {fmtDate(d.data)}
                   </div>

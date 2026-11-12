@@ -53,7 +53,12 @@ function computeInitial(
   suggestionId: string | undefined,
   projects: Project[],
   agrupamentos: Agrupamento[],
-): { fields: ConsolidacaoFields; iniciativaIds: string[]; aiSuggested: boolean; resumoEditado: boolean } {
+): {
+  fields: ConsolidacaoFields;
+  iniciativaIds: string[];
+  aiSuggested: boolean;
+  resumoEditado: boolean;
+} {
   if (agrupamento) {
     return {
       fields: {
@@ -103,7 +108,9 @@ export function JuridicoAgrupamentoForm({
   const createAgrupamento = useProjectsStore((s) => s.createAgrupamento);
   const updateAgrupamento = useProjectsStore((s) => s.updateAgrupamento);
   const addIniciativaToAgrupamento = useProjectsStore((s) => s.addIniciativaToAgrupamento);
-  const removeIniciativaFromAgrupamento = useProjectsStore((s) => s.removeIniciativaFromAgrupamento);
+  const removeIniciativaFromAgrupamento = useProjectsStore(
+    (s) => s.removeIniciativaFromAgrupamento,
+  );
   const transformarAgrupamentoEmPreProjeto = useProjectsStore(
     (s) => s.transformarAgrupamentoEmPreProjeto,
   );
@@ -126,7 +133,8 @@ export function JuridicoAgrupamentoForm({
   const isEdicao = !!agrupamentoExistente;
 
   const membros = useMemo(
-    () => iniciativaIds.map((id) => projects.find((p) => p.id === id)).filter((p): p is Project => !!p),
+    () =>
+      iniciativaIds.map((id) => projects.find((p) => p.id === id)).filter((p): p is Project => !!p),
     [iniciativaIds, projects],
   );
   const diretorias = useMemo(
@@ -323,7 +331,12 @@ export function JuridicoAgrupamentoForm({
           <aside className="space-y-3 rounded-lg border border-border bg-surface p-5">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold text-foreground">Iniciativas do agrupamento</h2>
-              <Button size="sm" variant="outline" className="gap-1" onClick={() => setAddOpen(true)}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1"
+                onClick={() => setAddOpen(true)}
+              >
                 <Plus className="size-3.5" /> Adicionar
               </Button>
             </div>
@@ -434,7 +447,8 @@ export function JuridicoAgrupamentoForm({
             <AlertDialogTitle>Substituir o resumo editado manualmente?</AlertDialogTitle>
             <AlertDialogDescription>
               Você editou o resumo manualmente. A nova consolidação da IA, com base nas iniciativas
-              atuais, é: <span className="mt-2 block text-foreground">{pendingIaFields?.resumo}</span>
+              atuais, é:{" "}
+              <span className="mt-2 block text-foreground">{pendingIaFields?.resumo}</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

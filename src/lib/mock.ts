@@ -1441,16 +1441,11 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
 (() => {
   const byName = (name: string) => INITIAL_PROJECTS.find((p) => p.name === name)!;
 
-  const clusterA = [
-    "Célula Robotizada de Solda para Linha de Montagem",
-    "Braço Robótico Colaborativo para Picking",
-    "Sistema de Visão para Controle de Automação Industrial",
-  ].map((n) => byName(n).id);
-  const clusterB = [
-    "Sistema de Recuperação de Energia em Compressores",
-    "Painel Solar Modular para Autoconsumo Industrial",
-    "Programa de Redução de Emissões na Linha de Pintura",
-  ].map((n) => byName(n).id);
+  // Clusters A (Automação e Robótica Industrial) e B (Eficiência Energética e
+  // Sustentabilidade) ficam deliberadamente SEM agrupamento — são a massa de
+  // teste para as sugestões de agrupamento da IA na tela de Iniciativas (ver
+  // gerarSugestoesAgrupamento em lib/juridico.ts). Só o cluster C já vem
+  // agrupado, para demonstrar as etapas seguintes do fluxo.
   const clusterC = [
     "Plataforma de Inteligência Artificial para Previsão de Demanda",
     "Modelo de Machine Learning para Detecção de Defeitos",
@@ -1462,135 +1457,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
   const reatorId = byName("Reator Modular de Testes de Corrosão Acelerada").id;
   const protocoloId = byName("Protocolo de Comunicação Industrial Proprietário").id;
 
-  // Agrupamento 1 — sugestão da IA transformada em pré-projeto, ainda não
-  // avaliado pelo comitê.
-  const agrupamentoA: Agrupamento = {
-    id: nextId("agr"),
-    name: "Automação e Robótica Industrial",
-    resumo:
-      "Agrupamento de 3 iniciativas das Diretorias Automação, Engenharia de Produto e Processos Industriais, relacionadas por automação industrial e robótica aplicada à produção.",
-    objetivoComum:
-      "Consolidar iniciativas de automação industrial e robótica que elevam produtividade e qualidade na produção.",
-    relacaoAtividades:
-      "As três iniciativas envolvem integração de robótica, visão computacional e controle de células automatizadas.",
-    justificativa:
-      "Agrupadas por tratarem de tecnologias e oportunidades convergentes de automação industrial, permitindo avaliação consolidada pelo comitê.",
-    iniciativaIds: clusterA,
-    aiSuggested: true,
-    createdAt: daysAgo(18),
-    updatedAt: daysAgo(15),
-    history: [
-      seedHistory(
-        ROLE_USERS.juridico.name,
-        "criou o agrupamento a partir de uma sugestão da IA",
-        daysAgo(18),
-      ),
-      seedHistory(
-        ROLE_USERS.juridico.name,
-        "transformou o agrupamento em pré-projeto",
-        daysAgo(15),
-      ),
-    ],
-  };
-  const preProjetoA: PreProjeto = {
-    id: nextId("prep"),
-    agrupamentoId: agrupamentoA.id,
-    name: "Pré-projeto — Automação e Robótica Industrial",
-    ano: 2026,
-    resumoExecutivo: agrupamentoA.resumo,
-    problema:
-      "Processos manuais de automação, picking e inspeção geram retrabalho, riscos ergonômicos e falhas não detectadas.",
-    objetivoPrincipal: agrupamentoA.objetivoComum,
-    propostaInovacao: agrupamentoA.justificativa,
-    atividadesInovacao: agrupamentoA.relacaoAtividades,
-    resultadosEsperados:
-      "Ganhos de produtividade, segurança e rastreabilidade nas linhas automatizadas.",
-    status: "aguardando_comite",
-    createdAt: daysAgo(15),
-    updatedAt: daysAgo(15),
-    decisoes: [],
-    history: [
-      seedHistory(
-        ROLE_USERS.juridico.name,
-        "criou o pré-projeto a partir do agrupamento",
-        daysAgo(15),
-      ),
-    ],
-  };
-  agrupamentoA.preProjetoId = preProjetoA.id;
-
-  // Agrupamento 2 — pré-projeto com ajuste solicitado pelo comitê.
-  const agrupamentoB: Agrupamento = {
-    id: nextId("agr"),
-    name: "Eficiência Energética e Sustentabilidade",
-    resumo:
-      "Agrupamento de 3 iniciativas das Diretorias Processos Industriais, Automação e Qualidade e Inovação, relacionadas por eficiência energética e sustentabilidade.",
-    objetivoComum:
-      "Consolidar iniciativas que reduzem consumo energético e impacto ambiental da operação.",
-    relacaoAtividades:
-      "As iniciativas envolvem recuperação de energia, geração renovável e redução de emissões.",
-    justificativa:
-      "Agrupadas por tratarem de oportunidades convergentes de eficiência energética e sustentabilidade.",
-    iniciativaIds: clusterB,
-    aiSuggested: true,
-    createdAt: daysAgo(40),
-    updatedAt: daysAgo(10),
-    history: [
-      seedHistory(
-        ROLE_USERS.juridico.name,
-        "criou o agrupamento a partir de uma sugestão da IA",
-        daysAgo(40),
-      ),
-      seedHistory(
-        ROLE_USERS.juridico.name,
-        "transformou o agrupamento em pré-projeto",
-        daysAgo(35),
-      ),
-    ],
-  };
-  const preProjetoB: PreProjeto = {
-    id: nextId("prep"),
-    agrupamentoId: agrupamentoB.id,
-    name: "Pré-projeto — Eficiência Energética e Sustentabilidade",
-    ano: 2026,
-    resumoExecutivo: agrupamentoB.resumo,
-    problema:
-      "Alto consumo energético e emissões acima do desejável em etapas críticas da operação.",
-    objetivoPrincipal: agrupamentoB.objetivoComum,
-    propostaInovacao: agrupamentoB.justificativa,
-    atividadesInovacao: agrupamentoB.relacaoAtividades,
-    resultadosEsperados:
-      "Redução de consumo energético e de emissões, com avanço nas metas de sustentabilidade.",
-    status: "ajustes_solicitados",
-    createdAt: daysAgo(35),
-    updatedAt: daysAgo(10),
-    decisoes: [
-      {
-        id: nextId("dec"),
-        decisao: "ajustes",
-        data: daysAgo(10),
-        responsavel: ROLE_USERS.juridico.name,
-        observacoes:
-          "Comitê pediu detalhamento do retorno financeiro estimado antes de uma nova avaliação.",
-      },
-    ],
-    history: [
-      seedHistory(
-        ROLE_USERS.juridico.name,
-        "criou o pré-projeto a partir do agrupamento",
-        daysAgo(35),
-      ),
-      seedHistory(ROLE_USERS.juridico.name, "apresentou o pré-projeto ao comitê", daysAgo(11)),
-      seedHistory(
-        ROLE_USERS.juridico.name,
-        "o comitê solicitou ajustes no pré-projeto",
-        daysAgo(10),
-      ),
-    ],
-  };
-  agrupamentoB.preProjetoId = preProjetoB.id;
-
-  // Agrupamento 3 — aprovado pelo comitê, já virou Projeto em elaboração.
+  // Agrupamento — aprovado pelo comitê, já virou Projeto em elaboração.
   const agrupamentoC: Agrupamento = {
     id: nextId("agr"),
     name: "Plataformas de Dados e Inteligência Artificial",
@@ -1680,8 +1547,8 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
   preProjetoC.projetoId = projetoC.id;
   agrupamentoC.preProjetoId = preProjetoC.id;
 
-  INITIAL_AGRUPAMENTOS.push(agrupamentoA, agrupamentoB, agrupamentoC);
-  INITIAL_PRE_PROJETOS.push(preProjetoA, preProjetoB, preProjetoC);
+  INITIAL_AGRUPAMENTOS.push(agrupamentoC);
+  INITIAL_PRE_PROJETOS.push(preProjetoC);
   INITIAL_JURIDICO_PROJETOS.push(projetoC);
 
   // --- Projetos individuais, em diferentes estágios do fluxo com o MCTI ----

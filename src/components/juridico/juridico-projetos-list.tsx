@@ -102,7 +102,10 @@ export function JuridicoProjetosList() {
           placeholder="Buscar por nome ou identificação…"
           className="h-9 w-[260px]"
         />
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as ProjetoStatus | "all")}>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v as ProjetoStatus | "all")}
+        >
           <SelectTrigger className="h-9 w-[200px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -171,7 +174,9 @@ export function JuridicoProjetosList() {
               <TableRow
                 key={r.projeto.id}
                 className="group cursor-pointer"
-                onClick={() => navigate({ to: "/juridico/projetos/$id", params: { id: r.projeto.id } })}
+                onClick={() =>
+                  navigate({ to: "/juridico/projetos/$id", params: { id: r.projeto.id } })
+                }
               >
                 <TableCell className="py-4 font-medium text-foreground">{r.projeto.name}</TableCell>
                 <TableCell className="py-4 text-sm text-muted-foreground">

@@ -106,8 +106,8 @@ export function JuridicoDevolutivasMcti() {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Devolutivas do MCTI</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Envie o documento oficial de retorno do MCTI e confirme a interpretação antes de
-          atualizar o status do projeto.
+          Envie o documento oficial de retorno do MCTI e confirme a interpretação antes de atualizar
+          o status do projeto.
         </p>
       </div>
 
@@ -156,8 +156,7 @@ export function JuridicoDevolutivasMcti() {
           projetoSelecionado && (
             <>
               <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-                <FileSearch className="size-4 text-muted-foreground" /> Conferência da
-                interpretação
+                <FileSearch className="size-4 text-muted-foreground" /> Conferência da interpretação
               </h2>
               <dl className="mb-4 grid gap-4 sm:grid-cols-2">
                 <div>
@@ -271,7 +270,10 @@ export function JuridicoDevolutivasMcti() {
             {processados.map((p) => {
               const ultima = p.submissions[p.submissions.length - 1];
               return (
-                <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                <li
+                  key={p.id}
+                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                >
                   <div>
                     <div className="font-medium text-foreground">{p.name}</div>
                     <div className="text-xs text-muted-foreground">

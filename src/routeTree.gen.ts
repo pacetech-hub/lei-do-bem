@@ -38,6 +38,7 @@ import { Route as FinanceiroProjetosIdRouteImport } from './routes/financeiro.pr
 import { Route as JuridicoAgrupamentosIdRouteImport } from './routes/juridico.agrupamentos.$id'
 import { Route as JuridicoAgrupamentosNovoRouteImport } from './routes/juridico.agrupamentos.novo'
 import { Route as JuridicoIniciativasIndexRouteImport } from './routes/juridico.iniciativas.index'
+import { Route as JuridicoIniciativasIdRouteImport } from './routes/juridico.iniciativas.$id'
 import { Route as JuridicoPreProjetosIndexRouteImport } from './routes/juridico.pre-projetos.index'
 import { Route as JuridicoPreProjetosIdRouteImport } from './routes/juridico.pre-projetos.$id'
 import { Route as JuridicoProjetosIndexRouteImport } from './routes/juridico.projetos.index'
@@ -198,6 +199,11 @@ const JuridicoIniciativasIndexRoute =
     path: '/',
     getParentRoute: () => JuridicoIniciativasRoute,
   } as any)
+const JuridicoIniciativasIdRoute = JuridicoIniciativasIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => JuridicoIniciativasRoute,
+} as any)
 const JuridicoPreProjetosIndexRoute =
   JuridicoPreProjetosIndexRouteImport.update({
     id: '/',
@@ -259,6 +265,7 @@ export interface FileRoutesByFullPath {
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/juridico/agrupamentos/$id': typeof JuridicoAgrupamentosIdRoute
   '/juridico/agrupamentos/novo': typeof JuridicoAgrupamentosNovoRoute
+  '/juridico/iniciativas/$id': typeof JuridicoIniciativasIdRoute
   '/juridico/pre-projetos/$id': typeof JuridicoPreProjetosIdRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
   '/juridico/projetos/devolutivas': typeof JuridicoProjetosDevolutivasRoute
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/juridico/agrupamentos/$id': typeof JuridicoAgrupamentosIdRoute
   '/juridico/agrupamentos/novo': typeof JuridicoAgrupamentosNovoRoute
+  '/juridico/iniciativas/$id': typeof JuridicoIniciativasIdRoute
   '/juridico/pre-projetos/$id': typeof JuridicoPreProjetosIdRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
   '/juridico/projetos/devolutivas': typeof JuridicoProjetosDevolutivasRoute
@@ -325,6 +333,7 @@ export interface FileRoutesById {
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/juridico/agrupamentos/$id': typeof JuridicoAgrupamentosIdRoute
   '/juridico/agrupamentos/novo': typeof JuridicoAgrupamentosNovoRoute
+  '/juridico/iniciativas/$id': typeof JuridicoIniciativasIdRoute
   '/juridico/pre-projetos/$id': typeof JuridicoPreProjetosIdRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
   '/juridico/projetos/devolutivas': typeof JuridicoProjetosDevolutivasRoute
@@ -364,6 +373,7 @@ export interface FileRouteTypes {
     | '/financeiro/projetos/$id'
     | '/juridico/agrupamentos/$id'
     | '/juridico/agrupamentos/novo'
+    | '/juridico/iniciativas/$id'
     | '/juridico/pre-projetos/$id'
     | '/juridico/projetos/$id'
     | '/juridico/projetos/devolutivas'
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/financeiro/projetos/$id'
     | '/juridico/agrupamentos/$id'
     | '/juridico/agrupamentos/novo'
+    | '/juridico/iniciativas/$id'
     | '/juridico/pre-projetos/$id'
     | '/juridico/projetos/$id'
     | '/juridico/projetos/devolutivas'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/financeiro/projetos/$id'
     | '/juridico/agrupamentos/$id'
     | '/juridico/agrupamentos/novo'
+    | '/juridico/iniciativas/$id'
     | '/juridico/pre-projetos/$id'
     | '/juridico/projetos/$id'
     | '/juridico/projetos/devolutivas'
@@ -656,6 +668,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JuridicoIniciativasIndexRouteImport
       parentRoute: typeof JuridicoIniciativasRoute
     }
+    '/juridico/iniciativas/$id': {
+      id: '/juridico/iniciativas/$id'
+      path: '/$id'
+      fullPath: '/juridico/iniciativas/$id'
+      preLoaderRoute: typeof JuridicoIniciativasIdRouteImport
+      parentRoute: typeof JuridicoIniciativasRoute
+    }
     '/juridico/pre-projetos/': {
       id: '/juridico/pre-projetos/'
       path: '/'
@@ -778,10 +797,12 @@ const JuridicoAgrupamentosRouteWithChildren =
   JuridicoAgrupamentosRoute._addFileChildren(JuridicoAgrupamentosRouteChildren)
 
 interface JuridicoIniciativasRouteChildren {
+  JuridicoIniciativasIdRoute: typeof JuridicoIniciativasIdRoute
   JuridicoIniciativasIndexRoute: typeof JuridicoIniciativasIndexRoute
 }
 
 const JuridicoIniciativasRouteChildren: JuridicoIniciativasRouteChildren = {
+  JuridicoIniciativasIdRoute: JuridicoIniciativasIdRoute,
   JuridicoIniciativasIndexRoute: JuridicoIniciativasIndexRoute,
 }
 

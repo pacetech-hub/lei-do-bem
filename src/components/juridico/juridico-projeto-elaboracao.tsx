@@ -174,7 +174,9 @@ export function JuridicoProjetoElaboracao({ projeto }: { projeto: JuridicoProjet
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <ProjetoStatusBadge status={projeto.status} />
-            <h1 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{projeto.name}</h1>
+            <h1 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
+              {projeto.name}
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">{projeto.identificacao}</p>
           </div>
           <div className="flex flex-wrap gap-2">
