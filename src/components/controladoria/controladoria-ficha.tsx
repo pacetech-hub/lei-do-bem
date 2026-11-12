@@ -5,7 +5,6 @@ import { ptBR } from "date-fns/locale";
 import { AlertTriangle, ArrowLeft, CheckCircle2, History, Send, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -128,9 +127,7 @@ export function ControladoriaFicha({ project }: { project: Project }) {
   const despesaAdjustments = project.despesaAdjustments ?? [];
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      <AppHeader current="Controladoria" role="controladoria" />
-
+    <div className="pb-32">
       <main className="mx-auto max-w-4xl px-6 py-8">
         <Link
           to="/controladoria/iniciativas"

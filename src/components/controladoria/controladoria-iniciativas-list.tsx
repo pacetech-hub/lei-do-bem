@@ -4,7 +4,6 @@ import { ChevronRight, Clock3, Send, Undo2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-import { AppHeader } from "@/components/app-header";
 import {
   Select,
   SelectContent,
@@ -93,8 +92,7 @@ export function ControladoriaIniciativasList() {
   }, [received, statusFilter, areaFilter, yearFilter]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader current="Iniciativas — Controladoria" role="controladoria" />
+    <>
       <main className="mx-auto max-w-[1440px] px-6 py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold tracking-tight">Iniciativas</h1>
@@ -250,6 +248,6 @@ export function ControladoriaIniciativasList() {
           </Table>
         </div>
       </main>
-    </div>
+    </>
   );
 }

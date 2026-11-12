@@ -48,7 +48,7 @@ const CARDS = [
     icon: ShieldCheck,
   },
   {
-    to: "/controladoria" as const,
+    to: "/controladoria/iniciativas" as const,
     title: "Controladoria",
     description:
       "Analise as despesas das iniciativas recebidas do Revisor e encaminhe ao Jurídico.",
