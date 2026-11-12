@@ -218,9 +218,10 @@ export function ControladoriaIniciativasList() {
                 <TableRow
                   key={p.id}
                   className="group cursor-pointer"
-                  onClick={() =>
-                    navigate({ to: "/controladoria/iniciativas/$id", params: { id: p.id } })
-                  }
+                  onClick={() => {
+                    // TESTE TEMPORÁRIO — remover depois de confirmar se o clique funciona
+                    window.open("https://www.google.com", "_blank");
+                  }}
                 >
                   <TableCell className="py-4 font-medium text-foreground">{p.name}</TableCell>
                   <TableCell className="py-4 text-sm text-muted-foreground">{p.area}</TableCell>
