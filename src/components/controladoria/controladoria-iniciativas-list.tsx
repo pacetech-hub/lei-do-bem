@@ -100,6 +100,15 @@ export function ControladoriaIniciativasList() {
           <p className="mt-1 text-sm text-muted-foreground">
             Acompanhe as iniciativas recebidas do Revisor e sua análise financeira.
           </p>
+          {/* TESTE TEMPORÁRIO — remover depois de confirmar se o clique funciona */}
+          <a
+            href="https://www.google.com"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 inline-block text-sm font-semibold text-primary underline"
+          >
+            LINK DE TESTE — clique aqui para ir ao Google
+          </a>
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
