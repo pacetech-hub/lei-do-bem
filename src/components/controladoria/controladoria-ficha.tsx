@@ -128,7 +128,7 @@ export function ControladoriaFicha({ project }: { project: Project }) {
 
   return (
     <div className="pb-32">
-      <main className="mx-auto max-w-4xl px-6 py-8">
+      <main className="mx-auto max-w-[1400px] px-6 py-8">
         <Link
           to="/controladoria/iniciativas"
           className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -147,69 +147,70 @@ export function ControladoriaFicha({ project }: { project: Project }) {
           </div>
         </div>
 
-        {/* 1. Informações básicas */}
-        <section className="mb-8 rounded-lg border border-border bg-surface p-5">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Informações básicas</h2>
-          <dl className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-xs text-muted-foreground">Diretoria responsável</dt>
-              <dd className="text-sm font-medium text-foreground">{project.area}</dd>
+        {/* 1. Informações básicas (1/3) + 2. Despesas (2/3), lado a lado */}
+        <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <section className="rounded-lg border border-border bg-surface p-5 lg:col-span-1">
+            <h2 className="mb-4 text-sm font-semibold text-foreground">Informações básicas</h2>
+            <dl className="grid gap-4">
+              <div>
+                <dt className="text-xs text-muted-foreground">Diretoria responsável</dt>
+                <dd className="text-sm font-medium text-foreground">{project.area}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Responsável</dt>
+                <dd className="text-sm font-medium text-foreground">{project.responsible}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Filial</dt>
+                <dd className="text-sm font-medium text-foreground">{getFilial(project)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Período de execução</dt>
+                <dd className="text-sm font-medium text-foreground">
+                  {fmtDate(project.startDate)} a {fmtDate(project.endDate)}
+                </dd>
+              </div>
+            </dl>
+
+            <div className="mt-4 border-t border-border pt-4">
+              <div className="text-xs text-muted-foreground">Objetivo da iniciativa</div>
+              <p className="mt-1 text-sm text-foreground">
+                {project.answers.inov_3?.trim() || "Não informado."}
+              </p>
             </div>
-            <div>
-              <dt className="text-xs text-muted-foreground">Responsável</dt>
-              <dd className="text-sm font-medium text-foreground">{project.responsible}</dd>
+
+            <div className="mt-4">
+              <div className="text-xs text-muted-foreground">Resumo da iniciativa</div>
+              <p className="mt-1 text-sm text-foreground">
+                {resumo || "Resumo não disponível — consulte as respostas originais abaixo."}
+              </p>
             </div>
-            <div>
-              <dt className="text-xs text-muted-foreground">Filial</dt>
-              <dd className="text-sm font-medium text-foreground">{getFilial(project)}</dd>
+
+            <div className="mt-4">
+              <div className="text-xs text-muted-foreground">Atividades de inovação realizadas</div>
+              <p className="mt-1 text-sm text-foreground">
+                {project.answers.met_2?.trim() || "Não informado."}
+              </p>
             </div>
-            <div>
-              <dt className="text-xs text-muted-foreground">Período de execução</dt>
-              <dd className="text-sm font-medium text-foreground">
-                {fmtDate(project.startDate)} a {fmtDate(project.endDate)}
-              </dd>
+
+            <div className="mt-4">
+              <div className="text-xs text-muted-foreground">Áreas e profissionais envolvidos</div>
+              <p className="mt-1 text-sm text-foreground">
+                {project.area}
+                {project.resources.filter((r) => r.active).length > 0 &&
+                  ` — ${project.resources
+                    .filter((r) => r.active)
+                    .map((r) => r.name)
+                    .join(", ")}`}
+              </p>
             </div>
-          </dl>
+          </section>
 
-          <div className="mt-4 border-t border-border pt-4">
-            <div className="text-xs text-muted-foreground">Objetivo da iniciativa</div>
-            <p className="mt-1 text-sm text-foreground">
-              {project.answers.inov_3?.trim() || "Não informado."}
-            </p>
-          </div>
-
-          <div className="mt-4">
-            <div className="text-xs text-muted-foreground">Resumo da iniciativa</div>
-            <p className="mt-1 text-sm text-foreground">
-              {resumo || "Resumo não disponível — consulte as respostas originais abaixo."}
-            </p>
-          </div>
-
-          <div className="mt-4">
-            <div className="text-xs text-muted-foreground">Atividades de inovação realizadas</div>
-            <p className="mt-1 text-sm text-foreground">
-              {project.answers.met_2?.trim() || "Não informado."}
-            </p>
-          </div>
-
-          <div className="mt-4">
-            <div className="text-xs text-muted-foreground">Áreas e profissionais envolvidos</div>
-            <p className="mt-1 text-sm text-foreground">
-              {project.area}
-              {project.resources.filter((r) => r.active).length > 0 &&
-                ` — ${project.resources
-                  .filter((r) => r.active)
-                  .map((r) => r.name)
-                  .join(", ")}`}
-            </p>
-          </div>
-        </section>
-
-        {/* 2. Despesas — maior destaque da ficha */}
-        <section className="mb-8 rounded-lg border-2 border-primary/20 bg-surface p-5">
-          <h2 className="mb-4 text-base font-semibold text-foreground">Despesas</h2>
-          <ControladoriaDespesas project={project} readOnly={!isActive} />
-        </section>
+          <section className="rounded-lg border-2 border-primary/20 bg-surface p-5 lg:col-span-2">
+            <h2 className="mb-4 text-base font-semibold text-foreground">Despesas</h2>
+            <ControladoriaDespesas project={project} readOnly={!isActive} />
+          </section>
+        </div>
 
         {/* 3. Demais informações */}
         <section className="mb-8">

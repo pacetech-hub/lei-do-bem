@@ -6,25 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useProjectsStore } from "@/lib/store";
+import { getItemConsumed } from "@/lib/invoices";
 import {
   decisionFor,
   despesaFoiAlterada,
-  despesaRefs,
   valorConsiderado,
   valorTotalInformado,
   type DespesaRef,
 } from "@/lib/controladoria";
-import { ROLE_USERS, type DespesaDecisionStatus, type Project } from "@/lib/types";
+import {
+  ROLE_USERS,
+  type DespesaDecisionStatus,
+  type EmployeeExpense,
+  type MaterialExpense,
+  type Project,
+  type ThirdPartyExpense,
+} from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-const GROUP_LABEL: Record<DespesaRef["type"], string> = {
-  funcionario: "Funcionários",
-  terceiro: "Terceiros",
-  material: "Materiais",
-};
 
 const DECISION_LABEL: Record<DespesaDecisionStatus, string> = {
   validada: "Validada",
@@ -35,12 +44,13 @@ const DECISION_LABEL: Record<DespesaDecisionStatus, string> = {
 const DECISION_CLASS: Record<DespesaDecisionStatus, string> = {
   validada: "bg-status-ready text-status-ready-fg",
   pendencia: "bg-status-adjust text-status-adjust-fg",
-  excluida: "bg-surface-muted text-muted-foreground line-through decoration-1",
+  excluida: "bg-surface-muted text-muted-foreground",
 };
 
 // Popover com campo de comentário obrigatório, reaproveitado tanto para
 // "Sinalizar pendência" quanto para "Excluir despesa" (ambos exigem
-// justificativa) — só muda rótulo/ação.
+// justificativa) — só muda rótulo/ação. Gatilho compacto (ícone) para caber
+// na coluna de decisão da tabela.
 function JustificationPopover({
   label,
   placeholder,
@@ -80,14 +90,15 @@ function JustificationPopover({
     >
       <PopoverTrigger asChild>
         <Button
-          size="sm"
-          variant="outline"
+          size="icon"
+          variant="ghost"
           className={cn(
-            "h-8 gap-1.5 text-xs",
+            "size-7",
             tone === "destructive" && "text-destructive hover:text-destructive",
           )}
+          aria-label={label}
         >
-          <Icon className="size-3.5" /> {label}
+          <Icon className="size-3.5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 space-y-2">
@@ -106,7 +117,10 @@ function JustificationPopover({
   );
 }
 
-function DespesaRow({
+// Coluna de decisão compartilhada pelas três tabelas de despesa — mostra a
+// decisão atual (se houver), o alerta de valor alterado desde a última
+// análise e, quando editável, os três controles (validar/pendência/excluir).
+function DecisionCell({
   project,
   despesa,
   readOnly,
@@ -137,51 +151,32 @@ function DespesaRow({
   };
 
   return (
-    <div className="space-y-2 border-b border-border p-4 last:border-0">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-foreground">{despesa.title}</div>
-          <div className="text-xs text-muted-foreground">{despesa.detail}</div>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <div className="text-right text-sm tabular-nums font-medium text-foreground">
-            {despesa.type === "funcionario" ? `${despesa.value}h elegíveis` : brl(despesa.value)}
-          </div>
-          {decision && (
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium",
-                DECISION_CLASS[decision.status],
-              )}
-            >
-              {DECISION_LABEL[decision.status]}
-            </span>
+    <div className="flex flex-col items-start gap-1.5">
+      {decision && (
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+            DECISION_CLASS[decision.status],
           )}
-        </div>
-      </div>
-
+        >
+          {DECISION_LABEL[decision.status]}
+        </span>
+      )}
       {alterada && (
-        <div className="flex items-center gap-1.5 text-xs font-medium text-status-adjust-fg">
-          <AlertTriangle className="size-3.5 shrink-0" /> Valor alterado desde a última análise —
-          confira novamente.
-        </div>
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-status-adjust-fg">
+          <AlertTriangle className="size-3 shrink-0" /> Alterada
+        </span>
       )}
-
-      {decision?.comment && (
-        <p className="rounded-md bg-surface-muted/60 p-2 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">Justificativa:</span> {decision.comment}
-        </p>
-      )}
-
       {!readOnly && (
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex gap-1">
           <Button
-            size="sm"
-            variant="outline"
-            className="h-8 gap-1.5 text-xs"
+            size="icon"
+            variant="ghost"
+            className="size-7"
+            aria-label="Validar"
             onClick={() => record("validada")}
           >
-            <CheckCircle2 className="size-3.5" /> Validar
+            <CheckCircle2 className="size-3.5" />
           </Button>
           <JustificationPopover
             label="Sinalizar pendência"
@@ -203,6 +198,185 @@ function DespesaRow({
           />
         </div>
       )}
+      {decision?.comment && (
+        <p className="max-w-[220px] text-xs text-muted-foreground">{decision.comment}</p>
+      )}
+    </div>
+  );
+}
+
+// As três tabelas abaixo espelham exatamente o formato/colunas das tabelas de
+// Despesas do Responsável Financeiro (ver section-despesas.tsx) — mesma
+// identidade visual, só trocando a coluna de ação (adicionar/remover) pela
+// coluna de decisão da Controladoria.
+
+function FuncionariosTable({ project, readOnly }: { project: Project; readOnly?: boolean }) {
+  if (project.employees.length === 0) return null;
+  return (
+    <div>
+      <h3 className="mb-2 text-sm font-semibold text-foreground">Funcionários</h3>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Crachá</TableHead>
+              <TableHead>Nome</TableHead>
+              <TableHead>Função</TableHead>
+              <TableHead>Atividade</TableHead>
+              <TableHead className="text-right">Horas totais</TableHead>
+              <TableHead className="text-right">Horas elegíveis</TableHead>
+              <TableHead>Decisão</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {project.employees.map((e: EmployeeExpense) => (
+              <TableRow key={e.id}>
+                <TableCell className="font-mono text-xs">{e.code}</TableCell>
+                <TableCell className="font-medium">{e.name}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{e.role}</TableCell>
+                <TableCell className="text-sm">{e.activity}</TableCell>
+                <TableCell className="text-right tabular-nums">{e.totalHours}h</TableCell>
+                <TableCell className="text-right tabular-nums font-medium">
+                  {e.eligibleHours}h
+                </TableCell>
+                <TableCell>
+                  <DecisionCell
+                    project={project}
+                    despesa={{
+                      id: e.id,
+                      type: "funcionario",
+                      title: `${e.name} — ${e.role}`,
+                      detail: e.activity,
+                      value: e.eligibleHours,
+                    }}
+                    readOnly={readOnly}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+function TerceirosTable({ project, readOnly }: { project: Project; readOnly?: boolean }) {
+  const allProjects = useProjectsStore((s) => s.projects);
+  if (project.thirdParties.length === 0) return null;
+
+  const otherProjectsConsumption = (e: ThirdPartyExpense) => {
+    if (!e.itemId) return e.allocatedElsewhere ?? 0;
+    return getItemConsumed(allProjects, e.itemId) - e.usedInProject;
+  };
+
+  return (
+    <div>
+      <h3 className="mb-2 text-sm font-semibold text-foreground">Serviços de Terceiros</h3>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Empresa</TableHead>
+              <TableHead>CNPJ</TableHead>
+              <TableHead>NF</TableHead>
+              <TableHead className="text-right">Valor total</TableHead>
+              <TableHead className="text-right">Utilizado</TableHead>
+              <TableHead className="text-right">Outros projetos</TableHead>
+              <TableHead>Decisão</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {project.thirdParties.map((e: ThirdPartyExpense) => (
+              <TableRow key={e.id}>
+                <TableCell className="font-medium">{e.company}</TableCell>
+                <TableCell className="font-mono text-xs">{e.cnpj}</TableCell>
+                <TableCell className="text-sm">{e.invoice}</TableCell>
+                <TableCell className="text-right tabular-nums">{brl(e.invoiceTotal)}</TableCell>
+                <TableCell className="text-right tabular-nums font-medium">
+                  {brl(e.usedInProject)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">
+                  {brl(otherProjectsConsumption(e))}
+                </TableCell>
+                <TableCell>
+                  <DecisionCell
+                    project={project}
+                    despesa={{
+                      id: e.id,
+                      type: "terceiro",
+                      title: e.company,
+                      detail: `NF ${e.invoice}`,
+                      value: e.usedInProject,
+                    }}
+                    readOnly={readOnly}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+function MateriaisTable({ project, readOnly }: { project: Project; readOnly?: boolean }) {
+  const allProjects = useProjectsStore((s) => s.projects);
+  if (project.materials.length === 0) return null;
+
+  const otherProjectsConsumption = (m: MaterialExpense) => {
+    if (!m.itemId) return 0;
+    return getItemConsumed(allProjects, m.itemId) - m.netValue;
+  };
+
+  return (
+    <div>
+      <h3 className="mb-2 text-sm font-semibold text-foreground">Materiais</h3>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Fornecedor</TableHead>
+              <TableHead>NF</TableHead>
+              <TableHead>Material</TableHead>
+              <TableHead className="text-right">Bruto</TableHead>
+              <TableHead className="text-right">Líquido</TableHead>
+              <TableHead className="text-right">Outros projetos</TableHead>
+              <TableHead>Decisão</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {project.materials.map((m: MaterialExpense) => (
+              <TableRow key={m.id}>
+                <TableCell className="font-medium">{m.supplier}</TableCell>
+                <TableCell className="text-sm">{m.invoice}</TableCell>
+                <TableCell className="text-sm">{m.materialDescription}</TableCell>
+                <TableCell className="text-right tabular-nums">{brl(m.grossValue)}</TableCell>
+                <TableCell className="text-right tabular-nums font-medium">
+                  {brl(m.netValue)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">
+                  {brl(otherProjectsConsumption(m))}
+                </TableCell>
+                <TableCell>
+                  <DecisionCell
+                    project={project}
+                    despesa={{
+                      id: m.id,
+                      type: "material",
+                      title: m.supplier,
+                      detail: m.materialDescription,
+                      value: m.netValue,
+                    }}
+                    readOnly={readOnly}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
@@ -214,8 +388,8 @@ export function ControladoriaDespesas({
   project: Project;
   readOnly?: boolean;
 }) {
-  const refs = despesaRefs(project);
-  const groups: DespesaRef["type"][] = ["funcionario", "terceiro", "material"];
+  const hasAny =
+    project.employees.length > 0 || project.thirdParties.length > 0 || project.materials.length > 0;
 
   return (
     <div>
@@ -234,31 +408,15 @@ export function ControladoriaDespesas({
         </div>
       </div>
 
-      {refs.length === 0 ? (
+      {!hasAny ? (
         <div className="rounded-lg border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
           Nenhuma despesa lançada pelo Responsável Financeiro.
         </div>
       ) : (
         <div className="space-y-6">
-          {groups.map((type) => {
-            const list = refs.filter((r) => r.type === type);
-            if (list.length === 0) return null;
-            return (
-              <div key={type}>
-                <h3 className="mb-2 text-sm font-semibold text-foreground">{GROUP_LABEL[type]}</h3>
-                <div className="overflow-hidden rounded-lg border border-border bg-surface">
-                  {list.map((despesa) => (
-                    <DespesaRow
-                      key={despesa.id}
-                      project={project}
-                      despesa={despesa}
-                      readOnly={readOnly}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+          <FuncionariosTable project={project} readOnly={readOnly} />
+          <TerceirosTable project={project} readOnly={readOnly} />
+          <MateriaisTable project={project} readOnly={readOnly} />
         </div>
       )}
     </div>
