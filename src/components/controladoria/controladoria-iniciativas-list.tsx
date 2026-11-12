@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronRight, Clock3, Send, Undo2 } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -21,24 +21,20 @@ import {
 } from "@/components/ui/table";
 import { useProjectsStore } from "@/lib/store";
 import { valorTotalInformado } from "@/lib/controladoria";
-import {
-  CONTROLADORIA_STATUS_BADGE_CLASS,
-  ControladoriaStatusBadge,
-} from "@/components/controladoria/controladoria-status-badge";
+import { ControladoriaStatusBadge } from "@/components/controladoria/controladoria-status-badge";
 import {
   AREAS,
   CONTROLADORIA_STATUS_LABEL,
   type ControladoriaStatus,
   type Project,
 } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-const INDICATORS: Array<{ key: ControladoriaStatus; icon: typeof Clock3 }> = [
-  { key: "aguardando_analise", icon: Clock3 },
-  { key: "devolvida_revisor", icon: Undo2 },
-  { key: "enviada_juridico", icon: Send },
+const STATUS_OPTIONS: ControladoriaStatus[] = [
+  "aguardando_analise",
+  "devolvida_revisor",
+  "enviada_juridico",
 ];
 
 export function ControladoriaIniciativasList() {
@@ -59,18 +55,6 @@ export function ControladoriaIniciativasList() {
       ),
     [projects],
   );
-
-  const counts = useMemo(() => {
-    const c: Record<ControladoriaStatus, number> = {
-      aguardando_analise: 0,
-      devolvida_revisor: 0,
-      enviada_juridico: 0,
-    };
-    received.forEach((p) => {
-      c[p.controladoriaStatus]++;
-    });
-    return c;
-  }, [received]);
 
   const availableYears = useMemo(() => {
     const years = new Set<number>();
@@ -101,47 +85,6 @@ export function ControladoriaIniciativasList() {
           </p>
         </div>
 
-        <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {INDICATORS.map(({ key, icon: Icon }) => {
-            const active = statusFilter === key;
-            const highlight = key === "aguardando_analise";
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setStatusFilter(active ? "all" : key)}
-                className={cn(
-                  "group rounded-lg border bg-surface p-4 text-left transition-all hover:shadow-sm",
-                  highlight ? "border-primary/40" : "border-border",
-                  active && "ring-1 ring-primary/30",
-                )}
-              >
-                <div className="mb-3 flex items-center justify-between">
-                  <div
-                    className={cn(
-                      "grid size-9 place-items-center rounded-md",
-                      CONTROLADORIA_STATUS_BADGE_CLASS[key],
-                    )}
-                  >
-                    <Icon className="size-4.5" />
-                  </div>
-                  {highlight && (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                      Prioridade
-                    </span>
-                  )}
-                </div>
-                <div className="text-2xl font-semibold tabular-nums tracking-tight">
-                  {counts[key]}
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {CONTROLADORIA_STATUS_LABEL[key]}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <Select
             value={statusFilter}
@@ -152,7 +95,7 @@ export function ControladoriaIniciativasList() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os status</SelectItem>
-              {INDICATORS.map(({ key }) => (
+              {STATUS_OPTIONS.map((key) => (
                 <SelectItem key={key} value={key}>
                   {CONTROLADORIA_STATUS_LABEL[key]}
                 </SelectItem>

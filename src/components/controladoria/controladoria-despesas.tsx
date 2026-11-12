@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectsStore } from "@/lib/store";
 import { getItemConsumed } from "@/lib/invoices";
 import {
@@ -207,63 +208,65 @@ function DecisionCell({
 
 // As três tabelas abaixo espelham exatamente o formato/colunas das tabelas de
 // Despesas do Responsável Financeiro (ver section-despesas.tsx) — mesma
-// identidade visual, só trocando a coluna de ação (adicionar/remover) pela
-// coluna de decisão da Controladoria.
+// identidade visual, inclusive as abas, só trocando a coluna de ação
+// (adicionar/remover) pela coluna de decisão da Controladoria.
 
 function FuncionariosTable({ project, readOnly }: { project: Project; readOnly?: boolean }) {
-  if (project.employees.length === 0) return null;
   return (
-    <div>
-      <h3 className="mb-2 text-sm font-semibold text-foreground">Funcionários</h3>
-      <div className="overflow-hidden rounded-lg border border-border bg-surface">
-        <Table>
-          <TableHeader>
+    <div className="overflow-hidden rounded-lg border border-border bg-surface">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Crachá</TableHead>
+            <TableHead>Nome</TableHead>
+            <TableHead>Função</TableHead>
+            <TableHead>Atividade</TableHead>
+            <TableHead className="text-right">Horas totais</TableHead>
+            <TableHead className="text-right">Horas elegíveis</TableHead>
+            <TableHead>Decisão</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {project.employees.length === 0 && (
             <TableRow>
-              <TableHead>Crachá</TableHead>
-              <TableHead>Nome</TableHead>
-              <TableHead>Função</TableHead>
-              <TableHead>Atividade</TableHead>
-              <TableHead className="text-right">Horas totais</TableHead>
-              <TableHead className="text-right">Horas elegíveis</TableHead>
-              <TableHead>Decisão</TableHead>
+              <TableCell colSpan={7} className="h-20 text-center text-sm text-muted-foreground">
+                Nenhum colaborador lançado.
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {project.employees.map((e: EmployeeExpense) => (
-              <TableRow key={e.id}>
-                <TableCell className="font-mono text-xs">{e.code}</TableCell>
-                <TableCell className="font-medium">{e.name}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{e.role}</TableCell>
-                <TableCell className="text-sm">{e.activity}</TableCell>
-                <TableCell className="text-right tabular-nums">{e.totalHours}h</TableCell>
-                <TableCell className="text-right tabular-nums font-medium">
-                  {e.eligibleHours}h
-                </TableCell>
-                <TableCell>
-                  <DecisionCell
-                    project={project}
-                    despesa={{
-                      id: e.id,
-                      type: "funcionario",
-                      title: `${e.name} — ${e.role}`,
-                      detail: e.activity,
-                      value: e.eligibleHours,
-                    }}
-                    readOnly={readOnly}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          )}
+          {project.employees.map((e: EmployeeExpense) => (
+            <TableRow key={e.id}>
+              <TableCell className="font-mono text-xs">{e.code}</TableCell>
+              <TableCell className="font-medium">{e.name}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{e.role}</TableCell>
+              <TableCell className="text-sm">{e.activity}</TableCell>
+              <TableCell className="text-right tabular-nums">{e.totalHours}h</TableCell>
+              <TableCell className="text-right tabular-nums font-medium">
+                {e.eligibleHours}h
+              </TableCell>
+              <TableCell>
+                <DecisionCell
+                  project={project}
+                  despesa={{
+                    id: e.id,
+                    type: "funcionario",
+                    title: `${e.name} — ${e.role}`,
+                    detail: e.activity,
+                    value: e.eligibleHours,
+                  }}
+                  readOnly={readOnly}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
 
 function TerceirosTable({ project, readOnly }: { project: Project; readOnly?: boolean }) {
   const allProjects = useProjectsStore((s) => s.projects);
-  if (project.thirdParties.length === 0) return null;
 
   const otherProjectsConsumption = (e: ThirdPartyExpense) => {
     if (!e.itemId) return e.allocatedElsewhere ?? 0;
@@ -271,59 +274,62 @@ function TerceirosTable({ project, readOnly }: { project: Project; readOnly?: bo
   };
 
   return (
-    <div>
-      <h3 className="mb-2 text-sm font-semibold text-foreground">Serviços de Terceiros</h3>
-      <div className="overflow-hidden rounded-lg border border-border bg-surface">
-        <Table>
-          <TableHeader>
+    <div className="overflow-hidden rounded-lg border border-border bg-surface">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Empresa</TableHead>
+            <TableHead>CNPJ</TableHead>
+            <TableHead>NF</TableHead>
+            <TableHead className="text-right">Valor total</TableHead>
+            <TableHead className="text-right">Utilizado</TableHead>
+            <TableHead className="text-right">Outros projetos</TableHead>
+            <TableHead>Decisão</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {project.thirdParties.length === 0 && (
             <TableRow>
-              <TableHead>Empresa</TableHead>
-              <TableHead>CNPJ</TableHead>
-              <TableHead>NF</TableHead>
-              <TableHead className="text-right">Valor total</TableHead>
-              <TableHead className="text-right">Utilizado</TableHead>
-              <TableHead className="text-right">Outros projetos</TableHead>
-              <TableHead>Decisão</TableHead>
+              <TableCell colSpan={7} className="h-20 text-center text-sm text-muted-foreground">
+                Nenhum serviço de terceiro lançado.
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {project.thirdParties.map((e: ThirdPartyExpense) => (
-              <TableRow key={e.id}>
-                <TableCell className="font-medium">{e.company}</TableCell>
-                <TableCell className="font-mono text-xs">{e.cnpj}</TableCell>
-                <TableCell className="text-sm">{e.invoice}</TableCell>
-                <TableCell className="text-right tabular-nums">{brl(e.invoiceTotal)}</TableCell>
-                <TableCell className="text-right tabular-nums font-medium">
-                  {brl(e.usedInProject)}
-                </TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">
-                  {brl(otherProjectsConsumption(e))}
-                </TableCell>
-                <TableCell>
-                  <DecisionCell
-                    project={project}
-                    despesa={{
-                      id: e.id,
-                      type: "terceiro",
-                      title: e.company,
-                      detail: `NF ${e.invoice}`,
-                      value: e.usedInProject,
-                    }}
-                    readOnly={readOnly}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          )}
+          {project.thirdParties.map((e: ThirdPartyExpense) => (
+            <TableRow key={e.id}>
+              <TableCell className="font-medium">{e.company}</TableCell>
+              <TableCell className="font-mono text-xs">{e.cnpj}</TableCell>
+              <TableCell className="text-sm">{e.invoice}</TableCell>
+              <TableCell className="text-right tabular-nums">{brl(e.invoiceTotal)}</TableCell>
+              <TableCell className="text-right tabular-nums font-medium">
+                {brl(e.usedInProject)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums text-muted-foreground">
+                {brl(otherProjectsConsumption(e))}
+              </TableCell>
+              <TableCell>
+                <DecisionCell
+                  project={project}
+                  despesa={{
+                    id: e.id,
+                    type: "terceiro",
+                    title: e.company,
+                    detail: `NF ${e.invoice}`,
+                    value: e.usedInProject,
+                  }}
+                  readOnly={readOnly}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
 
 function MateriaisTable({ project, readOnly }: { project: Project; readOnly?: boolean }) {
   const allProjects = useProjectsStore((s) => s.projects);
-  if (project.materials.length === 0) return null;
 
   const otherProjectsConsumption = (m: MaterialExpense) => {
     if (!m.itemId) return 0;
@@ -331,52 +337,56 @@ function MateriaisTable({ project, readOnly }: { project: Project; readOnly?: bo
   };
 
   return (
-    <div>
-      <h3 className="mb-2 text-sm font-semibold text-foreground">Materiais</h3>
-      <div className="overflow-hidden rounded-lg border border-border bg-surface">
-        <Table>
-          <TableHeader>
+    <div className="overflow-hidden rounded-lg border border-border bg-surface">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Fornecedor</TableHead>
+            <TableHead>NF</TableHead>
+            <TableHead>Material</TableHead>
+            <TableHead className="text-right">Bruto</TableHead>
+            <TableHead className="text-right">Líquido</TableHead>
+            <TableHead className="text-right">Outros projetos</TableHead>
+            <TableHead>Decisão</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {project.materials.length === 0 && (
             <TableRow>
-              <TableHead>Fornecedor</TableHead>
-              <TableHead>NF</TableHead>
-              <TableHead>Material</TableHead>
-              <TableHead className="text-right">Bruto</TableHead>
-              <TableHead className="text-right">Líquido</TableHead>
-              <TableHead className="text-right">Outros projetos</TableHead>
-              <TableHead>Decisão</TableHead>
+              <TableCell colSpan={7} className="h-20 text-center text-sm text-muted-foreground">
+                Nenhum material lançado.
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {project.materials.map((m: MaterialExpense) => (
-              <TableRow key={m.id}>
-                <TableCell className="font-medium">{m.supplier}</TableCell>
-                <TableCell className="text-sm">{m.invoice}</TableCell>
-                <TableCell className="text-sm">{m.materialDescription}</TableCell>
-                <TableCell className="text-right tabular-nums">{brl(m.grossValue)}</TableCell>
-                <TableCell className="text-right tabular-nums font-medium">
-                  {brl(m.netValue)}
-                </TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">
-                  {brl(otherProjectsConsumption(m))}
-                </TableCell>
-                <TableCell>
-                  <DecisionCell
-                    project={project}
-                    despesa={{
-                      id: m.id,
-                      type: "material",
-                      title: m.supplier,
-                      detail: m.materialDescription,
-                      value: m.netValue,
-                    }}
-                    readOnly={readOnly}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          )}
+          {project.materials.map((m: MaterialExpense) => (
+            <TableRow key={m.id}>
+              <TableCell className="font-medium">{m.supplier}</TableCell>
+              <TableCell className="text-sm">{m.invoice}</TableCell>
+              <TableCell className="text-sm">{m.materialDescription}</TableCell>
+              <TableCell className="text-right tabular-nums">{brl(m.grossValue)}</TableCell>
+              <TableCell className="text-right tabular-nums font-medium">
+                {brl(m.netValue)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums text-muted-foreground">
+                {brl(otherProjectsConsumption(m))}
+              </TableCell>
+              <TableCell>
+                <DecisionCell
+                  project={project}
+                  despesa={{
+                    id: m.id,
+                    type: "material",
+                    title: m.supplier,
+                    detail: m.materialDescription,
+                    value: m.netValue,
+                  }}
+                  readOnly={readOnly}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -388,9 +398,6 @@ export function ControladoriaDespesas({
   project: Project;
   readOnly?: boolean;
 }) {
-  const hasAny =
-    project.employees.length > 0 || project.thirdParties.length > 0 || project.materials.length > 0;
-
   return (
     <div>
       <div className="mb-4 grid gap-4 rounded-lg border border-border bg-surface p-4 sm:grid-cols-2">
@@ -408,17 +415,22 @@ export function ControladoriaDespesas({
         </div>
       </div>
 
-      {!hasAny ? (
-        <div className="rounded-lg border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
-          Nenhuma despesa lançada pelo Responsável Financeiro.
-        </div>
-      ) : (
-        <div className="space-y-6">
+      <Tabs defaultValue="funcionarios">
+        <TabsList className="mb-4">
+          <TabsTrigger value="funcionarios">Funcionários</TabsTrigger>
+          <TabsTrigger value="terceiros">Serviços de Terceiros</TabsTrigger>
+          <TabsTrigger value="materiais">Materiais</TabsTrigger>
+        </TabsList>
+        <TabsContent value="funcionarios">
           <FuncionariosTable project={project} readOnly={readOnly} />
+        </TabsContent>
+        <TabsContent value="terceiros">
           <TerceirosTable project={project} readOnly={readOnly} />
+        </TabsContent>
+        <TabsContent value="materiais">
           <MateriaisTable project={project} readOnly={readOnly} />
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
