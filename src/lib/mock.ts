@@ -839,6 +839,102 @@ INITIAL_PROJECTS.forEach((p) => {
   }
 });
 
+// Preenche a iniciativa que hoje aparece primeiro na lista da Controladoria
+// (maior reviewedAt) com despesas variadas e SEM nenhuma decisão registrada
+// — serve de "massa de teste" para experimentar validar/sinalizar
+// pendência/excluir e devolver ao Revisor.
+(() => {
+  const target = INITIAL_PROJECTS.find(
+    (p) => p.name === "Sistema Anti-Colisão para Veículos Pesados",
+  );
+  if (!target) return;
+  target.employees = [
+    {
+      id: nextId("emp"),
+      code: MOCK_EMPLOYEES[0].code,
+      name: MOCK_EMPLOYEES[0].name,
+      role: MOCK_EMPLOYEES[0].role,
+      activity: "Validação de sensores anticolisão em bancada",
+      totalHours: 220,
+      eligibleHours: 180,
+    },
+    {
+      id: nextId("emp"),
+      code: MOCK_EMPLOYEES[1].code,
+      name: MOCK_EMPLOYEES[1].name,
+      role: MOCK_EMPLOYEES[1].role,
+      activity: "Pesquisa de algoritmos de frenagem preditiva",
+      totalHours: 300,
+      eligibleHours: 300,
+    },
+    {
+      id: nextId("emp"),
+      code: MOCK_EMPLOYEES[2].code,
+      name: MOCK_EMPLOYEES[2].name,
+      role: MOCK_EMPLOYEES[2].role,
+      activity: "Testes de campo em pista fechada",
+      totalHours: 150,
+      eligibleHours: 90,
+    },
+  ];
+  target.thirdParties = [
+    {
+      id: nextId("tp"),
+      company: MOCK_SUPPLIERS[0].name,
+      cnpj: MOCK_SUPPLIERS[0].cnpj,
+      invoice: "NF-002001",
+      invoiceTotal: 60000,
+      usedInProject: 60000,
+    },
+    {
+      id: nextId("tp"),
+      company: MOCK_SUPPLIERS[1].name,
+      cnpj: MOCK_SUPPLIERS[1].cnpj,
+      invoice: "NF-002002",
+      invoiceTotal: 25000,
+      usedInProject: 18000,
+    },
+    {
+      id: nextId("tp"),
+      company: MOCK_SUPPLIERS[4].name,
+      cnpj: MOCK_SUPPLIERS[4].cnpj,
+      invoice: "NF-002003",
+      invoiceTotal: 40000,
+      usedInProject: 40000,
+    },
+  ];
+  target.materials = [
+    {
+      id: nextId("mat"),
+      supplier: MOCK_SUPPLIERS[2].name,
+      cnpj: MOCK_SUPPLIERS[2].cnpj,
+      invoice: "NF-002004",
+      grossValue: 15000,
+      netValue: 13500,
+      materialDescription: "Sensores LiDAR de curto alcance",
+      usageDescription: "Montagem do protótipo de teste",
+    },
+    {
+      id: nextId("mat"),
+      supplier: MOCK_SUPPLIERS[3].name,
+      cnpj: MOCK_SUPPLIERS[3].cnpj,
+      invoice: "NF-002005",
+      grossValue: 9000,
+      netValue: 9000,
+      materialDescription: "Estrutura de fixação para sensores",
+      usageDescription: "Instalação no veículo de testes",
+    },
+  ];
+  target.controladoriaHistory = [
+    {
+      id: nextId("ch"),
+      date: target.reviewedAt ?? target.updatedAt,
+      actor: target.reviewedBy ?? "Revisor",
+      description: "encaminhou a iniciativa para a Controladoria",
+    },
+  ];
+})();
+
 // Iniciativas concluídas em 2025 — já fora da responsabilidade do Revisor.
 // Datas fixas em ISO (não daysAgo/daysFromNow, que são relativas a "hoje")
 // para que o ano de 2025 apareça de forma estável no filtro de Ano.

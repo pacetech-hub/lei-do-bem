@@ -38,7 +38,7 @@ const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", curren
 
 const DECISION_LABEL: Record<DespesaDecisionStatus, string> = {
   validada: "Validada",
-  pendencia: "Pendência",
+  pendencia: "Com pendência",
   excluida: "Excluída",
 };
 
@@ -135,13 +135,24 @@ function DecisionCell({
   const alterada = despesaFoiAlterada(project, despesa);
 
   const record = (status: DespesaDecisionStatus, comment?: string) => {
-    setDespesaDecision(project.id, despesa.id, {
-      status,
-      comment,
-      decidedAt: new Date().toISOString(),
-      decidedBy: ROLE_USERS.controladoria.name,
-      snapshotValue: despesa.value,
-    });
+    const historyDescription =
+      status === "validada"
+        ? `validou a despesa "${despesa.title}"`
+        : status === "pendencia"
+          ? `sinalizou pendência na despesa "${despesa.title}": ${comment}`
+          : `excluiu a despesa "${despesa.title}" da composição financeira: ${comment}`;
+    setDespesaDecision(
+      project.id,
+      despesa.id,
+      {
+        status,
+        comment,
+        decidedAt: new Date().toISOString(),
+        decidedBy: ROLE_USERS.controladoria.name,
+        snapshotValue: despesa.value,
+      },
+      historyDescription,
+    );
     toast.success(
       status === "validada"
         ? "Despesa validada."
