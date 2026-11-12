@@ -23,6 +23,7 @@ import { Route as ConfiguracaoGeralPesquisadoresRouteImport } from './routes/con
 import { Route as ControladoriaIndexRouteImport } from './routes/controladoria.index'
 import { Route as ControladoriaContasContabeisRouteImport } from './routes/controladoria.contas-contabeis'
 import { Route as ControladoriaIniciativasRouteImport } from './routes/controladoria.iniciativas'
+import { Route as ControladoriaTesteRouteImport } from './routes/controladoria.teste'
 import { Route as FinanceiroIndexRouteImport } from './routes/financeiro.index'
 import { Route as JuridicoIndexRouteImport } from './routes/juridico.index'
 import { Route as JuridicoAgrupamentosRouteImport } from './routes/juridico.agrupamentos'
@@ -109,6 +110,11 @@ const ControladoriaIniciativasRoute =
     path: '/iniciativas',
     getParentRoute: () => ControladoriaRoute,
   } as any)
+const ControladoriaTesteRoute = ControladoriaTesteRouteImport.update({
+  id: '/teste',
+  path: '/teste',
+  getParentRoute: () => ControladoriaRoute,
+} as any)
 const FinanceiroIndexRoute = FinanceiroIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/configuracao-geral/pesquisadores': typeof ConfiguracaoGeralPesquisadoresRoute
   '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
   '/controladoria/iniciativas': typeof ControladoriaIniciativasRouteWithChildren
+  '/controladoria/teste': typeof ControladoriaTesteRoute
   '/juridico/agrupamentos': typeof JuridicoAgrupamentosRoute
   '/juridico/pre-projetos': typeof JuridicoPreProjetosRoute
   '/juridico/projetos': typeof JuridicoProjetosRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/configuracao-geral/pesquisadores': typeof ConfiguracaoGeralPesquisadoresRoute
   '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
   '/controladoria/iniciativas': typeof ControladoriaIniciativasRouteWithChildren
+  '/controladoria/teste': typeof ControladoriaTesteRoute
   '/juridico/agrupamentos': typeof JuridicoAgrupamentosRoute
   '/juridico/pre-projetos': typeof JuridicoPreProjetosRoute
   '/juridico/projetos': typeof JuridicoProjetosRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/configuracao-geral/pesquisadores': typeof ConfiguracaoGeralPesquisadoresRoute
   '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
   '/controladoria/iniciativas': typeof ControladoriaIniciativasRouteWithChildren
+  '/controladoria/teste': typeof ControladoriaTesteRoute
   '/juridico/agrupamentos': typeof JuridicoAgrupamentosRoute
   '/juridico/pre-projetos': typeof JuridicoPreProjetosRoute
   '/juridico/projetos': typeof JuridicoProjetosRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/configuracao-geral/pesquisadores'
     | '/controladoria/contas-contabeis'
     | '/controladoria/iniciativas'
+    | '/controladoria/teste'
     | '/juridico/agrupamentos'
     | '/juridico/pre-projetos'
     | '/juridico/projetos'
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/configuracao-geral/pesquisadores'
     | '/controladoria/contas-contabeis'
     | '/controladoria/iniciativas'
+    | '/controladoria/teste'
     | '/juridico/agrupamentos'
     | '/juridico/pre-projetos'
     | '/juridico/projetos'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/configuracao-geral/pesquisadores'
     | '/controladoria/contas-contabeis'
     | '/controladoria/iniciativas'
+    | '/controladoria/teste'
     | '/juridico/agrupamentos'
     | '/juridico/pre-projetos'
     | '/juridico/projetos'
@@ -434,6 +446,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ControladoriaIniciativasRouteImport
       parentRoute: typeof ControladoriaRoute
     }
+    '/controladoria/teste': {
+      id: '/controladoria/teste'
+      path: '/teste'
+      fullPath: '/controladoria/teste'
+      preLoaderRoute: typeof ControladoriaTesteRouteImport
+      parentRoute: typeof ControladoriaRoute
+    }
     '/financeiro/': {
       id: '/financeiro/'
       path: '/'
@@ -548,12 +567,14 @@ const ControladoriaIniciativasRouteWithChildren =
 interface ControladoriaRouteChildren {
   ControladoriaContasContabeisRoute: typeof ControladoriaContasContabeisRoute
   ControladoriaIniciativasRoute: typeof ControladoriaIniciativasRouteWithChildren
+  ControladoriaTesteRoute: typeof ControladoriaTesteRoute
   ControladoriaIndexRoute: typeof ControladoriaIndexRoute
 }
 
 const ControladoriaRouteChildren: ControladoriaRouteChildren = {
   ControladoriaContasContabeisRoute: ControladoriaContasContabeisRoute,
   ControladoriaIniciativasRoute: ControladoriaIniciativasRouteWithChildren,
+  ControladoriaTesteRoute: ControladoriaTesteRoute,
   ControladoriaIndexRoute: ControladoriaIndexRoute,
 }
 

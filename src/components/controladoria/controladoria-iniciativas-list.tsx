@@ -220,7 +220,7 @@ export function ControladoriaIniciativasList() {
                   className="group cursor-pointer"
                   onClick={() => {
                     // TESTE TEMPORÁRIO — remover depois de confirmar se o clique funciona
-                    window.open("https://www.google.com", "_blank");
+                    navigate({ to: "/controladoria/teste" });
                   }}
                 >
                   <TableCell className="py-4 font-medium text-foreground">{p.name}</TableCell>
