@@ -87,6 +87,40 @@ export interface DespesaAdjustmentItem {
   createdAt: string;
 }
 
+// Status interno da Controladoria sobre uma iniciativa já "Enviado para
+// Controladoria" (ver ProjectStatus) — não substitui esse status geral, só
+// detalha em que ponto da análise da Controladoria ela está.
+export type ControladoriaStatus = "aguardando_analise" | "devolvida_revisor" | "enviada_juridico";
+
+export const CONTROLADORIA_STATUS_LABEL: Record<ControladoriaStatus, string> = {
+  aguardando_analise: "Aguardando análise",
+  devolvida_revisor: "Devolvida ao Revisor",
+  enviada_juridico: "Enviada ao Jurídico",
+};
+
+export type DespesaDecisionStatus = "validada" | "pendencia" | "excluida";
+
+// Decisão da Controladoria sobre uma despesa específica (funcionário,
+// terceiro ou material — identificada só pelo id, já que são únicos entre os
+// três tipos). Comentário obrigatório para pendência/exclusão.
+export interface DespesaDecision {
+  status: DespesaDecisionStatus;
+  comment?: string;
+  decidedAt: string;
+  decidedBy: string;
+  // Valor (R$ para terceiro/material, horas elegíveis para funcionário) no
+  // momento da decisão — permite identificar, num retorno do Revisor, se a
+  // despesa foi alterada desde a última análise.
+  snapshotValue: number;
+}
+
+export interface ControladoriaHistoryEvent {
+  id: string;
+  date: string;
+  actor: string;
+  description: string;
+}
+
 // Recurso (profissional ou terceiro) cadastrado pelo Relator na iniciativa,
 // disponível para o Responsável Financeiro vincular uma despesa depois.
 export interface ResourceEntry {
@@ -185,6 +219,11 @@ export interface Project {
   // Recursos, disponíveis para o Financeiro referenciar em Despesas.
   resources: ResourceEntry[];
   despesaAdjustments?: DespesaAdjustmentItem[];
+  // Análise da Controladoria (só relevante a partir de status
+  // "enviado_controladoria") — ver ControladoriaStatus/DespesaDecision acima.
+  controladoriaStatus?: ControladoriaStatus;
+  despesaDecisions?: Record<string, DespesaDecision>;
+  controladoriaHistory?: ControladoriaHistoryEvent[];
 }
 
 export type SectionKey =

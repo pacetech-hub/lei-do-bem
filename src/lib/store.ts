@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import type {
   Attachment,
   DespesaAdjustmentItem,
+  DespesaDecision,
   EmployeeExpense,
   Invoice,
   JobRole,
@@ -59,6 +60,9 @@ interface ProjectsState {
   // Ajuste do Revisor sobre uma despesa específica, devolvida ao Financeiro.
   addDespesaAdjustment: (id: string, item: DespesaAdjustmentItem) => void;
   resolveDespesaAdjustment: (id: string, adjustmentId: string) => void;
+  // Decisão da Controladoria (validar/pendência/excluir) sobre uma despesa
+  // específica — chave é o id da despesa (funcionário, terceiro ou material).
+  setDespesaDecision: (id: string, expenseId: string, decision: DespesaDecision) => void;
   // Configuração Geral
   addQuestion: (q: QuestionRecord) => void;
   updateQuestion: (id: string, patch: Partial<QuestionRecord>) => void;
@@ -246,6 +250,18 @@ export const useProjectsStore = create<ProjectsState>()(
                   despesaAdjustments: (p.despesaAdjustments ?? []).filter(
                     (a) => a.id !== adjustmentId,
                   ),
+                  updatedAt: nowIso(),
+                }
+              : p,
+          ),
+        })),
+      setDespesaDecision: (id, expenseId, decision) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  despesaDecisions: { ...p.despesaDecisions, [expenseId]: decision },
                   updatedAt: nowIso(),
                 }
               : p,

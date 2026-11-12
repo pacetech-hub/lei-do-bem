@@ -50,7 +50,8 @@ const CARDS = [
   {
     to: "/controladoria" as const,
     title: "Controladoria",
-    description: "Estrutura inicial da Controladoria — funcionalidades a definir.",
+    description:
+      "Analise as despesas das iniciativas recebidas do Revisor e encaminhe ao Jurídico.",
     icon: Landmark,
   },
   {

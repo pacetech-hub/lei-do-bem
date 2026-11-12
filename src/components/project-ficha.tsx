@@ -316,11 +316,28 @@ export function ProjectFicha({ project, mode, masterProject }: ProjectFichaProps
   };
 
   const handleApprove = () => {
+    // Reenvio após devolução (controladoriaStatus "devolvida_revisor") chega
+    // de novo como "aguardando análise" — as decisões e o histórico já
+    // registrados pela Controladoria são preservados (não fazem parte deste
+    // patch).
     updateProject(project.id, {
       status: "enviado_controladoria",
       reviewedBy: ROLE_USERS.revisor.name,
       reviewedAt: new Date().toISOString(),
       draftAdjustmentItems: [],
+      controladoriaStatus: "aguardando_analise",
+      controladoriaHistory: [
+        ...(project.controladoriaHistory ?? []),
+        {
+          id: crypto.randomUUID(),
+          date: new Date().toISOString(),
+          actor: ROLE_USERS.revisor.name,
+          description:
+            project.controladoriaStatus === "devolvida_revisor"
+              ? "reencaminhou a iniciativa à Controladoria após ajuste"
+              : "encaminhou a iniciativa para a Controladoria",
+        },
+      ],
     });
     toast.success("Iniciativa encaminhada para a Controladoria");
     setApproveOpen(false);

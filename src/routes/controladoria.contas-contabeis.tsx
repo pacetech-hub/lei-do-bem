@@ -1,16 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { RoleStubPlaceholder } from "@/components/role-stub";
+import { ControladoriaContasContabeis } from "@/components/controladoria/controladoria-contas-contabeis";
 
 export const Route = createFileRoute("/controladoria/contas-contabeis")({
   head: () => ({
-    meta: [{ title: "Contas contábeis — Controladoria | Lei do Bem" }],
+    meta: [
+      { title: "Contas contábeis — Controladoria | Lei do Bem" },
+      {
+        name: "description",
+        content: "Classificação contábil consolidada das despesas, por exercício.",
+      },
+    ],
   }),
-  component: () => (
-    <RoleStubPlaceholder
-      role="controladoria"
-      roleLabel="Controladoria"
-      title="Contas contábeis"
-      backTo="/controladoria"
-    />
-  ),
+  component: ControladoriaContasContabeis,
 });

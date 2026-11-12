@@ -4,6 +4,7 @@ import {
   QUESTIONS_INOVADOR,
   QUESTIONS_BARREIRAS,
   QUESTIONS_METODOLOGIA,
+  ROLE_USERS,
   type Attachment,
   type Invoice,
   type JobRole,
@@ -150,33 +151,256 @@ export const INITIAL_PROJECTS: Project[] = [
     status: "enviado_controladoria",
     updatedAt: daysAgo(10),
     endDate: daysFromNow(15),
+    // Recém-chegada à Controladoria — nenhuma despesa analisada ainda.
+    employees: [
+      {
+        id: nextId("emp"),
+        code: MOCK_EMPLOYEES[3].code,
+        name: MOCK_EMPLOYEES[3].name,
+        role: MOCK_EMPLOYEES[3].role,
+        activity: "Treinamento do modelo de visão computacional para inspeção de solda",
+        totalHours: 320,
+        eligibleHours: 320,
+      },
+    ],
+    thirdParties: [
+      {
+        id: nextId("tp"),
+        company: MOCK_SUPPLIERS[1].name,
+        cnpj: MOCK_SUPPLIERS[1].cnpj,
+        invoice: "NF-000789",
+        invoiceTotal: 35000,
+        usedInProject: 35000,
+      },
+    ],
+    materials: [
+      {
+        id: nextId("mat"),
+        supplier: MOCK_SUPPLIERS[2].name,
+        cnpj: MOCK_SUPPLIERS[2].cnpj,
+        invoice: "NF-000790",
+        grossValue: 18000,
+        netValue: 18000,
+        materialDescription: "Câmeras industriais de alta resolução",
+        usageDescription: "Montagem da bancada de inspeção visual",
+      },
+    ],
   }),
-  emptyProject({
-    name: "Modelagem Preditiva de Demanda Energética",
-    filial: RELATOR_FILIAL,
-    area: RELATOR_SETOR,
-    status: "enviado_controladoria",
-    updatedAt: daysAgo(25),
-    endDate: daysAgo(5),
-  }),
-  emptyProject({
-    name: "Novo Catalisador para Redução de Emissões",
-    filial: RELATOR_FILIAL,
-    area: RELATOR_SETOR,
-    status: "enviado_controladoria",
-    updatedAt: daysAgo(60),
-    endDate: daysAgo(30),
-    hasPatent: true,
-    patentNumber: "BR102023000123-4",
-  }),
-  emptyProject({
-    name: "Protocolo de Comunicação Industrial Proprietário",
-    filial: RELATOR_FILIAL,
-    area: RELATOR_SETOR,
-    status: "enviado_controladoria",
-    updatedAt: daysAgo(80),
-    endDate: daysAgo(45),
-  }),
+  (() => {
+    const empId = nextId("emp");
+    const tpId = nextId("tp");
+    const matId = nextId("mat");
+    return emptyProject({
+      name: "Modelagem Preditiva de Demanda Energética",
+      filial: RELATOR_FILIAL,
+      area: RELATOR_SETOR,
+      status: "enviado_controladoria",
+      updatedAt: daysAgo(25),
+      endDate: daysAgo(5),
+      // Cenário A: existe pendência em aberto — só "Devolver ao Revisor"
+      // fica disponível no rodapé da ficha da Controladoria.
+      employees: [
+        {
+          id: empId,
+          code: MOCK_EMPLOYEES[1].code,
+          name: MOCK_EMPLOYEES[1].name,
+          role: MOCK_EMPLOYEES[1].role,
+          activity: "Modelagem estatística da curva de demanda horária",
+          totalHours: 260,
+          eligibleHours: 260,
+        },
+      ],
+      thirdParties: [
+        {
+          id: tpId,
+          company: MOCK_SUPPLIERS[4].name,
+          cnpj: MOCK_SUPPLIERS[4].cnpj,
+          invoice: "NF-000911",
+          invoiceTotal: 42000,
+          usedInProject: 42000,
+        },
+      ],
+      materials: [
+        {
+          id: matId,
+          supplier: MOCK_SUPPLIERS[3].name,
+          cnpj: MOCK_SUPPLIERS[3].cnpj,
+          invoice: "NF-000912",
+          grossValue: 9000,
+          netValue: 9000,
+          materialDescription: "Sensores de consumo energético",
+          usageDescription: "Instalação para coleta de dados de treinamento do modelo",
+        },
+      ],
+      despesaDecisions: {
+        [empId]: {
+          status: "validada",
+          decidedAt: daysAgo(20),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 260,
+        },
+        [tpId]: {
+          status: "pendencia",
+          comment:
+            "O valor utilizado não bate com o item da nota fiscal informado — confirmar com o Financeiro.",
+          decidedAt: daysAgo(20),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 42000,
+        },
+      },
+      controladoriaHistory: [
+        {
+          id: nextId("ch"),
+          date: daysAgo(25),
+          actor: "Revisor",
+          description: "encaminhou a iniciativa para a Controladoria",
+        },
+        {
+          id: nextId("ch"),
+          date: daysAgo(20),
+          actor: ROLE_USERS.controladoria.name,
+          description: "sinalizou pendência na despesa de serviço de terceiro",
+        },
+      ],
+    });
+  })(),
+  (() => {
+    const empId = nextId("emp");
+    const tpId = nextId("tp");
+    const matId = nextId("mat");
+    return emptyProject({
+      name: "Novo Catalisador para Redução de Emissões",
+      filial: RELATOR_FILIAL,
+      area: RELATOR_SETOR,
+      status: "enviado_controladoria",
+      updatedAt: daysAgo(60),
+      endDate: daysAgo(30),
+      hasPatent: true,
+      patentNumber: "BR102023000123-4",
+      // Cenário B: todas as despesas já têm decisão e nenhuma pendência em
+      // aberto — "Enviar para Jurídico" fica disponível no rodapé.
+      employees: [
+        {
+          id: empId,
+          code: MOCK_EMPLOYEES[4].code,
+          name: MOCK_EMPLOYEES[4].name,
+          role: MOCK_EMPLOYEES[4].role,
+          activity: "Testes de bancada do catalisador em diferentes temperaturas",
+          totalHours: 410,
+          eligibleHours: 410,
+        },
+      ],
+      thirdParties: [
+        {
+          id: tpId,
+          company: MOCK_SUPPLIERS[0].name,
+          cnpj: MOCK_SUPPLIERS[0].cnpj,
+          invoice: "NF-001033",
+          invoiceTotal: 28000,
+          usedInProject: 28000,
+        },
+      ],
+      materials: [
+        {
+          id: matId,
+          supplier: MOCK_SUPPLIERS[2].name,
+          cnpj: MOCK_SUPPLIERS[2].cnpj,
+          invoice: "NF-001034",
+          grossValue: 15000,
+          netValue: 15000,
+          materialDescription: "Compostos metálicos para síntese catalítica",
+          usageDescription: "Síntese e caracterização do catalisador",
+        },
+      ],
+      despesaDecisions: {
+        [empId]: {
+          status: "validada",
+          decidedAt: daysAgo(50),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 410,
+        },
+        [tpId]: {
+          status: "validada",
+          decidedAt: daysAgo(50),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 28000,
+        },
+        [matId]: {
+          status: "excluida",
+          comment: "Nota fiscal referente a outro centro de custo — retirada da composição.",
+          decidedAt: daysAgo(49),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 15000,
+        },
+      },
+      controladoriaHistory: [
+        {
+          id: nextId("ch"),
+          date: daysAgo(60),
+          actor: "Revisor",
+          description: "encaminhou a iniciativa para a Controladoria",
+        },
+        {
+          id: nextId("ch"),
+          date: daysAgo(49),
+          actor: ROLE_USERS.controladoria.name,
+          description: "concluiu a análise de todas as despesas",
+        },
+      ],
+    });
+  })(),
+  (() => {
+    const tpId = nextId("tp");
+    return emptyProject({
+      name: "Protocolo de Comunicação Industrial Proprietário",
+      filial: RELATOR_FILIAL,
+      area: RELATOR_SETOR,
+      status: "enviado_controladoria",
+      updatedAt: daysAgo(80),
+      endDate: daysAgo(45),
+      // Análise concluída e já encaminhada ao Jurídico — estado terminal
+      // dentro da Controladoria.
+      controladoriaStatus: "enviada_juridico",
+      thirdParties: [
+        {
+          id: tpId,
+          company: MOCK_SUPPLIERS[1].name,
+          cnpj: MOCK_SUPPLIERS[1].cnpj,
+          invoice: "NF-000654",
+          invoiceTotal: 31000,
+          usedInProject: 31000,
+        },
+      ],
+      despesaDecisions: {
+        [tpId]: {
+          status: "validada",
+          decidedAt: daysAgo(70),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 31000,
+        },
+      },
+      controladoriaHistory: [
+        {
+          id: nextId("ch"),
+          date: daysAgo(80),
+          actor: "Revisor",
+          description: "encaminhou a iniciativa para a Controladoria",
+        },
+        {
+          id: nextId("ch"),
+          date: daysAgo(70),
+          actor: ROLE_USERS.controladoria.name,
+          description: "concluiu a análise de todas as despesas",
+        },
+        {
+          id: nextId("ch"),
+          date: daysAgo(69),
+          actor: ROLE_USERS.controladoria.name,
+          description: "encaminhou a iniciativa para o Jurídico",
+        },
+      ],
+    });
+  })(),
   emptyProject({
     name: "Automação de Linha de Envase com Robótica Colaborativa",
     filial: RELATOR_FILIAL,
@@ -201,14 +425,65 @@ export const INITIAL_PROJECTS: Project[] = [
     updatedAt: daysAgo(4),
     endDate: daysFromNow(150),
   }),
-  emptyProject({
-    name: "Redução de Consumo Hídrico no Processo Têxtil",
-    filial: RELATOR_FILIAL,
-    area: RELATOR_SETOR,
-    status: "enviado_controladoria",
-    updatedAt: daysAgo(12),
-    endDate: daysFromNow(20),
-  }),
+  (() => {
+    const matId = nextId("mat");
+    return emptyProject({
+      name: "Redução de Consumo Hídrico no Processo Têxtil",
+      filial: RELATOR_FILIAL,
+      area: RELATOR_SETOR,
+      // Devolvida pela Controladoria: volta para a fila do Revisor (mesmo
+      // status "revisao" usado pelo pedido de ajuste comum), mas o histórico
+      // e as decisões já registradas pela Controladoria são preservados.
+      status: "revisao",
+      updatedAt: daysAgo(12),
+      endDate: daysFromNow(20),
+      reviewedBy: "Fernanda Ramos",
+      reviewedAt: daysAgo(18),
+      controladoriaStatus: "devolvida_revisor",
+      materials: [
+        {
+          id: matId,
+          supplier: MOCK_SUPPLIERS[3].name,
+          cnpj: MOCK_SUPPLIERS[3].cnpj,
+          invoice: "NF-000788",
+          grossValue: 22000,
+          netValue: 22000,
+          materialDescription: "Membranas de filtragem para reuso de água",
+          usageDescription: "Instalação do sistema piloto de reaproveitamento hídrico",
+        },
+      ],
+      despesaDecisions: {
+        [matId]: {
+          status: "pendencia",
+          comment:
+            "Nota fiscal anexada não corresponde ao fornecedor informado — solicitar correção.",
+          decidedAt: daysAgo(14),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 22000,
+        },
+      },
+      controladoriaHistory: [
+        {
+          id: nextId("ch"),
+          date: daysAgo(18),
+          actor: "Fernanda Ramos",
+          description: "encaminhou a iniciativa para a Controladoria",
+        },
+        {
+          id: nextId("ch"),
+          date: daysAgo(14),
+          actor: ROLE_USERS.controladoria.name,
+          description: "sinalizou pendência na despesa de material",
+        },
+        {
+          id: nextId("ch"),
+          date: daysAgo(12),
+          actor: ROLE_USERS.controladoria.name,
+          description: "devolveu a iniciativa ao Revisor por pendências identificadas nas despesas",
+        },
+      ],
+    });
+  })(),
   emptyProject({
     name: "Sensor Óptico para Detecção de Contaminantes",
     filial: RELATOR_FILIAL,
@@ -551,6 +826,19 @@ INITIAL_PROJECTS.forEach((p, idx) => {
   }
 });
 
+// Controladoria — toda iniciativa "Enviado para Controladoria" chega como
+// "Aguardando análise", com data/responsável de recebimento (reviewedAt/
+// reviewedBy, preenchidos pelo Revisor no momento do encaminhamento).
+// Cenários específicos (pendência, tudo decidido, devolvida, enviada ao
+// Jurídico) já vêm com esses campos definidos explicitamente acima.
+INITIAL_PROJECTS.forEach((p) => {
+  if (p.status === "enviado_controladoria") {
+    if (!p.controladoriaStatus) p.controladoriaStatus = "aguardando_analise";
+    if (!p.reviewedAt) p.reviewedAt = p.updatedAt;
+    if (!p.reviewedBy) p.reviewedBy = "Fernanda Ramos";
+  }
+});
+
 // Iniciativas concluídas em 2025 — já fora da responsabilidade do Revisor.
 // Datas fixas em ISO (não daysAgo/daysFromNow, que são relativas a "hoje")
 // para que o ano de 2025 apareça de forma estável no filtro de Ano.
@@ -614,6 +902,112 @@ INITIAL_PROJECTS.push(
     answers: randomAnswers(104),
   }),
 );
+
+// Retorno à Controladoria após devolução ao Revisor: demonstra o cenário de
+// "Retorno de uma iniciativa" — histórico da primeira análise preservado,
+// decisões antigas mantidas, e uma despesa já corrigida pelo Financeiro cujo
+// valor diverge do snapshot registrado na decisão anterior (precisa de nova
+// conferência).
+(() => {
+  const empId = nextId("emp");
+  const tpOkId = nextId("tp");
+  const tpFixedId = nextId("tp");
+  INITIAL_PROJECTS.push(
+    emptyProject({
+      name: "Linha de Pasteurização Contínua com Controle Adaptativo",
+      filial: RELATOR_FILIAL,
+      area: RELATOR_SETOR,
+      responsible: "Beatriz Lima",
+      status: "enviado_controladoria",
+      updatedAt: daysAgo(5),
+      createdAt: daysAgo(150),
+      startDate: daysAgo(150),
+      endDate: daysAgo(10),
+      answers: randomAnswers(105),
+      reviewedBy: "Ricardo Alves",
+      reviewedAt: daysAgo(5),
+      controladoriaStatus: "aguardando_analise",
+      employees: [
+        {
+          id: empId,
+          code: MOCK_EMPLOYEES[2].code,
+          name: MOCK_EMPLOYEES[2].name,
+          role: MOCK_EMPLOYEES[2].role,
+          activity: "Ajuste do controle adaptativo de temperatura da linha",
+          totalHours: 300,
+          eligibleHours: 300,
+        },
+      ],
+      thirdParties: [
+        {
+          id: tpOkId,
+          company: MOCK_SUPPLIERS[0].name,
+          cnpj: MOCK_SUPPLIERS[0].cnpj,
+          invoice: "NF-000501",
+          invoiceTotal: 26000,
+          usedInProject: 26000,
+        },
+        {
+          id: tpFixedId,
+          company: MOCK_SUPPLIERS[4].name,
+          cnpj: MOCK_SUPPLIERS[4].cnpj,
+          invoice: "NF-000502",
+          // Valor corrigido pelo Financeiro após a devolução — diverge do
+          // snapshot registrado na decisão de pendência abaixo.
+          invoiceTotal: 17500,
+          usedInProject: 17500,
+        },
+      ],
+      despesaDecisions: {
+        [empId]: {
+          status: "validada",
+          decidedAt: daysAgo(30),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 300,
+        },
+        [tpOkId]: {
+          status: "validada",
+          decidedAt: daysAgo(30),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 26000,
+        },
+        [tpFixedId]: {
+          status: "pendencia",
+          comment: "Valor utilizado divergia do item da nota fiscal — corrigir com o Financeiro.",
+          decidedAt: daysAgo(29),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 21000,
+        },
+      },
+      controladoriaHistory: [
+        {
+          id: nextId("ch"),
+          date: daysAgo(30),
+          actor: "Ricardo Alves",
+          description: "encaminhou a iniciativa para a Controladoria",
+        },
+        {
+          id: nextId("ch"),
+          date: daysAgo(29),
+          actor: ROLE_USERS.controladoria.name,
+          description: "sinalizou pendência na despesa de serviço de terceiro",
+        },
+        {
+          id: nextId("ch"),
+          date: daysAgo(28),
+          actor: ROLE_USERS.controladoria.name,
+          description: "devolveu a iniciativa ao Revisor por pendências identificadas nas despesas",
+        },
+        {
+          id: nextId("ch"),
+          date: daysAgo(5),
+          actor: "Ricardo Alves",
+          description: "reencaminhou a iniciativa à Controladoria após o ajuste do Financeiro",
+        },
+      ],
+    }),
+  );
+})();
 
 // --- Configuração Geral — cadastros básicos ------------------------------
 

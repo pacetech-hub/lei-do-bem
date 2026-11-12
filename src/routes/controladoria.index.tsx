@@ -1,12 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { LayoutList, Calculator, Settings } from "lucide-react";
+import { LayoutList, Calculator } from "lucide-react";
 import { RoleStubIndex } from "@/components/role-stub";
 
 export const Route = createFileRoute("/controladoria/")({
   head: () => ({
     meta: [
       { title: "Controladoria | Lei do Bem" },
-      { name: "description", content: "Estrutura da Controladoria — funcionalidades a definir." },
+      {
+        name: "description",
+        content: "Análise financeira das iniciativas recebidas do Revisor.",
+      },
     ],
   }),
   component: ControladoriaPage,
@@ -17,7 +20,7 @@ function ControladoriaPage() {
     <RoleStubIndex
       role="controladoria"
       roleLabel="Controladoria"
-      description="Estrutura inicial da Controladoria. As funcionalidades de cada área serão definidas posteriormente."
+      description="Acompanhe as iniciativas recebidas do Revisor e consulte a classificação contábil das despesas."
       items={[
         {
           label: "Iniciativas",
@@ -30,12 +33,6 @@ function ControladoriaPage() {
           description: "Classificação contábil das despesas.",
           to: "/controladoria/contas-contabeis",
           icon: Calculator,
-        },
-        {
-          label: "Configurações",
-          description: "Configurações da área de Controladoria.",
-          to: "/controladoria/configuracoes",
-          icon: Settings,
         },
       ]}
     />

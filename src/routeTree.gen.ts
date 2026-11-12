@@ -29,11 +29,11 @@ import { Route as ConfiguracaoGeralIndexRouteImport } from './routes/configuraca
 import { Route as ConfiguracaoGeralCargosRouteImport } from './routes/configuracao-geral.cargos'
 import { Route as ControladoriaIniciativasRouteImport } from './routes/controladoria.iniciativas'
 import { Route as ControladoriaContasContabeisRouteImport } from './routes/controladoria.contas-contabeis'
-import { Route as ControladoriaConfiguracoesRouteImport } from './routes/controladoria.configuracoes'
 import { Route as ProjetosNovoRouteImport } from './routes/projetos.novo'
 import { Route as ProjetosIdRouteImport } from './routes/projetos.$id'
 import { Route as RevisorProjetosIdRouteImport } from './routes/revisor.projetos.$id'
 import { Route as FinanceiroProjetosIdRouteImport } from './routes/financeiro.projetos.$id'
+import { Route as ControladoriaIniciativasIdRouteImport } from './routes/controladoria.iniciativas.$id'
 
 const RevisorRoute = RevisorRouteImport.update({
   id: '/revisor',
@@ -139,12 +139,6 @@ const ControladoriaContasContabeisRoute =
     path: '/contas-contabeis',
     getParentRoute: () => ControladoriaRoute,
   } as any)
-const ControladoriaConfiguracoesRoute =
-  ControladoriaConfiguracoesRouteImport.update({
-    id: '/configuracoes',
-    path: '/configuracoes',
-    getParentRoute: () => ControladoriaRoute,
-  } as any)
 const ProjetosNovoRoute = ProjetosNovoRouteImport.update({
   id: '/projetos/novo',
   path: '/projetos/novo',
@@ -165,6 +159,12 @@ const FinanceiroProjetosIdRoute = FinanceiroProjetosIdRouteImport.update({
   path: '/projetos/$id',
   getParentRoute: () => FinanceiroRoute,
 } as any)
+const ControladoriaIniciativasIdRoute =
+  ControladoriaIniciativasIdRouteImport.update({
+    id: '/iniciativas/$id',
+    path: '/iniciativas/$id',
+    getParentRoute: () => ControladoriaRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -176,7 +176,6 @@ export interface FileRoutesByFullPath {
   '/revisor': typeof RevisorRouteWithChildren
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
-  '/controladoria/configuracoes': typeof ControladoriaConfiguracoesRoute
   '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
   '/controladoria/iniciativas': typeof ControladoriaIniciativasRoute
   '/configuracao-geral/cargos': typeof ConfiguracaoGeralCargosRoute
@@ -192,13 +191,13 @@ export interface FileRoutesByFullPath {
   '/revisor/': typeof RevisorIndexRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
+  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
-  '/controladoria/configuracoes': typeof ControladoriaConfiguracoesRoute
   '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
   '/controladoria/iniciativas': typeof ControladoriaIniciativasRoute
   '/configuracao-geral/cargos': typeof ConfiguracaoGeralCargosRoute
@@ -214,6 +213,7 @@ export interface FileRoutesByTo {
   '/revisor': typeof RevisorIndexRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
+  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -226,7 +226,6 @@ export interface FileRoutesById {
   '/revisor': typeof RevisorRouteWithChildren
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
-  '/controladoria/configuracoes': typeof ControladoriaConfiguracoesRoute
   '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
   '/controladoria/iniciativas': typeof ControladoriaIniciativasRoute
   '/configuracao-geral/cargos': typeof ConfiguracaoGeralCargosRoute
@@ -242,6 +241,7 @@ export interface FileRoutesById {
   '/revisor/': typeof RevisorIndexRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
+  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -255,7 +255,6 @@ export interface FileRouteTypes {
     | '/revisor'
     | '/projetos/$id'
     | '/projetos/novo'
-    | '/controladoria/configuracoes'
     | '/controladoria/contas-contabeis'
     | '/controladoria/iniciativas'
     | '/configuracao-geral/cargos'
@@ -271,13 +270,13 @@ export interface FileRouteTypes {
     | '/revisor/'
     | '/financeiro/projetos/$id'
     | '/revisor/projetos/$id'
+    | '/controladoria/iniciativas/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
     | '/projetos/$id'
     | '/projetos/novo'
-    | '/controladoria/configuracoes'
     | '/controladoria/contas-contabeis'
     | '/controladoria/iniciativas'
     | '/configuracao-geral/cargos'
@@ -293,6 +292,7 @@ export interface FileRouteTypes {
     | '/revisor'
     | '/financeiro/projetos/$id'
     | '/revisor/projetos/$id'
+    | '/controladoria/iniciativas/$id'
   id:
     | '__root__'
     | '/'
@@ -304,7 +304,6 @@ export interface FileRouteTypes {
     | '/revisor'
     | '/projetos/$id'
     | '/projetos/novo'
-    | '/controladoria/configuracoes'
     | '/controladoria/contas-contabeis'
     | '/controladoria/iniciativas'
     | '/configuracao-geral/cargos'
@@ -320,6 +319,7 @@ export interface FileRouteTypes {
     | '/revisor/'
     | '/financeiro/projetos/$id'
     | '/revisor/projetos/$id'
+    | '/controladoria/iniciativas/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -476,11 +476,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ControladoriaContasContabeisRouteImport
       parentRoute: typeof ControladoriaRoute
     }
-    '/controladoria/configuracoes': {
-      id: '/controladoria/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/controladoria/configuracoes'
-      preLoaderRoute: typeof ControladoriaConfiguracoesRouteImport
+    '/controladoria/iniciativas/$id': {
+      id: '/controladoria/iniciativas/$id'
+      path: '/iniciativas/$id'
+      fullPath: '/controladoria/iniciativas/$id'
+      preLoaderRoute: typeof ControladoriaIniciativasIdRouteImport
       parentRoute: typeof ControladoriaRoute
     }
     '/projetos/novo': {
@@ -561,16 +561,16 @@ const RevisorRouteWithChildren =
 
 interface ControladoriaRouteChildren {
   ControladoriaIndexRoute: typeof ControladoriaIndexRoute
-  ControladoriaConfiguracoesRoute: typeof ControladoriaConfiguracoesRoute
   ControladoriaContasContabeisRoute: typeof ControladoriaContasContabeisRoute
   ControladoriaIniciativasRoute: typeof ControladoriaIniciativasRoute
+  ControladoriaIniciativasIdRoute: typeof ControladoriaIniciativasIdRoute
 }
 
 const ControladoriaRouteChildren: ControladoriaRouteChildren = {
   ControladoriaIndexRoute: ControladoriaIndexRoute,
-  ControladoriaConfiguracoesRoute: ControladoriaConfiguracoesRoute,
   ControladoriaContasContabeisRoute: ControladoriaContasContabeisRoute,
   ControladoriaIniciativasRoute: ControladoriaIniciativasRoute,
+  ControladoriaIniciativasIdRoute: ControladoriaIniciativasIdRoute,
 }
 
 const ControladoriaRouteWithChildren = ControladoriaRoute._addFileChildren(
