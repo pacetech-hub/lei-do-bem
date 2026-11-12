@@ -68,6 +68,9 @@ interface ProjectsState {
     decision: DespesaDecision,
     historyDescription?: string,
   ) => void;
+  // Resposta do Responsável financeiro a uma pendência sinalizada pela
+  // Controladoria — mescla na decisão existente sem alterar status/comment.
+  setDespesaFinanceiroResponse: (id: string, expenseId: string, response: string) => void;
   // Configuração Geral
   addQuestion: (q: QuestionRecord) => void;
   updateQuestion: (id: string, patch: Partial<QuestionRecord>) => void;
@@ -282,6 +285,22 @@ export const useProjectsStore = create<ProjectsState>()(
                 }
               : p,
           ),
+        })),
+      setDespesaFinanceiroResponse: (id, expenseId, response) =>
+        set((s) => ({
+          projects: s.projects.map((p) => {
+            if (p.id !== id) return p;
+            const current = p.despesaDecisions?.[expenseId];
+            if (!current) return p;
+            return {
+              ...p,
+              despesaDecisions: {
+                ...p.despesaDecisions,
+                [expenseId]: { ...current, financeiroResponse: response },
+              },
+              updatedAt: nowIso(),
+            };
+          }),
         })),
       addQuestion: (q) => set((s) => ({ questions: [...s.questions, q] })),
       updateQuestion: (id, patch) =>

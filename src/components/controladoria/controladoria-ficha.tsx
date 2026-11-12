@@ -6,7 +6,6 @@ import { AlertTriangle, ArrowLeft, CheckCircle2, History, Send, Undo2 } from "lu
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import {
   Accordion,
   AccordionContent,
@@ -75,11 +74,6 @@ export function ControladoriaFicha({ project }: { project: Project }) {
   const updateProject = useProjectsStore((s) => s.updateProject);
   const [devolverOpen, setDevolverOpen] = useState(false);
   const [enviarOpen, setEnviarOpen] = useState(false);
-  // Simulação de permissão de finalização — este protótipo tem um único
-  // usuário fixo por perfil (ver ROLE_USERS), então não há um sistema real de
-  // autorização a consultar. Este controle local demonstra os dois estados
-  // de tela pedidos (com e sem permissão para encaminhar ao Jurídico).
-  const [canFinalize, setCanFinalize] = useState(true);
 
   const controladoriaStatus = project.controladoriaStatus ?? "aguardando_analise";
   const isActive = controladoriaStatus === "aguardando_analise";
@@ -374,26 +368,11 @@ export function ControladoriaFicha({ project }: { project: Project }) {
               </div>
             </>
           ) : allDecided ? (
-            <>
-              <label className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-                <Switch checked={canFinalize} onCheckedChange={setCanFinalize} />
-                Simular permissão para encaminhar
-              </label>
-              <div className="ml-auto flex flex-col items-end gap-1">
-                {!canFinalize && (
-                  <span className="text-xs text-muted-foreground">
-                    Você não tem permissão para finalizar esta análise.
-                  </span>
-                )}
-                <Button
-                  className="gap-2"
-                  disabled={!canFinalize}
-                  onClick={() => setEnviarOpen(true)}
-                >
-                  <Send className="size-4" /> Enviar para Jurídico
-                </Button>
-              </div>
-            </>
+            <div className="ml-auto">
+              <Button className="gap-2" onClick={() => setEnviarOpen(true)}>
+                <Send className="size-4" /> Enviar para Jurídico
+              </Button>
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">
               Decida todas as despesas (validar, sinalizar pendência ou excluir) para habilitar o

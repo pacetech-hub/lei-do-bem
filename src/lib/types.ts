@@ -112,6 +112,9 @@ export interface DespesaDecision {
   // momento da decisão — permite identificar, num retorno do Revisor, se a
   // despesa foi alterada desde a última análise.
   snapshotValue: number;
+  // Resposta do Responsável financeiro a uma pendência sinalizada pela
+  // Controladoria — o que foi ajustado na despesa.
+  financeiroResponse?: string;
 }
 
 export interface ControladoriaHistoryEvent {

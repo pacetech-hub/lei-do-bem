@@ -77,6 +77,57 @@ function RequestAdjustmentButton({ onSubmit }: { onSubmit: (comment: string) => 
   );
 }
 
+function despesaLabel(project: Project, expenseId: string) {
+  const emp = project.employees.find((x) => x.id === expenseId);
+  if (emp) return `Funcionário — ${emp.name}`;
+  const tp = project.thirdParties.find((x) => x.id === expenseId);
+  if (tp) return `Serviço de terceiro — ${tp.company}`;
+  const mat = project.materials.find((x) => x.id === expenseId);
+  if (mat) return `Material — ${mat.materialDescription}`;
+  return "Despesa";
+}
+
+// Linha de resposta a uma pendência sinalizada pela Controladoria: o
+// Responsável Financeiro descreve o que foi ajustado na despesa.
+function PendenciaControladoriaItem({
+  project,
+  expenseId,
+  comment,
+  onSubmit,
+}: {
+  project: Project;
+  expenseId: string;
+  comment?: string;
+  onSubmit: (response: string) => void;
+}) {
+  const [response, setResponse] = useState("");
+
+  const submit = () => {
+    if (!response.trim()) {
+      toast.error("Descreva o que foi ajustado nesta despesa.");
+      return;
+    }
+    onSubmit(response.trim());
+  };
+
+  return (
+    <div className="space-y-2 rounded-md border border-status-adjust-fg/30 bg-background/60 p-3">
+      <p className="font-medium">{despesaLabel(project, expenseId)}</p>
+      <p className="text-xs">Pendência: {comment}</p>
+      <Textarea
+        value={response}
+        onChange={(e) => setResponse(e.target.value)}
+        placeholder="Descreva o que foi ajustado nesta despesa."
+        rows={2}
+        className="bg-surface"
+      />
+      <Button size="sm" onClick={submit}>
+        Enviar resposta à Controladoria
+      </Button>
+    </div>
+  );
+}
+
 // Regra provisória — o percentual final de horas elegíveis ainda não foi
 // definido pelo negócio. Fácil de ajustar quando a regra for fechada.
 const ELIGIBLE_HOURS_RATIO = 0.3;
@@ -645,7 +696,11 @@ export function SectionDespesas({
   canRequestAdjustment?: boolean;
 }) {
   const resolveDespesaAdjustment = useProjectsStore((s) => s.resolveDespesaAdjustment);
+  const setDespesaFinanceiroResponse = useProjectsStore((s) => s.setDespesaFinanceiroResponse);
   const despesaAdjustments = project.despesaAdjustments ?? [];
+  const pendenciasControladoria = Object.entries(project.despesaDecisions ?? {}).filter(
+    ([, d]) => d.status === "pendencia" && !d.financeiroResponse,
+  );
 
   const expenseLabel = (item: DespesaAdjustmentItem) => {
     if (item.expenseType === "thirdParty") {
@@ -675,6 +730,26 @@ export function SectionDespesas({
               <p key={item.id}>Ajuste solicitado: {item.comment}</p>
             ))}
           </div>
+        </div>
+      )}
+
+      {!readOnly && pendenciasControladoria.length > 0 && (
+        <div className="mb-6 space-y-3 rounded-lg border border-status-adjust-fg/40 bg-status-adjust/5 p-4 text-sm text-status-adjust-fg">
+          <div className="flex items-center gap-2 font-medium">
+            <AlertTriangle className="size-4 shrink-0" /> Pendências sinalizadas pela Controladoria
+          </div>
+          {pendenciasControladoria.map(([expenseId, decision]) => (
+            <PendenciaControladoriaItem
+              key={expenseId}
+              project={project}
+              expenseId={expenseId}
+              comment={decision.comment}
+              onSubmit={(response) => {
+                setDespesaFinanceiroResponse(project.id, expenseId, response);
+                toast.success("Resposta enviada à Controladoria.");
+              }}
+            />
+          ))}
         </div>
       )}
 

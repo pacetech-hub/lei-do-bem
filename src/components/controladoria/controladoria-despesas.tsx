@@ -210,8 +210,20 @@ function DecisionCell({
           />
         </div>
       )}
-      {decision?.comment && (
-        <p className="max-w-[220px] text-xs text-muted-foreground">{decision.comment}</p>
+      {decision?.status === "pendencia" && decision.financeiroResponse ? (
+        <div className="max-w-[220px] space-y-0.5 text-xs text-muted-foreground">
+          <p className="font-medium text-foreground">Nota devolvida</p>
+          <p>
+            <span className="font-medium">Pendência:</span> {decision.comment}
+          </p>
+          <p>
+            <span className="font-medium">Ajustada:</span> {decision.financeiroResponse}
+          </p>
+        </div>
+      ) : (
+        decision?.comment && (
+          <p className="max-w-[220px] text-xs text-muted-foreground">{decision.comment}</p>
+        )
       )}
     </div>
   );
