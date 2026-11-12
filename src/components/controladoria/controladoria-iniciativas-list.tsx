@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ChevronRight, Clock3, Send, Undo2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -44,7 +44,6 @@ const INDICATORS: Array<{ key: ControladoriaStatus; icon: typeof Clock3 }> = [
 
 export function ControladoriaIniciativasList() {
   const projects = useProjectsStore((s) => s.projects);
-  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<ControladoriaStatus | "all">("all");
   const [areaFilter, setAreaFilter] = useState<string>("all");
   const [yearFilter, setYearFilter] = useState<string>("all");
@@ -215,14 +214,16 @@ export function ControladoriaIniciativasList() {
                 </TableRow>
               )}
               {filtered.map((p) => (
-                <TableRow
-                  key={p.id}
-                  className="group cursor-pointer"
-                  onClick={() =>
-                    navigate({ to: "/controladoria/iniciativas/$id", params: { id: p.id } })
-                  }
-                >
-                  <TableCell className="py-4 font-medium text-foreground">{p.name}</TableCell>
+                <TableRow key={p.id} className="group">
+                  <TableCell className="py-4 font-medium text-foreground">
+                    <Link
+                      to="/controladoria/iniciativas/$id"
+                      params={{ id: p.id }}
+                      className="block hover:underline"
+                    >
+                      {p.name}
+                    </Link>
+                  </TableCell>
                   <TableCell className="py-4 text-sm text-muted-foreground">{p.area}</TableCell>
                   <TableCell className="py-4 text-sm text-muted-foreground">
                     {p.responsible}
@@ -242,7 +243,14 @@ export function ControladoriaIniciativasList() {
                     <ControladoriaStatusBadge status={p.controladoriaStatus} />
                   </TableCell>
                   <TableCell className="py-4 text-right">
-                    <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
+                    <Link
+                      to="/controladoria/iniciativas/$id"
+                      params={{ id: p.id }}
+                      className="inline-flex items-center justify-end"
+                      aria-label={`Abrir ${p.name}`}
+                    >
+                      <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}
