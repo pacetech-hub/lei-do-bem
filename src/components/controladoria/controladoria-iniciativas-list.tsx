@@ -222,16 +222,28 @@ export function ControladoriaIniciativasList() {
                   </TableCell>
                 </TableRow>
               )}
-              {filtered.map((p) => (
+              {filtered.map((p, idx) => (
                 <TableRow key={p.id} className="group">
                   <TableCell className="py-4 font-medium text-foreground">
-                    <Link
-                      to="/controladoria/iniciativas/$id"
-                      params={{ id: p.id }}
-                      className="block hover:underline"
-                    >
-                      {p.name}
-                    </Link>
+                    {idx === 0 ? (
+                      // TESTE TEMPORÁRIO — remover depois de confirmar se o clique funciona
+                      <a
+                        href="https://www.google.com"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-primary underline"
+                      >
+                        [TESTE] {p.name}
+                      </a>
+                    ) : (
+                      <Link
+                        to="/controladoria/iniciativas/$id"
+                        params={{ id: p.id }}
+                        className="block hover:underline"
+                      >
+                        {p.name}
+                      </Link>
+                    )}
                   </TableCell>
                   <TableCell className="py-4 text-sm text-muted-foreground">{p.area}</TableCell>
                   <TableCell className="py-4 text-sm text-muted-foreground">
