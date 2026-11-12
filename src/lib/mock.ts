@@ -5,12 +5,16 @@ import {
   QUESTIONS_BARREIRAS,
   QUESTIONS_METODOLOGIA,
   ROLE_USERS,
+  type Agrupamento,
   type Attachment,
   type Invoice,
   type JobRole,
+  type JuridicoProjeto,
+  type PreProjeto,
   type Project,
   type QuestionRecord,
 } from "./types";
+import { gerarIdentificacaoProjeto, gerarSecoesProjeto } from "./juridico";
 
 export interface MockEmployee {
   code: string;
@@ -1103,6 +1107,894 @@ INITIAL_PROJECTS.push(
       ],
     }),
   );
+})();
+
+// --- Jurídico — iniciativas recebidas, agrupamentos, pré-projetos e ------
+// projetos (dados fictícios cobrindo o fluxo completo: sugestão de
+// agrupamento pela IA, transformação em pré-projeto, decisão do comitê nos
+// três sentidos, elaboração do projeto e as etapas de submissão/devolutiva
+// do MCTI, incluindo o cenário de segunda submissão).
+
+// Datas explícitas (não crypto.randomUUID()/new Date() soltos) pelo mesmo
+// motivo do nextId: este módulo roda em SSR e CSR, e um valor diferente a
+// cada avaliação causaria hydration mismatch.
+function seedHistory(actor: string, description: string, date: string) {
+  return { id: nextId("jh"), date, actor, description };
+}
+
+interface JuridicoSeedIniciativa {
+  name: string;
+  area: string;
+  responsible: string;
+  objetivo: string;
+  problema: string;
+  atividades: string;
+  resultados: string;
+  descricao: string;
+  valorTerceiro: number;
+  valorMaterial: number;
+  ano: number;
+}
+
+const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
+  // Cluster A — Automação e Robótica Industrial
+  {
+    name: "Célula Robotizada de Solda para Linha de Montagem",
+    area: "Automação",
+    responsible: "Carlos Silva",
+    objetivo:
+      "Desenvolver uma célula de automação industrial com solda robotizada para a linha de montagem principal.",
+    problema: "Alto índice de retrabalho e variabilidade na solda manual da linha de montagem.",
+    atividades:
+      "Projeto e integração de braço robótico, programação de trajetórias de solda e testes de automação industrial em bancada.",
+    resultados: "Redução do retrabalho e aumento de produtividade na linha de montagem.",
+    descricao:
+      "Célula robotizada para solda automatizada, reduzindo a variabilidade do processo manual.",
+    valorTerceiro: 42000,
+    valorMaterial: 18000,
+    ano: 2026,
+  },
+  {
+    name: "Braço Robótico Colaborativo para Picking",
+    area: "Engenharia de Produto",
+    responsible: "João Silva",
+    objetivo:
+      "Avaliar a aplicação de robótica colaborativa em operações de picking para automação industrial do centro de distribuição.",
+    problema: "Baixa produtividade e riscos ergonômicos na separação manual de pedidos.",
+    atividades:
+      "Testes com braço robótico colaborativo, calibração de garras e integração com o sistema de gestão de armazém.",
+    resultados:
+      "Ganhos de produtividade e redução de riscos ergonômicos nas operações de separação.",
+    descricao:
+      "Avaliação de robô colaborativo aplicado à separação de pedidos no centro de distribuição.",
+    valorTerceiro: 35000,
+    valorMaterial: 12000,
+    ano: 2026,
+  },
+  {
+    name: "Sistema de Visão para Controle de Automação Industrial",
+    area: "Processos Industriais",
+    responsible: "Mariana Costa",
+    objetivo:
+      "Implementar visão computacional para controle de qualidade em uma célula de automação industrial.",
+    problema: "Falta de rastreabilidade visual nos pontos críticos da linha automatizada.",
+    atividades:
+      "Desenvolvimento de algoritmos de visão, integração com controladores da célula de automação industrial e testes de campo.",
+    resultados: "Maior rastreabilidade e redução de falhas não detectadas na linha.",
+    descricao: "Sistema de visão computacional integrado à automação industrial da linha.",
+    valorTerceiro: 50000,
+    valorMaterial: 9000,
+    ano: 2025,
+  },
+  // Cluster B — Eficiência Energética e Sustentabilidade
+  {
+    name: "Sistema de Recuperação de Energia em Compressores",
+    area: "Processos Industriais",
+    responsible: "Beatriz Lima",
+    objetivo:
+      "Desenvolver um sistema de recuperação de calor para aumentar a eficiência energética dos compressores industriais.",
+    problema: "Alto desperdício de energia térmica no processo de compressão.",
+    atividades:
+      "Modelagem térmica, testes de eficiência energética e validação do sistema de recuperação em escala piloto.",
+    resultados:
+      "Redução do consumo energético e melhoria da sustentabilidade do processo produtivo.",
+    descricao:
+      "Recuperação de calor residual dos compressores para ganhos de eficiência energética.",
+    valorTerceiro: 38000,
+    valorMaterial: 21000,
+    ano: 2026,
+  },
+  {
+    name: "Painel Solar Modular para Autoconsumo Industrial",
+    area: "Automação",
+    responsible: "Ana Souza",
+    objetivo:
+      "Desenvolver um painel solar modular voltado à energia renovável para autoconsumo em unidades industriais.",
+    problema: "Dependência de fontes de energia não renováveis em unidades remotas.",
+    atividades:
+      "Testes de módulos fotovoltaicos, integração com o sistema elétrico e avaliação de sustentabilidade do autoconsumo.",
+    resultados: "Maior participação de energia renovável na matriz da unidade.",
+    descricao: "Solução modular de energia renovável para autoconsumo industrial.",
+    valorTerceiro: 46000,
+    valorMaterial: 15000,
+    ano: 2025,
+  },
+  {
+    name: "Programa de Redução de Emissões na Linha de Pintura",
+    area: "Qualidade e Inovação",
+    responsible: "Carlos Silva",
+    objetivo:
+      "Reduzir emissões de compostos orgânicos voláteis na linha de pintura, com foco em sustentabilidade.",
+    problema:
+      "Emissões acima do desejável na etapa de pintura, impactando a sustentabilidade da operação.",
+    atividades:
+      "Testes com tintas de menor impacto, ajuste de parâmetros de cura e monitoramento da redução de emissões.",
+    resultados: "Redução de emissões e avanço nas metas de sustentabilidade ambiental.",
+    descricao: "Programa técnico de redução de emissões na linha de pintura.",
+    valorTerceiro: 29000,
+    valorMaterial: 11000,
+    ano: 2026,
+  },
+  // Cluster C — Plataformas de Dados e Inteligência Artificial
+  {
+    name: "Plataforma de Inteligência Artificial para Previsão de Demanda",
+    area: "Tecnologia da Informação",
+    responsible: "Mariana Costa",
+    objetivo:
+      "Desenvolver uma plataforma de inteligência artificial para previsão de demanda de produtos acabados.",
+    problema: "Baixa acurácia nas previsões atuais, gerando excesso ou falta de estoque.",
+    atividades:
+      "Treinamento de modelos de machine learning, validação estatística e testes de análise preditiva de dados históricos de vendas.",
+    resultados: "Maior acurácia na previsão de demanda e redução de rupturas de estoque.",
+    descricao: "Plataforma de IA para previsão de demanda com base em dados históricos.",
+    valorTerceiro: 55000,
+    valorMaterial: 6000,
+    ano: 2026,
+  },
+  {
+    name: "Modelo de Machine Learning para Detecção de Defeitos",
+    area: "Qualidade e Inovação",
+    responsible: "João Silva",
+    objetivo:
+      "Aplicar machine learning para detecção automática de defeitos em imagens de inspeção de qualidade.",
+    problema: "Inspeção visual manual sujeita a falhas e baixa padronização.",
+    atividades:
+      "Rotulagem de imagens, treinamento de modelo de machine learning e testes de análise preditiva de dados de inspeção.",
+    resultados: "Maior padronização e redução de defeitos não detectados.",
+    descricao: "Modelo de inteligência artificial para inspeção visual automatizada.",
+    valorTerceiro: 48000,
+    valorMaterial: 4000,
+    ano: 2025,
+  },
+  {
+    name: "Motor de Análise Preditiva de Dados de Sensores",
+    area: "Pesquisa & Desenvolvimento",
+    responsible: "Ana Souza",
+    objetivo:
+      "Criar um motor de análise preditiva de dados de sensores para antecipar falhas em equipamentos críticos.",
+    problema: "Paradas não programadas por falhas não antecipadas em equipamentos críticos.",
+    atividades:
+      "Coleta de dados de sensores, testes de inteligência artificial para manutenção preditiva e validação em campo.",
+    resultados: "Redução de paradas não programadas e aumento da disponibilidade dos equipamentos.",
+    descricao:
+      "Motor preditivo baseado em inteligência artificial para manutenção de equipamentos.",
+    valorTerceiro: 33000,
+    valorMaterial: 8000,
+    ano: 2026,
+  },
+  // Sem tema compartilhado — ficam disponíveis para agrupamento manual ou
+  // para os cenários individuais de Pré-projetos/Projetos abaixo.
+  {
+    name: "Sistema Modular de Embalagem Retornável",
+    area: "Engenharia de Produto",
+    responsible: "Beatriz Lima",
+    objetivo:
+      "Desenvolver um sistema modular de embalagem retornável para redução de descarte logístico.",
+    problema: "Alto volume de descarte de embalagens descartáveis no transporte entre unidades.",
+    atividades:
+      "Prototipagem de módulos de embalagem, testes de resistência e ciclos de reutilização.",
+    resultados: "Redução do descarte de embalagens e menor custo logístico recorrente.",
+    descricao: "Embalagem modular retornável para uso recorrente entre unidades.",
+    valorTerceiro: 21000,
+    valorMaterial: 17000,
+    ano: 2025,
+  },
+  {
+    name: "Sistema de Rastreamento RFID para Expedição",
+    area: "Processos Industriais",
+    responsible: "Carlos Silva",
+    objetivo:
+      "Implementar rastreamento por RFID dos lotes na expedição para reduzir erros de separação.",
+    problema: "Erros recorrentes de expedição por identificação manual de lotes.",
+    atividades:
+      "Testes de antenas RFID, integração com o sistema de gestão de armazém e validação de leitura em docas de carregamento.",
+    resultados: "Redução de erros de expedição e maior rastreabilidade de lotes.",
+    descricao: "Solução de rastreamento por radiofrequência aplicada à expedição.",
+    valorTerceiro: 31000,
+    valorMaterial: 14000,
+    ano: 2026,
+  },
+  {
+    name: "Unidade de Testes Climáticos Acelerados para Componentes",
+    area: "Qualidade e Inovação",
+    responsible: "Mariana Costa",
+    objetivo:
+      "Desenvolver uma câmara de testes climáticos acelerados para validação de componentes críticos.",
+    problema:
+      "Falta de estrutura própria para simular condições climáticas extremas em componentes.",
+    atividades: "Projeto da câmara climática, calibração de sensores e ciclos de teste acelerado.",
+    resultados: "Maior confiabilidade dos componentes validados antes do uso em campo.",
+    descricao: "Câmara própria de testes climáticos acelerados para componentes críticos.",
+    valorTerceiro: 27000,
+    valorMaterial: 19000,
+    ano: 2025,
+  },
+  {
+    name: "Reator Modular de Testes de Corrosão Acelerada",
+    area: "Automação",
+    responsible: "João Silva",
+    objetivo:
+      "Construir um reator modular para testes de corrosão acelerada de revestimentos industriais.",
+    problema:
+      "Dependência de laboratórios externos para ensaios de corrosão, com alto custo e prazo.",
+    atividades:
+      "Montagem do reator modular, calibração de parâmetros de ensaio e testes comparativos de revestimentos.",
+    resultados: "Redução de custo e prazo nos ensaios de corrosão acelerada.",
+    descricao: "Reator próprio para ensaios acelerados de corrosão em revestimentos.",
+    valorTerceiro: 24000,
+    valorMaterial: 10000,
+    ano: 2026,
+  },
+];
+
+JURIDICO_SEED_INICIATIVAS.forEach((seed, idx) => {
+  const tpId = nextId("tp");
+  const matId = nextId("mat");
+  const reviewedAt = daysAgo(20 + idx * 3);
+  INITIAL_PROJECTS.push(
+    emptyProject({
+      name: seed.name,
+      filial: RELATOR_FILIAL,
+      area: seed.area,
+      responsible: seed.responsible,
+      status: "enviado_controladoria",
+      natureza: "produto",
+      atividade: "aplicada",
+      createdAt: `${seed.ano}-02-10T09:00:00.000Z`,
+      startDate: `${seed.ano}-02-10T09:00:00.000Z`,
+      endDate: `${seed.ano}-08-20T18:00:00.000Z`,
+      updatedAt: reviewedAt,
+      answers: {
+        inov_3: seed.objetivo,
+        inov_8: seed.problema,
+        inov_9: seed.descricao,
+        inov_6: seed.resultados,
+        met_2: seed.atividades,
+      },
+      reviewedBy: "Ricardo Alves",
+      reviewedAt,
+      controladoriaStatus: "enviada_juridico",
+      thirdParties: [
+        {
+          id: tpId,
+          company: MOCK_SUPPLIERS[idx % MOCK_SUPPLIERS.length].name,
+          cnpj: MOCK_SUPPLIERS[idx % MOCK_SUPPLIERS.length].cnpj,
+          invoice: `NF-003${String(100 + idx).padStart(3, "0")}`,
+          invoiceTotal: seed.valorTerceiro,
+          usedInProject: seed.valorTerceiro,
+        },
+      ],
+      materials: [
+        {
+          id: matId,
+          supplier: MOCK_SUPPLIERS[(idx + 1) % MOCK_SUPPLIERS.length].name,
+          cnpj: MOCK_SUPPLIERS[(idx + 1) % MOCK_SUPPLIERS.length].cnpj,
+          invoice: `NF-004${String(100 + idx).padStart(3, "0")}`,
+          grossValue: seed.valorMaterial,
+          netValue: seed.valorMaterial,
+          materialDescription: `Insumos técnicos — ${seed.name}`,
+          usageDescription: "Aplicação direta na iniciativa.",
+        },
+      ],
+      despesaDecisions: {
+        [tpId]: {
+          status: "validada",
+          decidedAt: reviewedAt,
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: seed.valorTerceiro,
+        },
+        [matId]: {
+          status: "validada",
+          decidedAt: reviewedAt,
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: seed.valorMaterial,
+        },
+      },
+      controladoriaHistory: [
+        {
+          id: nextId("ch"),
+          date: reviewedAt,
+          actor: "Ricardo Alves",
+          description: "encaminhou a iniciativa para a Controladoria",
+        },
+        {
+          id: nextId("ch"),
+          date: reviewedAt,
+          actor: ROLE_USERS.controladoria.name,
+          description: "concluiu a análise de todas as despesas",
+        },
+        {
+          id: nextId("ch"),
+          date: reviewedAt,
+          actor: ROLE_USERS.controladoria.name,
+          description: "encaminhou a iniciativa para o Jurídico",
+        },
+      ],
+    }),
+  );
+});
+
+export const INITIAL_AGRUPAMENTOS: Agrupamento[] = [];
+export const INITIAL_PRE_PROJETOS: PreProjeto[] = [];
+export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
+
+(() => {
+  const byName = (name: string) => INITIAL_PROJECTS.find((p) => p.name === name)!;
+
+  const clusterA = [
+    "Célula Robotizada de Solda para Linha de Montagem",
+    "Braço Robótico Colaborativo para Picking",
+    "Sistema de Visão para Controle de Automação Industrial",
+  ].map((n) => byName(n).id);
+  const clusterB = [
+    "Sistema de Recuperação de Energia em Compressores",
+    "Painel Solar Modular para Autoconsumo Industrial",
+    "Programa de Redução de Emissões na Linha de Pintura",
+  ].map((n) => byName(n).id);
+  const clusterC = [
+    "Plataforma de Inteligência Artificial para Previsão de Demanda",
+    "Modelo de Machine Learning para Detecção de Defeitos",
+    "Motor de Análise Preditiva de Dados de Sensores",
+  ].map((n) => byName(n).id);
+
+  const rfidId = byName("Sistema de Rastreamento RFID para Expedição").id;
+  const climaticosId = byName("Unidade de Testes Climáticos Acelerados para Componentes").id;
+  const reatorId = byName("Reator Modular de Testes de Corrosão Acelerada").id;
+  const protocoloId = byName("Protocolo de Comunicação Industrial Proprietário").id;
+
+  // Agrupamento 1 — sugestão da IA transformada em pré-projeto, ainda não
+  // avaliado pelo comitê.
+  const agrupamentoA: Agrupamento = {
+    id: nextId("agr"),
+    name: "Automação e Robótica Industrial",
+    resumo:
+      "Agrupamento de 3 iniciativas das Diretorias Automação, Engenharia de Produto e Processos Industriais, relacionadas por automação industrial e robótica aplicada à produção.",
+    objetivoComum:
+      "Consolidar iniciativas de automação industrial e robótica que elevam produtividade e qualidade na produção.",
+    relacaoAtividades:
+      "As três iniciativas envolvem integração de robótica, visão computacional e controle de células automatizadas.",
+    justificativa:
+      "Agrupadas por tratarem de tecnologias e oportunidades convergentes de automação industrial, permitindo avaliação consolidada pelo comitê.",
+    iniciativaIds: clusterA,
+    aiSuggested: true,
+    createdAt: daysAgo(18),
+    updatedAt: daysAgo(15),
+    history: [
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "criou o agrupamento a partir de uma sugestão da IA",
+        daysAgo(18),
+      ),
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "transformou o agrupamento em pré-projeto",
+        daysAgo(15),
+      ),
+    ],
+  };
+  const preProjetoA: PreProjeto = {
+    id: nextId("prep"),
+    agrupamentoId: agrupamentoA.id,
+    name: "Pré-projeto — Automação e Robótica Industrial",
+    ano: 2026,
+    resumoExecutivo: agrupamentoA.resumo,
+    problema:
+      "Processos manuais de automação, picking e inspeção geram retrabalho, riscos ergonômicos e falhas não detectadas.",
+    objetivoPrincipal: agrupamentoA.objetivoComum,
+    propostaInovacao: agrupamentoA.justificativa,
+    atividadesInovacao: agrupamentoA.relacaoAtividades,
+    resultadosEsperados:
+      "Ganhos de produtividade, segurança e rastreabilidade nas linhas automatizadas.",
+    status: "aguardando_comite",
+    createdAt: daysAgo(15),
+    updatedAt: daysAgo(15),
+    decisoes: [],
+    history: [
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "criou o pré-projeto a partir do agrupamento",
+        daysAgo(15),
+      ),
+    ],
+  };
+  agrupamentoA.preProjetoId = preProjetoA.id;
+
+  // Agrupamento 2 — pré-projeto com ajuste solicitado pelo comitê.
+  const agrupamentoB: Agrupamento = {
+    id: nextId("agr"),
+    name: "Eficiência Energética e Sustentabilidade",
+    resumo:
+      "Agrupamento de 3 iniciativas das Diretorias Processos Industriais, Automação e Qualidade e Inovação, relacionadas por eficiência energética e sustentabilidade.",
+    objetivoComum:
+      "Consolidar iniciativas que reduzem consumo energético e impacto ambiental da operação.",
+    relacaoAtividades:
+      "As iniciativas envolvem recuperação de energia, geração renovável e redução de emissões.",
+    justificativa:
+      "Agrupadas por tratarem de oportunidades convergentes de eficiência energética e sustentabilidade.",
+    iniciativaIds: clusterB,
+    aiSuggested: true,
+    createdAt: daysAgo(40),
+    updatedAt: daysAgo(10),
+    history: [
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "criou o agrupamento a partir de uma sugestão da IA",
+        daysAgo(40),
+      ),
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "transformou o agrupamento em pré-projeto",
+        daysAgo(35),
+      ),
+    ],
+  };
+  const preProjetoB: PreProjeto = {
+    id: nextId("prep"),
+    agrupamentoId: agrupamentoB.id,
+    name: "Pré-projeto — Eficiência Energética e Sustentabilidade",
+    ano: 2026,
+    resumoExecutivo: agrupamentoB.resumo,
+    problema:
+      "Alto consumo energético e emissões acima do desejável em etapas críticas da operação.",
+    objetivoPrincipal: agrupamentoB.objetivoComum,
+    propostaInovacao: agrupamentoB.justificativa,
+    atividadesInovacao: agrupamentoB.relacaoAtividades,
+    resultadosEsperados:
+      "Redução de consumo energético e de emissões, com avanço nas metas de sustentabilidade.",
+    status: "ajustes_solicitados",
+    createdAt: daysAgo(35),
+    updatedAt: daysAgo(10),
+    decisoes: [
+      {
+        id: nextId("dec"),
+        decisao: "ajustes",
+        data: daysAgo(10),
+        responsavel: ROLE_USERS.juridico.name,
+        observacoes:
+          "Comitê pediu detalhamento do retorno financeiro estimado antes de uma nova avaliação.",
+      },
+    ],
+    history: [
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "criou o pré-projeto a partir do agrupamento",
+        daysAgo(35),
+      ),
+      seedHistory(ROLE_USERS.juridico.name, "apresentou o pré-projeto ao comitê", daysAgo(11)),
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "o comitê solicitou ajustes no pré-projeto",
+        daysAgo(10),
+      ),
+    ],
+  };
+  agrupamentoB.preProjetoId = preProjetoB.id;
+
+  // Agrupamento 3 — aprovado pelo comitê, já virou Projeto em elaboração.
+  const agrupamentoC: Agrupamento = {
+    id: nextId("agr"),
+    name: "Plataformas de Dados e Inteligência Artificial",
+    resumo:
+      "Agrupamento de 3 iniciativas das Diretorias Tecnologia da Informação, Qualidade e Inovação e Pesquisa & Desenvolvimento, relacionadas por inteligência artificial aplicada a dados industriais.",
+    objetivoComum:
+      "Consolidar iniciativas de inteligência artificial para previsão, detecção e manutenção preditiva.",
+    relacaoAtividades:
+      "As iniciativas envolvem treinamento de modelos de machine learning e análise preditiva de dados.",
+    justificativa:
+      "Agrupadas por tratarem de tecnologias convergentes de inteligência artificial aplicada a dados industriais.",
+    iniciativaIds: clusterC,
+    aiSuggested: true,
+    createdAt: daysAgo(60),
+    updatedAt: daysAgo(20),
+    history: [
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "criou o agrupamento a partir de uma sugestão da IA",
+        daysAgo(60),
+      ),
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "transformou o agrupamento em pré-projeto",
+        daysAgo(55),
+      ),
+    ],
+  };
+  const preProjetoC: PreProjeto = {
+    id: nextId("prep"),
+    agrupamentoId: agrupamentoC.id,
+    name: "Pré-projeto — Plataformas de Dados e Inteligência Artificial",
+    ano: 2025,
+    resumoExecutivo: agrupamentoC.resumo,
+    problema:
+      "Decisões de previsão, qualidade e manutenção ainda dependem de análise manual de dados.",
+    objetivoPrincipal: agrupamentoC.objetivoComum,
+    propostaInovacao: agrupamentoC.justificativa,
+    atividadesInovacao: agrupamentoC.relacaoAtividades,
+    resultadosEsperados: "Maior acurácia preditiva e redução de falhas e rupturas na operação.",
+    status: "aprovado",
+    createdAt: daysAgo(55),
+    updatedAt: daysAgo(20),
+    decisoes: [
+      {
+        id: nextId("dec"),
+        decisao: "aprovar",
+        data: daysAgo(20),
+        responsavel: ROLE_USERS.juridico.name,
+        observacoes:
+          "Comitê aprovou por unanimidade, considerando o potencial de ganho operacional.",
+      },
+    ],
+    history: [
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "criou o pré-projeto a partir do agrupamento",
+        daysAgo(55),
+      ),
+      seedHistory(ROLE_USERS.juridico.name, "apresentou o pré-projeto ao comitê", daysAgo(21)),
+      seedHistory(ROLE_USERS.juridico.name, "o comitê aprovou o pré-projeto", daysAgo(20)),
+    ],
+  };
+  const projetoC: JuridicoProjeto = {
+    id: nextId("pj"),
+    preProjetoId: preProjetoC.id,
+    agrupamentoId: agrupamentoC.id,
+    iniciativaIds: clusterC,
+    name: "Projeto — Plataformas de Dados e Inteligência Artificial",
+    identificacao: gerarIdentificacaoProjeto(2025, INITIAL_JURIDICO_PROJETOS),
+    ano: 2025,
+    objetivos: preProjetoC.objetivoPrincipal,
+    sections: gerarSecoesProjeto(preProjetoC),
+    documents: [],
+    status: "em_elaboracao",
+    createdAt: daysAgo(20),
+    updatedAt: daysAgo(20),
+    submissions: [],
+    history: [
+      seedHistory(
+        ROLE_USERS.juridico.name,
+        "criou o projeto a partir do pré-projeto aprovado pelo comitê",
+        daysAgo(20),
+      ),
+    ],
+  };
+  preProjetoC.projetoId = projetoC.id;
+  agrupamentoC.preProjetoId = preProjetoC.id;
+
+  INITIAL_AGRUPAMENTOS.push(agrupamentoA, agrupamentoB, agrupamentoC);
+  INITIAL_PRE_PROJETOS.push(preProjetoA, preProjetoB, preProjetoC);
+  INITIAL_JURIDICO_PROJETOS.push(projetoC);
+
+  // --- Projetos individuais, em diferentes estágios do fluxo com o MCTI ----
+
+  function soloAgrupamentoEPreProjeto(
+    nomeBase: string,
+    iniciativaId: string,
+    ano: number,
+    diasAtras: number,
+  ): { agrupamento: Agrupamento; preProjeto: PreProjeto } {
+    const criadoEm = daysAgo(diasAtras + 10);
+    const aprovadoEm = daysAgo(diasAtras + 5);
+    const agrupamento: Agrupamento = {
+      id: nextId("agr"),
+      name: nomeBase,
+      resumo: `Agrupamento individual criado manualmente a partir da iniciativa "${nomeBase}".`,
+      objetivoComum: "Objetivo detalhado na ficha da iniciativa de origem.",
+      relacaoAtividades: "Agrupamento de uma única iniciativa, sem relação com outras nesta etapa.",
+      justificativa:
+        "Iniciativa com escopo suficientemente consolidado para avaliação individual pelo comitê.",
+      iniciativaIds: [iniciativaId],
+      aiSuggested: false,
+      createdAt: criadoEm,
+      updatedAt: aprovadoEm,
+      history: [
+        seedHistory(ROLE_USERS.juridico.name, "criou o agrupamento manualmente", criadoEm),
+        seedHistory(ROLE_USERS.juridico.name, "transformou o agrupamento em pré-projeto", criadoEm),
+      ],
+    };
+    const preProjeto: PreProjeto = {
+      id: nextId("prep"),
+      agrupamentoId: agrupamento.id,
+      name: `Pré-projeto — ${nomeBase}`,
+      ano,
+      resumoExecutivo: agrupamento.resumo,
+      problema: "Detalhado a partir da ficha original encaminhada pela Controladoria.",
+      objetivoPrincipal: agrupamento.objetivoComum,
+      propostaInovacao: agrupamento.justificativa,
+      atividadesInovacao: agrupamento.relacaoAtividades,
+      resultadosEsperados: "Detalhados a partir da ficha original encaminhada pela Controladoria.",
+      status: "aprovado",
+      createdAt: criadoEm,
+      updatedAt: aprovadoEm,
+      decisoes: [
+        {
+          id: nextId("dec"),
+          decisao: "aprovar",
+          data: aprovadoEm,
+          responsavel: ROLE_USERS.juridico.name,
+        },
+      ],
+      history: [
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "criou o pré-projeto a partir do agrupamento",
+          criadoEm,
+        ),
+        seedHistory(ROLE_USERS.juridico.name, "o comitê aprovou o pré-projeto", aprovadoEm),
+      ],
+    };
+    agrupamento.preProjetoId = preProjeto.id;
+    INITIAL_AGRUPAMENTOS.push(agrupamento);
+    INITIAL_PRE_PROJETOS.push(preProjeto);
+    return { agrupamento, preProjeto };
+  }
+
+  // Projeto X — finalizado, aguardando submissão ao MCTI.
+  {
+    const { agrupamento, preProjeto } = soloAgrupamentoEPreProjeto(
+      "Protocolo de Comunicação Industrial Proprietário",
+      protocoloId,
+      2025,
+      30,
+    );
+    const finalizadoEm = daysAgo(18);
+    const projeto: JuridicoProjeto = {
+      id: nextId("pj"),
+      preProjetoId: preProjeto.id,
+      agrupamentoId: agrupamento.id,
+      iniciativaIds: [protocoloId],
+      name: "Projeto — Protocolo de Comunicação Industrial Proprietário",
+      identificacao: gerarIdentificacaoProjeto(2025, INITIAL_JURIDICO_PROJETOS),
+      ano: 2025,
+      objetivos: preProjeto.objetivoPrincipal,
+      sections: gerarSecoesProjeto(preProjeto),
+      documents: [
+        {
+          id: nextId("att"),
+          name: "memorial-descritivo-protocolo.pdf",
+          type: "pdf",
+          uploadedAt: finalizadoEm,
+          uploadedBy: ROLE_USERS.juridico.name,
+          size: 820000,
+        },
+      ],
+      status: "aguardando_submissao",
+      createdAt: daysAgo(25),
+      updatedAt: finalizadoEm,
+      finalizadoEm,
+      finalizadoPor: ROLE_USERS.juridico.name,
+      submissions: [],
+      history: [
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "criou o projeto a partir do pré-projeto aprovado pelo comitê",
+          daysAgo(25),
+        ),
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          'anexou o documento "memorial-descritivo-protocolo.pdf"',
+          finalizadoEm,
+        ),
+        seedHistory(ROLE_USERS.juridico.name, "finalizou o projeto", finalizadoEm),
+      ],
+    };
+    preProjeto.projetoId = projeto.id;
+    INITIAL_JURIDICO_PROJETOS.push(projeto);
+  }
+
+  // Projeto Y — submetido ao MCTI, aguardando devolutiva (sem resultado).
+  {
+    const { agrupamento, preProjeto } = soloAgrupamentoEPreProjeto(
+      "Reator Modular de Testes de Corrosão Acelerada",
+      reatorId,
+      2026,
+      45,
+    );
+    const finalizadoEm = daysAgo(16);
+    const submissionDate = daysAgo(14);
+    const projeto: JuridicoProjeto = {
+      id: nextId("pj"),
+      preProjetoId: preProjeto.id,
+      agrupamentoId: agrupamento.id,
+      iniciativaIds: [reatorId],
+      name: "Projeto — Reator Modular de Testes de Corrosão Acelerada",
+      identificacao: gerarIdentificacaoProjeto(2026, INITIAL_JURIDICO_PROJETOS),
+      ano: 2026,
+      objetivos: preProjeto.objetivoPrincipal,
+      sections: gerarSecoesProjeto(preProjeto),
+      documents: [],
+      status: "submetido_mcti",
+      createdAt: daysAgo(40),
+      updatedAt: submissionDate,
+      finalizadoEm,
+      finalizadoPor: ROLE_USERS.juridico.name,
+      submissions: [
+        { numero: 1, submittedAt: submissionDate, submittedBy: ROLE_USERS.juridico.name },
+      ],
+      history: [
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "criou o projeto a partir do pré-projeto aprovado pelo comitê",
+          daysAgo(40),
+        ),
+        seedHistory(ROLE_USERS.juridico.name, "finalizou o projeto", finalizadoEm),
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "registrou a submissão do projeto ao MCTI",
+          submissionDate,
+        ),
+      ],
+    };
+    preProjeto.projetoId = projeto.id;
+    INITIAL_JURIDICO_PROJETOS.push(projeto);
+  }
+
+  // Projeto W — devolutiva negativa já registrada, pronto para reabrir e
+  // preparar a segunda (e última) submissão.
+  {
+    const { agrupamento, preProjeto } = soloAgrupamentoEPreProjeto(
+      "Unidade de Testes Climáticos Acelerados para Componentes",
+      climaticosId,
+      2025,
+      70,
+    );
+    const finalizadoEm = daysAgo(52);
+    const submissionDate = daysAgo(50);
+    const resultDate = daysAgo(22);
+    const devolutivaDocId = nextId("att");
+    const projeto: JuridicoProjeto = {
+      id: nextId("pj"),
+      preProjetoId: preProjeto.id,
+      agrupamentoId: agrupamento.id,
+      iniciativaIds: [climaticosId],
+      name: "Projeto — Unidade de Testes Climáticos Acelerados para Componentes",
+      identificacao: gerarIdentificacaoProjeto(2025, INITIAL_JURIDICO_PROJETOS),
+      ano: 2025,
+      objetivos: preProjeto.objetivoPrincipal,
+      sections: gerarSecoesProjeto(preProjeto),
+      documents: [
+        {
+          id: devolutivaDocId,
+          name: "devolutiva-mcti-camara-climatica.pdf",
+          type: "pdf",
+          uploadedAt: resultDate,
+          uploadedBy: ROLE_USERS.juridico.name,
+          size: 540000,
+        },
+      ],
+      status: "nao_aprovado",
+      createdAt: daysAgo(65),
+      updatedAt: resultDate,
+      finalizadoEm,
+      finalizadoPor: ROLE_USERS.juridico.name,
+      submissions: [
+        {
+          numero: 1,
+          submittedAt: submissionDate,
+          submittedBy: ROLE_USERS.juridico.name,
+          resultado: "nao_aprovado",
+          resultadoData: resultDate,
+          devolutivaDocumentoId: devolutivaDocId,
+          devolutivaResumo:
+            "O MCTI considerou insuficiente a comprovação do caráter inovador da câmara de testes frente ao estado da técnica apresentado.",
+        },
+      ],
+      history: [
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "criou o projeto a partir do pré-projeto aprovado pelo comitê",
+          daysAgo(65),
+        ),
+        seedHistory(ROLE_USERS.juridico.name, "finalizou o projeto", finalizadoEm),
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "registrou a submissão do projeto ao MCTI",
+          submissionDate,
+        ),
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "registrou a devolutiva do MCTI: projeto não aprovado",
+          resultDate,
+        ),
+      ],
+    };
+    preProjeto.projetoId = projeto.id;
+    INITIAL_JURIDICO_PROJETOS.push(projeto);
+  }
+
+  // Projeto Z — aprovado pelo MCTI no exercício atual, disponibilizando
+  // automaticamente os dados financeiros para a Controladoria (ver
+  // controladoria-contas-contabeis.tsx).
+  {
+    const anoAtual = new Date().getFullYear();
+    const { agrupamento, preProjeto } = soloAgrupamentoEPreProjeto(
+      "Sistema de Rastreamento RFID para Expedição",
+      rfidId,
+      anoAtual,
+      90,
+    );
+    const finalizadoEm = daysAgo(78);
+    const submissionDate = daysAgo(75);
+    const resultDate = daysAgo(6);
+    const devolutivaDocId = nextId("att");
+    const projeto: JuridicoProjeto = {
+      id: nextId("pj"),
+      preProjetoId: preProjeto.id,
+      agrupamentoId: agrupamento.id,
+      iniciativaIds: [rfidId],
+      name: "Projeto — Sistema de Rastreamento RFID para Expedição",
+      identificacao: gerarIdentificacaoProjeto(anoAtual, INITIAL_JURIDICO_PROJETOS),
+      ano: anoAtual,
+      objetivos: preProjeto.objetivoPrincipal,
+      sections: gerarSecoesProjeto(preProjeto),
+      documents: [
+        {
+          id: devolutivaDocId,
+          name: "devolutiva-mcti-rfid-expedicao.pdf",
+          type: "pdf",
+          uploadedAt: resultDate,
+          uploadedBy: ROLE_USERS.juridico.name,
+          size: 610000,
+        },
+      ],
+      status: "aprovado",
+      createdAt: daysAgo(85),
+      updatedAt: resultDate,
+      finalizadoEm,
+      finalizadoPor: ROLE_USERS.juridico.name,
+      submissions: [
+        {
+          numero: 1,
+          submittedAt: submissionDate,
+          submittedBy: ROLE_USERS.juridico.name,
+          resultado: "aprovado",
+          resultadoData: resultDate,
+          devolutivaDocumentoId: devolutivaDocId,
+          devolutivaResumo:
+            "O MCTI aprovou integralmente o projeto, reconhecendo o caráter inovador das atividades apresentadas.",
+        },
+      ],
+      history: [
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "criou o projeto a partir do pré-projeto aprovado pelo comitê",
+          daysAgo(85),
+        ),
+        seedHistory(ROLE_USERS.juridico.name, "finalizou o projeto", finalizadoEm),
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "registrou a submissão do projeto ao MCTI",
+          submissionDate,
+        ),
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "registrou a devolutiva do MCTI: projeto aprovado",
+          resultDate,
+        ),
+      ],
+    };
+    preProjeto.projetoId = projeto.id;
+    INITIAL_JURIDICO_PROJETOS.push(projeto);
+  }
 })();
 
 // --- Configuração Geral — cadastros básicos ------------------------------

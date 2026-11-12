@@ -387,3 +387,164 @@ export interface JobRole {
   name: string;
   eligibleHoursPercent: number;
 }
+
+// --- Jurídico -------------------------------------------------------------
+// Fluxo: Iniciativa (Project com controladoriaStatus "enviada_juridico") →
+// Agrupamento → Pré-projeto → Projeto (submetido ao MCTI). Ver lib/juridico.ts
+// para as regras derivadas e geração de sugestões/conteúdo pela IA.
+
+export interface JuridicoHistoryEvent {
+  id: string;
+  date: string;
+  actor: string;
+  description: string;
+}
+
+// Conjunto de iniciativas relacionadas, organizado pelo Jurídico
+// (manualmente ou a partir de uma sugestão da IA — aiSuggested só registra a
+// origem, não impede edição). iniciativaIds nunca remove o registro
+// original da iniciativa, só a relação com este agrupamento.
+export interface Agrupamento {
+  id: string;
+  name: string;
+  resumo: string;
+  objetivoComum: string;
+  relacaoAtividades: string;
+  justificativa: string;
+  iniciativaIds: string[];
+  aiSuggested: boolean;
+  // Marca que o usuário editou manualmente o resumo — impede que uma nova
+  // consolidação da IA sobrescreva sem confirmação (ver tela de revisão).
+  resumoEditadoManualmente?: boolean;
+  createdAt: string;
+  updatedAt: string;
+  history: JuridicoHistoryEvent[];
+  // Preenchido ao transformar em pré-projeto — o agrupamento continua
+  // existindo e podendo ser revisado (ver decisão "Revisar agrupamento"),
+  // mas passa a estar vinculado a esse pré-projeto.
+  preProjetoId?: string;
+}
+
+export type PreProjetoStatus =
+  | "aguardando_comite"
+  | "ajustes_solicitados"
+  | "revisao_agrupamento"
+  | "aprovado";
+
+export const PRE_PROJETO_STATUS_LABEL: Record<PreProjetoStatus, string> = {
+  aguardando_comite: "Aguardando comitê",
+  ajustes_solicitados: "Ajustes solicitados",
+  revisao_agrupamento: "Em revisão de agrupamento",
+  aprovado: "Aprovado",
+};
+
+export type ComiteDecisao = "aprovar" | "ajustes" | "revisar_agrupamento";
+
+export const COMITE_DECISAO_LABEL: Record<ComiteDecisao, string> = {
+  aprovar: "Aprovar pré-projeto",
+  ajustes: "Solicitar ajustes",
+  revisar_agrupamento: "Revisar agrupamento",
+};
+
+export interface ComiteDecisionRecord {
+  id: string;
+  decisao: ComiteDecisao;
+  data: string;
+  responsavel: string;
+  observacoes?: string;
+}
+
+// Consolidação de um agrupamento, apresentada ao comitê. Os textos podem ser
+// sugeridos pela IA a partir das iniciativas de origem, mas o Jurídico
+// controla o conteúdo final (ver lib/juridico.ts: gerarPreProjetoConteudo).
+export interface PreProjeto {
+  id: string;
+  agrupamentoId: string;
+  name: string;
+  ano: number;
+  resumoExecutivo: string;
+  problema: string;
+  objetivoPrincipal: string;
+  propostaInovacao: string;
+  atividadesInovacao: string;
+  resultadosEsperados: string;
+  status: PreProjetoStatus;
+  createdAt: string;
+  updatedAt: string;
+  decisoes: ComiteDecisionRecord[];
+  history: JuridicoHistoryEvent[];
+  projetoId?: string;
+}
+
+export type ProjetoStatus =
+  | "em_elaboracao"
+  | "aguardando_submissao"
+  | "submetido_mcti"
+  | "aprovado"
+  | "nao_aprovado";
+
+export const PROJETO_STATUS_LABEL: Record<ProjetoStatus, string> = {
+  em_elaboracao: "Em elaboração",
+  aguardando_submissao: "Aguardando submissão",
+  submetido_mcti: "Submetido ao MCTI",
+  aprovado: "Aprovado",
+  nao_aprovado: "Não aprovado",
+};
+
+// Bloco de texto do conteúdo do projeto (seções da redação para o MCTI) — a
+// IA sugere o conteúdo inicial a partir do pré-projeto, mas o Jurídico edita,
+// complementa e pode incluir novas seções livremente.
+export interface ProjetoSection {
+  key: string;
+  label: string;
+  content: string;
+}
+
+// Seções padrão sugeridas pela IA para o conteúdo do projeto — pré-geradas a
+// partir do pré-projeto (ver lib/juridico.ts: gerarSecoesProjeto). O Jurídico
+// pode editar o conteúdo de qualquer uma e incluir novas seções livremente.
+export const PROJETO_SECTION_LABELS: Record<string, string> = {
+  problema: "Problema ou oportunidade identificada",
+  objetivo: "Objetivo principal",
+  proposta: "Proposta de inovação",
+  atividades: "Atividades de inovação envolvidas",
+  resultados: "Resultados esperados",
+};
+
+// Cada projeto pode ter no máximo duas submissões ao MCTI (ver regra
+// importante nº 11). A segunda preserva o conteúdo e o resultado da primeira.
+export interface MctiSubmission {
+  numero: 1 | 2;
+  submittedAt: string;
+  submittedBy: string;
+  resultado?: "aprovado" | "nao_aprovado";
+  resultadoData?: string;
+  devolutivaDocumentoId?: string;
+  devolutivaResumo?: string;
+  // Só preenchido antes da 2ª submissão — o que foi ajustado após a 1ª
+  // devolutiva não aprovada.
+  ajustesRealizados?: string;
+}
+
+// Projeto formalizado a partir de um pré-projeto aprovado pelo comitê —
+// desenvolvido pelo Jurídico até a submissão (externa) ao MCTI e o
+// acompanhamento das devolutivas.
+export interface JuridicoProjeto {
+  id: string;
+  preProjetoId: string;
+  agrupamentoId: string;
+  iniciativaIds: string[];
+  name: string;
+  identificacao: string;
+  ano: number;
+  objetivos: string;
+  sections: ProjetoSection[];
+  documents: Attachment[];
+  status: ProjetoStatus;
+  createdAt: string;
+  updatedAt: string;
+  finalizadoEm?: string;
+  finalizadoPor?: string;
+  submissions: MctiSubmission[];
+  history: JuridicoHistoryEvent[];
+}

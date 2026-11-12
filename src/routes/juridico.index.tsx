@@ -1,43 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { FolderKanban, GitFork, FileStack } from "lucide-react";
-import { RoleStubIndex } from "@/components/role-stub";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+// Não existe uma tela de seleção intermediária — entrar em Jurídico (por
+// qualquer caminho) cai direto em Iniciativas; a troca entre Iniciativas,
+// Pré-projetos e Projetos acontece pelo menu no topo (ver juridico.tsx).
 export const Route = createFileRoute("/juridico/")({
-  head: () => ({
-    meta: [
-      { title: "Jurídico | Lei do Bem" },
-      { name: "description", content: "Estrutura do Jurídico — funcionalidades a definir." },
-    ],
-  }),
-  component: JuridicoPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/juridico/iniciativas" });
+  },
 });
-
-function JuridicoPage() {
-  return (
-    <RoleStubIndex
-      role="juridico"
-      roleLabel="Jurídico"
-      description="Estrutura inicial do Jurídico. As funcionalidades de cada área serão definidas posteriormente."
-      items={[
-        {
-          label: "Agrupamentos",
-          description: "Agrupamento de projetos para submissão conjunta.",
-          to: "/juridico/agrupamentos",
-          icon: GitFork,
-        },
-        {
-          label: "Pré-projetos",
-          description: "Projetos encaminhados pelo Revisor, aguardando tratamento jurídico.",
-          to: "/juridico/pre-projetos",
-          icon: FileStack,
-        },
-        {
-          label: "Projetos",
-          description: "Projetos já formalizados pelo Jurídico.",
-          to: "/juridico/projetos",
-          icon: FolderKanban,
-        },
-      ]}
-    />
-  );
-}

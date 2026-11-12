@@ -57,7 +57,8 @@ const CARDS = [
   {
     to: "/juridico" as const,
     title: "Jurídico",
-    description: "Estrutura inicial do Jurídico — funcionalidades a definir.",
+    description:
+      "Agrupe iniciativas recebidas da Controladoria, consolide pré-projetos para o comitê e conduza os projetos aprovados até a submissão ao MCTI.",
     icon: Scale,
   },
 ];
