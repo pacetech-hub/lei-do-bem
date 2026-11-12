@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { ChevronRight, Clock3, Send, Undo2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -44,6 +44,7 @@ const INDICATORS: Array<{ key: ControladoriaStatus; icon: typeof Clock3 }> = [
 
 export function ControladoriaIniciativasList() {
   const projects = useProjectsStore((s) => s.projects);
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<ControladoriaStatus | "all">("all");
   const [areaFilter, setAreaFilter] = useState<string>("all");
   const [yearFilter, setYearFilter] = useState<string>("all");
@@ -100,15 +101,6 @@ export function ControladoriaIniciativasList() {
           <p className="mt-1 text-sm text-muted-foreground">
             Acompanhe as iniciativas recebidas do Revisor e sua análise financeira.
           </p>
-          {/* TESTE TEMPORÁRIO — remover depois de confirmar se o clique funciona */}
-          <a
-            href="https://www.google.com"
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2 inline-block text-sm font-semibold text-primary underline"
-          >
-            LINK DE TESTE — clique aqui para ir ao Google
-          </a>
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -222,29 +214,15 @@ export function ControladoriaIniciativasList() {
                   </TableCell>
                 </TableRow>
               )}
-              {filtered.map((p, idx) => (
-                <TableRow key={p.id} className="group">
-                  <TableCell className="py-4 font-medium text-foreground">
-                    {idx === 0 ? (
-                      // TESTE TEMPORÁRIO — remover depois de confirmar se o clique funciona
-                      <a
-                        href="https://www.google.com"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block text-primary underline"
-                      >
-                        [TESTE] {p.name}
-                      </a>
-                    ) : (
-                      <Link
-                        to="/controladoria/iniciativas/$id"
-                        params={{ id: p.id }}
-                        className="block hover:underline"
-                      >
-                        {p.name}
-                      </Link>
-                    )}
-                  </TableCell>
+              {filtered.map((p) => (
+                <TableRow
+                  key={p.id}
+                  className="group cursor-pointer"
+                  onClick={() =>
+                    navigate({ to: "/controladoria/iniciativas/$id", params: { id: p.id } })
+                  }
+                >
+                  <TableCell className="py-4 font-medium text-foreground">{p.name}</TableCell>
                   <TableCell className="py-4 text-sm text-muted-foreground">{p.area}</TableCell>
                   <TableCell className="py-4 text-sm text-muted-foreground">
                     {p.responsible}
@@ -264,14 +242,7 @@ export function ControladoriaIniciativasList() {
                     <ControladoriaStatusBadge status={p.controladoriaStatus} />
                   </TableCell>
                   <TableCell className="py-4 text-right">
-                    <Link
-                      to="/controladoria/iniciativas/$id"
-                      params={{ id: p.id }}
-                      className="inline-flex items-center justify-end"
-                      aria-label={`Abrir ${p.name}`}
-                    >
-                      <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
-                    </Link>
+                    <ChevronRight className="ml-auto size-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
                   </TableCell>
                 </TableRow>
               ))}

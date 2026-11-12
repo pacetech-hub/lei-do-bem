@@ -9,45 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RevisorRouteImport } from './routes/revisor'
-import { Route as JuridicoRouteImport } from './routes/juridico'
-import { Route as FinanceiroRouteImport } from './routes/financeiro'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConfiguracaoGeralRouteImport } from './routes/configuracao-geral'
 import { Route as ControladoriaRouteImport } from './routes/controladoria'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as RevisorIndexRouteImport } from './routes/revisor.index'
-import { Route as JuridicoProjetosRouteImport } from './routes/juridico.projetos'
-import { Route as JuridicoPreProjetosRouteImport } from './routes/juridico.pre-projetos'
-import { Route as JuridicoIndexRouteImport } from './routes/juridico.index'
-import { Route as JuridicoAgrupamentosRouteImport } from './routes/juridico.agrupamentos'
-import { Route as FinanceiroIndexRouteImport } from './routes/financeiro.index'
-import { Route as ControladoriaIndexRouteImport } from './routes/controladoria.index'
-import { Route as ConfiguracaoGeralPesquisadoresRouteImport } from './routes/configuracao-geral.pesquisadores'
-import { Route as ConfiguracaoGeralPerguntasRouteImport } from './routes/configuracao-geral.perguntas'
+import { Route as FinanceiroRouteImport } from './routes/financeiro'
+import { Route as JuridicoRouteImport } from './routes/juridico'
+import { Route as RevisorRouteImport } from './routes/revisor'
 import { Route as ConfiguracaoGeralIndexRouteImport } from './routes/configuracao-geral.index'
 import { Route as ConfiguracaoGeralCargosRouteImport } from './routes/configuracao-geral.cargos'
-import { Route as ControladoriaIniciativasRouteImport } from './routes/controladoria.iniciativas'
+import { Route as ConfiguracaoGeralPerguntasRouteImport } from './routes/configuracao-geral.perguntas'
+import { Route as ConfiguracaoGeralPesquisadoresRouteImport } from './routes/configuracao-geral.pesquisadores'
+import { Route as ControladoriaIndexRouteImport } from './routes/controladoria.index'
 import { Route as ControladoriaContasContabeisRouteImport } from './routes/controladoria.contas-contabeis'
-import { Route as ProjetosNovoRouteImport } from './routes/projetos.novo'
+import { Route as ControladoriaIniciativasRouteImport } from './routes/controladoria.iniciativas'
+import { Route as FinanceiroIndexRouteImport } from './routes/financeiro.index'
+import { Route as JuridicoIndexRouteImport } from './routes/juridico.index'
+import { Route as JuridicoAgrupamentosRouteImport } from './routes/juridico.agrupamentos'
+import { Route as JuridicoPreProjetosRouteImport } from './routes/juridico.pre-projetos'
+import { Route as JuridicoProjetosRouteImport } from './routes/juridico.projetos'
 import { Route as ProjetosIdRouteImport } from './routes/projetos.$id'
-import { Route as RevisorProjetosIdRouteImport } from './routes/revisor.projetos.$id'
-import { Route as FinanceiroProjetosIdRouteImport } from './routes/financeiro.projetos.$id'
+import { Route as ProjetosNovoRouteImport } from './routes/projetos.novo'
+import { Route as RevisorIndexRouteImport } from './routes/revisor.index'
 import { Route as ControladoriaIniciativasIdRouteImport } from './routes/controladoria.iniciativas.$id'
+import { Route as FinanceiroProjetosIdRouteImport } from './routes/financeiro.projetos.$id'
+import { Route as RevisorProjetosIdRouteImport } from './routes/revisor.projetos.$id'
 
-const RevisorRoute = RevisorRouteImport.update({
-  id: '/revisor',
-  path: '/revisor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JuridicoRoute = JuridicoRouteImport.update({
-  id: '/juridico',
-  path: '/juridico',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FinanceiroRoute = FinanceiroRouteImport.update({
-  id: '/financeiro',
-  path: '/financeiro',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfiguracaoGeralRoute = ConfiguracaoGeralRouteImport.update({
@@ -65,25 +55,64 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const FinanceiroRoute = FinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RevisorIndexRoute = RevisorIndexRouteImport.update({
+const JuridicoRoute = JuridicoRouteImport.update({
+  id: '/juridico',
+  path: '/juridico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RevisorRoute = RevisorRouteImport.update({
+  id: '/revisor',
+  path: '/revisor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracaoGeralIndexRoute = ConfiguracaoGeralIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => RevisorRoute,
+  getParentRoute: () => ConfiguracaoGeralRoute,
 } as any)
-const JuridicoProjetosRoute = JuridicoProjetosRouteImport.update({
-  id: '/projetos',
-  path: '/projetos',
-  getParentRoute: () => JuridicoRoute,
+const ConfiguracaoGeralCargosRoute = ConfiguracaoGeralCargosRouteImport.update({
+  id: '/cargos',
+  path: '/cargos',
+  getParentRoute: () => ConfiguracaoGeralRoute,
 } as any)
-const JuridicoPreProjetosRoute = JuridicoPreProjetosRouteImport.update({
-  id: '/pre-projetos',
-  path: '/pre-projetos',
-  getParentRoute: () => JuridicoRoute,
+const ConfiguracaoGeralPerguntasRoute =
+  ConfiguracaoGeralPerguntasRouteImport.update({
+    id: '/perguntas',
+    path: '/perguntas',
+    getParentRoute: () => ConfiguracaoGeralRoute,
+  } as any)
+const ConfiguracaoGeralPesquisadoresRoute =
+  ConfiguracaoGeralPesquisadoresRouteImport.update({
+    id: '/pesquisadores',
+    path: '/pesquisadores',
+    getParentRoute: () => ConfiguracaoGeralRoute,
+  } as any)
+const ControladoriaIndexRoute = ControladoriaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ControladoriaRoute,
+} as any)
+const ControladoriaContasContabeisRoute =
+  ControladoriaContasContabeisRouteImport.update({
+    id: '/contas-contabeis',
+    path: '/contas-contabeis',
+    getParentRoute: () => ControladoriaRoute,
+  } as any)
+const ControladoriaIniciativasRoute =
+  ControladoriaIniciativasRouteImport.update({
+    id: '/iniciativas',
+    path: '/iniciativas',
+    getParentRoute: () => ControladoriaRoute,
+  } as any)
+const FinanceiroIndexRoute = FinanceiroIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FinanceiroRoute,
 } as any)
 const JuridicoIndexRoute = JuridicoIndexRouteImport.update({
   id: '/',
@@ -95,237 +124,208 @@ const JuridicoAgrupamentosRoute = JuridicoAgrupamentosRouteImport.update({
   path: '/agrupamentos',
   getParentRoute: () => JuridicoRoute,
 } as any)
-const FinanceiroIndexRoute = FinanceiroIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => FinanceiroRoute,
+const JuridicoPreProjetosRoute = JuridicoPreProjetosRouteImport.update({
+  id: '/pre-projetos',
+  path: '/pre-projetos',
+  getParentRoute: () => JuridicoRoute,
 } as any)
-const ControladoriaIndexRoute = ControladoriaIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ControladoriaRoute,
-} as any)
-const ConfiguracaoGeralPesquisadoresRoute =
-  ConfiguracaoGeralPesquisadoresRouteImport.update({
-    id: '/pesquisadores',
-    path: '/pesquisadores',
-    getParentRoute: () => ConfiguracaoGeralRoute,
-  } as any)
-const ConfiguracaoGeralPerguntasRoute =
-  ConfiguracaoGeralPerguntasRouteImport.update({
-    id: '/perguntas',
-    path: '/perguntas',
-    getParentRoute: () => ConfiguracaoGeralRoute,
-  } as any)
-const ConfiguracaoGeralIndexRoute = ConfiguracaoGeralIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ConfiguracaoGeralRoute,
-} as any)
-const ConfiguracaoGeralCargosRoute = ConfiguracaoGeralCargosRouteImport.update({
-  id: '/cargos',
-  path: '/cargos',
-  getParentRoute: () => ConfiguracaoGeralRoute,
-} as any)
-const ControladoriaIniciativasRoute =
-  ControladoriaIniciativasRouteImport.update({
-    id: '/iniciativas',
-    path: '/iniciativas',
-    getParentRoute: () => ControladoriaRoute,
-  } as any)
-const ControladoriaContasContabeisRoute =
-  ControladoriaContasContabeisRouteImport.update({
-    id: '/contas-contabeis',
-    path: '/contas-contabeis',
-    getParentRoute: () => ControladoriaRoute,
-  } as any)
-const ProjetosNovoRoute = ProjetosNovoRouteImport.update({
-  id: '/projetos/novo',
-  path: '/projetos/novo',
-  getParentRoute: () => rootRouteImport,
+const JuridicoProjetosRoute = JuridicoProjetosRouteImport.update({
+  id: '/projetos',
+  path: '/projetos',
+  getParentRoute: () => JuridicoRoute,
 } as any)
 const ProjetosIdRoute = ProjetosIdRouteImport.update({
   id: '/projetos/$id',
   path: '/projetos/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RevisorProjetosIdRoute = RevisorProjetosIdRouteImport.update({
-  id: '/projetos/$id',
-  path: '/projetos/$id',
+const ProjetosNovoRoute = ProjetosNovoRouteImport.update({
+  id: '/projetos/novo',
+  path: '/projetos/novo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RevisorIndexRoute = RevisorIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => RevisorRoute,
 } as any)
+const ControladoriaIniciativasIdRoute =
+  ControladoriaIniciativasIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ControladoriaIniciativasRoute,
+  } as any)
 const FinanceiroProjetosIdRoute = FinanceiroProjetosIdRouteImport.update({
   id: '/projetos/$id',
   path: '/projetos/$id',
   getParentRoute: () => FinanceiroRoute,
 } as any)
-const ControladoriaIniciativasIdRoute =
-  ControladoriaIniciativasIdRouteImport.update({
-    id: '/iniciativas/$id',
-    path: '/iniciativas/$id',
-    getParentRoute: () => ControladoriaRoute,
-  } as any)
+const RevisorProjetosIdRoute = RevisorProjetosIdRouteImport.update({
+  id: '/projetos/$id',
+  path: '/projetos/$id',
+  getParentRoute: () => RevisorRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/controladoria': typeof ControladoriaRouteWithChildren
   '/configuracao-geral': typeof ConfiguracaoGeralRouteWithChildren
+  '/controladoria': typeof ControladoriaRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/financeiro': typeof FinanceiroRouteWithChildren
   '/juridico': typeof JuridicoRouteWithChildren
   '/revisor': typeof RevisorRouteWithChildren
-  '/projetos/$id': typeof ProjetosIdRoute
-  '/projetos/novo': typeof ProjetosNovoRoute
-  '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
-  '/controladoria/iniciativas': typeof ControladoriaIniciativasRoute
   '/configuracao-geral/cargos': typeof ConfiguracaoGeralCargosRoute
-  '/configuracao-geral/': typeof ConfiguracaoGeralIndexRoute
   '/configuracao-geral/perguntas': typeof ConfiguracaoGeralPerguntasRoute
   '/configuracao-geral/pesquisadores': typeof ConfiguracaoGeralPesquisadoresRoute
-  '/controladoria/': typeof ControladoriaIndexRoute
-  '/financeiro/': typeof FinanceiroIndexRoute
+  '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
+  '/controladoria/iniciativas': typeof ControladoriaIniciativasRouteWithChildren
   '/juridico/agrupamentos': typeof JuridicoAgrupamentosRoute
-  '/juridico/': typeof JuridicoIndexRoute
   '/juridico/pre-projetos': typeof JuridicoPreProjetosRoute
   '/juridico/projetos': typeof JuridicoProjetosRoute
+  '/projetos/$id': typeof ProjetosIdRoute
+  '/projetos/novo': typeof ProjetosNovoRoute
+  '/configuracao-geral/': typeof ConfiguracaoGeralIndexRoute
+  '/controladoria/': typeof ControladoriaIndexRoute
+  '/financeiro/': typeof FinanceiroIndexRoute
+  '/juridico/': typeof JuridicoIndexRoute
   '/revisor/': typeof RevisorIndexRoute
+  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
-  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/projetos/$id': typeof ProjetosIdRoute
-  '/projetos/novo': typeof ProjetosNovoRoute
-  '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
-  '/controladoria/iniciativas': typeof ControladoriaIniciativasRoute
   '/configuracao-geral/cargos': typeof ConfiguracaoGeralCargosRoute
-  '/configuracao-geral': typeof ConfiguracaoGeralIndexRoute
   '/configuracao-geral/perguntas': typeof ConfiguracaoGeralPerguntasRoute
   '/configuracao-geral/pesquisadores': typeof ConfiguracaoGeralPesquisadoresRoute
-  '/controladoria': typeof ControladoriaIndexRoute
-  '/financeiro': typeof FinanceiroIndexRoute
+  '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
+  '/controladoria/iniciativas': typeof ControladoriaIniciativasRouteWithChildren
   '/juridico/agrupamentos': typeof JuridicoAgrupamentosRoute
-  '/juridico': typeof JuridicoIndexRoute
   '/juridico/pre-projetos': typeof JuridicoPreProjetosRoute
   '/juridico/projetos': typeof JuridicoProjetosRoute
+  '/projetos/$id': typeof ProjetosIdRoute
+  '/projetos/novo': typeof ProjetosNovoRoute
+  '/configuracao-geral': typeof ConfiguracaoGeralIndexRoute
+  '/controladoria': typeof ControladoriaIndexRoute
+  '/financeiro': typeof FinanceiroIndexRoute
+  '/juridico': typeof JuridicoIndexRoute
   '/revisor': typeof RevisorIndexRoute
+  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
-  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/controladoria': typeof ControladoriaRouteWithChildren
   '/configuracao-geral': typeof ConfiguracaoGeralRouteWithChildren
+  '/controladoria': typeof ControladoriaRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/financeiro': typeof FinanceiroRouteWithChildren
   '/juridico': typeof JuridicoRouteWithChildren
   '/revisor': typeof RevisorRouteWithChildren
-  '/projetos/$id': typeof ProjetosIdRoute
-  '/projetos/novo': typeof ProjetosNovoRoute
-  '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
-  '/controladoria/iniciativas': typeof ControladoriaIniciativasRoute
   '/configuracao-geral/cargos': typeof ConfiguracaoGeralCargosRoute
-  '/configuracao-geral/': typeof ConfiguracaoGeralIndexRoute
   '/configuracao-geral/perguntas': typeof ConfiguracaoGeralPerguntasRoute
   '/configuracao-geral/pesquisadores': typeof ConfiguracaoGeralPesquisadoresRoute
-  '/controladoria/': typeof ControladoriaIndexRoute
-  '/financeiro/': typeof FinanceiroIndexRoute
+  '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
+  '/controladoria/iniciativas': typeof ControladoriaIniciativasRouteWithChildren
   '/juridico/agrupamentos': typeof JuridicoAgrupamentosRoute
-  '/juridico/': typeof JuridicoIndexRoute
   '/juridico/pre-projetos': typeof JuridicoPreProjetosRoute
   '/juridico/projetos': typeof JuridicoProjetosRoute
+  '/projetos/$id': typeof ProjetosIdRoute
+  '/projetos/novo': typeof ProjetosNovoRoute
+  '/configuracao-geral/': typeof ConfiguracaoGeralIndexRoute
+  '/controladoria/': typeof ControladoriaIndexRoute
+  '/financeiro/': typeof FinanceiroIndexRoute
+  '/juridico/': typeof JuridicoIndexRoute
   '/revisor/': typeof RevisorIndexRoute
+  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
-  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/controladoria'
     | '/configuracao-geral'
+    | '/controladoria'
     | '/dashboard'
     | '/financeiro'
     | '/juridico'
     | '/revisor'
-    | '/projetos/$id'
-    | '/projetos/novo'
-    | '/controladoria/contas-contabeis'
-    | '/controladoria/iniciativas'
     | '/configuracao-geral/cargos'
-    | '/configuracao-geral/'
     | '/configuracao-geral/perguntas'
     | '/configuracao-geral/pesquisadores'
-    | '/controladoria/'
-    | '/financeiro/'
+    | '/controladoria/contas-contabeis'
+    | '/controladoria/iniciativas'
     | '/juridico/agrupamentos'
-    | '/juridico/'
     | '/juridico/pre-projetos'
     | '/juridico/projetos'
+    | '/projetos/$id'
+    | '/projetos/novo'
+    | '/configuracao-geral/'
+    | '/controladoria/'
+    | '/financeiro/'
+    | '/juridico/'
     | '/revisor/'
+    | '/controladoria/iniciativas/$id'
     | '/financeiro/projetos/$id'
     | '/revisor/projetos/$id'
-    | '/controladoria/iniciativas/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
-    | '/projetos/$id'
-    | '/projetos/novo'
-    | '/controladoria/contas-contabeis'
-    | '/controladoria/iniciativas'
     | '/configuracao-geral/cargos'
-    | '/configuracao-geral'
     | '/configuracao-geral/perguntas'
     | '/configuracao-geral/pesquisadores'
-    | '/controladoria'
-    | '/financeiro'
+    | '/controladoria/contas-contabeis'
+    | '/controladoria/iniciativas'
     | '/juridico/agrupamentos'
-    | '/juridico'
     | '/juridico/pre-projetos'
     | '/juridico/projetos'
+    | '/projetos/$id'
+    | '/projetos/novo'
+    | '/configuracao-geral'
+    | '/controladoria'
+    | '/financeiro'
+    | '/juridico'
     | '/revisor'
+    | '/controladoria/iniciativas/$id'
     | '/financeiro/projetos/$id'
     | '/revisor/projetos/$id'
-    | '/controladoria/iniciativas/$id'
   id:
     | '__root__'
     | '/'
-    | '/controladoria'
     | '/configuracao-geral'
+    | '/controladoria'
     | '/dashboard'
     | '/financeiro'
     | '/juridico'
     | '/revisor'
-    | '/projetos/$id'
-    | '/projetos/novo'
-    | '/controladoria/contas-contabeis'
-    | '/controladoria/iniciativas'
     | '/configuracao-geral/cargos'
-    | '/configuracao-geral/'
     | '/configuracao-geral/perguntas'
     | '/configuracao-geral/pesquisadores'
-    | '/controladoria/'
-    | '/financeiro/'
+    | '/controladoria/contas-contabeis'
+    | '/controladoria/iniciativas'
     | '/juridico/agrupamentos'
-    | '/juridico/'
     | '/juridico/pre-projetos'
     | '/juridico/projetos'
+    | '/projetos/$id'
+    | '/projetos/novo'
+    | '/configuracao-geral/'
+    | '/controladoria/'
+    | '/financeiro/'
+    | '/juridico/'
     | '/revisor/'
+    | '/controladoria/iniciativas/$id'
     | '/financeiro/projetos/$id'
     | '/revisor/projetos/$id'
-    | '/controladoria/iniciativas/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ControladoriaRoute: typeof ControladoriaRouteWithChildren
   ConfiguracaoGeralRoute: typeof ConfiguracaoGeralRouteWithChildren
+  ControladoriaRoute: typeof ControladoriaRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   FinanceiroRoute: typeof FinanceiroRouteWithChildren
   JuridicoRoute: typeof JuridicoRouteWithChildren
@@ -336,25 +336,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/revisor': {
-      id: '/revisor'
-      path: '/revisor'
-      fullPath: '/revisor'
-      preLoaderRoute: typeof RevisorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/juridico': {
-      id: '/juridico'
-      path: '/juridico'
-      fullPath: '/juridico'
-      preLoaderRoute: typeof JuridicoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/financeiro': {
-      id: '/financeiro'
-      path: '/financeiro'
-      fullPath: '/financeiro'
-      preLoaderRoute: typeof FinanceiroRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/configuracao-geral': {
@@ -378,75 +364,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/financeiro': {
+      id: '/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof FinanceiroRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/revisor/': {
-      id: '/revisor/'
-      path: '/'
-      fullPath: '/revisor/'
-      preLoaderRoute: typeof RevisorIndexRouteImport
-      parentRoute: typeof RevisorRoute
+    '/juridico': {
+      id: '/juridico'
+      path: '/juridico'
+      fullPath: '/juridico'
+      preLoaderRoute: typeof JuridicoRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/juridico/projetos': {
-      id: '/juridico/projetos'
-      path: '/projetos'
-      fullPath: '/juridico/projetos'
-      preLoaderRoute: typeof JuridicoProjetosRouteImport
-      parentRoute: typeof JuridicoRoute
-    }
-    '/juridico/pre-projetos': {
-      id: '/juridico/pre-projetos'
-      path: '/pre-projetos'
-      fullPath: '/juridico/pre-projetos'
-      preLoaderRoute: typeof JuridicoPreProjetosRouteImport
-      parentRoute: typeof JuridicoRoute
-    }
-    '/juridico/': {
-      id: '/juridico/'
-      path: '/'
-      fullPath: '/juridico/'
-      preLoaderRoute: typeof JuridicoIndexRouteImport
-      parentRoute: typeof JuridicoRoute
-    }
-    '/juridico/agrupamentos': {
-      id: '/juridico/agrupamentos'
-      path: '/agrupamentos'
-      fullPath: '/juridico/agrupamentos'
-      preLoaderRoute: typeof JuridicoAgrupamentosRouteImport
-      parentRoute: typeof JuridicoRoute
-    }
-    '/financeiro/': {
-      id: '/financeiro/'
-      path: '/'
-      fullPath: '/financeiro/'
-      preLoaderRoute: typeof FinanceiroIndexRouteImport
-      parentRoute: typeof FinanceiroRoute
-    }
-    '/controladoria/': {
-      id: '/controladoria/'
-      path: '/'
-      fullPath: '/controladoria/'
-      preLoaderRoute: typeof ControladoriaIndexRouteImport
-      parentRoute: typeof ControladoriaRoute
-    }
-    '/configuracao-geral/pesquisadores': {
-      id: '/configuracao-geral/pesquisadores'
-      path: '/pesquisadores'
-      fullPath: '/configuracao-geral/pesquisadores'
-      preLoaderRoute: typeof ConfiguracaoGeralPesquisadoresRouteImport
-      parentRoute: typeof ConfiguracaoGeralRoute
-    }
-    '/configuracao-geral/perguntas': {
-      id: '/configuracao-geral/perguntas'
-      path: '/perguntas'
-      fullPath: '/configuracao-geral/perguntas'
-      preLoaderRoute: typeof ConfiguracaoGeralPerguntasRouteImport
-      parentRoute: typeof ConfiguracaoGeralRoute
+    '/revisor': {
+      id: '/revisor'
+      path: '/revisor'
+      fullPath: '/revisor'
+      preLoaderRoute: typeof RevisorRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/configuracao-geral/': {
       id: '/configuracao-geral/'
@@ -462,11 +399,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfiguracaoGeralCargosRouteImport
       parentRoute: typeof ConfiguracaoGeralRoute
     }
-    '/controladoria/iniciativas': {
-      id: '/controladoria/iniciativas'
-      path: '/iniciativas'
-      fullPath: '/controladoria/iniciativas'
-      preLoaderRoute: typeof ControladoriaIniciativasRouteImport
+    '/configuracao-geral/perguntas': {
+      id: '/configuracao-geral/perguntas'
+      path: '/perguntas'
+      fullPath: '/configuracao-geral/perguntas'
+      preLoaderRoute: typeof ConfiguracaoGeralPerguntasRouteImport
+      parentRoute: typeof ConfiguracaoGeralRoute
+    }
+    '/configuracao-geral/pesquisadores': {
+      id: '/configuracao-geral/pesquisadores'
+      path: '/pesquisadores'
+      fullPath: '/configuracao-geral/pesquisadores'
+      preLoaderRoute: typeof ConfiguracaoGeralPesquisadoresRouteImport
+      parentRoute: typeof ConfiguracaoGeralRoute
+    }
+    '/controladoria/': {
+      id: '/controladoria/'
+      path: '/'
+      fullPath: '/controladoria/'
+      preLoaderRoute: typeof ControladoriaIndexRouteImport
       parentRoute: typeof ControladoriaRoute
     }
     '/controladoria/contas-contabeis': {
@@ -476,19 +427,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ControladoriaContasContabeisRouteImport
       parentRoute: typeof ControladoriaRoute
     }
-    '/controladoria/iniciativas/$id': {
-      id: '/controladoria/iniciativas/$id'
-      path: '/iniciativas/$id'
-      fullPath: '/controladoria/iniciativas/$id'
-      preLoaderRoute: typeof ControladoriaIniciativasIdRouteImport
+    '/controladoria/iniciativas': {
+      id: '/controladoria/iniciativas'
+      path: '/iniciativas'
+      fullPath: '/controladoria/iniciativas'
+      preLoaderRoute: typeof ControladoriaIniciativasRouteImport
       parentRoute: typeof ControladoriaRoute
     }
-    '/projetos/novo': {
-      id: '/projetos/novo'
-      path: '/projetos/novo'
-      fullPath: '/projetos/novo'
-      preLoaderRoute: typeof ProjetosNovoRouteImport
-      parentRoute: typeof rootRouteImport
+    '/financeiro/': {
+      id: '/financeiro/'
+      path: '/'
+      fullPath: '/financeiro/'
+      preLoaderRoute: typeof FinanceiroIndexRouteImport
+      parentRoute: typeof FinanceiroRoute
+    }
+    '/juridico/': {
+      id: '/juridico/'
+      path: '/'
+      fullPath: '/juridico/'
+      preLoaderRoute: typeof JuridicoIndexRouteImport
+      parentRoute: typeof JuridicoRoute
+    }
+    '/juridico/agrupamentos': {
+      id: '/juridico/agrupamentos'
+      path: '/agrupamentos'
+      fullPath: '/juridico/agrupamentos'
+      preLoaderRoute: typeof JuridicoAgrupamentosRouteImport
+      parentRoute: typeof JuridicoRoute
+    }
+    '/juridico/pre-projetos': {
+      id: '/juridico/pre-projetos'
+      path: '/pre-projetos'
+      fullPath: '/juridico/pre-projetos'
+      preLoaderRoute: typeof JuridicoPreProjetosRouteImport
+      parentRoute: typeof JuridicoRoute
+    }
+    '/juridico/projetos': {
+      id: '/juridico/projetos'
+      path: '/projetos'
+      fullPath: '/juridico/projetos'
+      preLoaderRoute: typeof JuridicoProjetosRouteImport
+      parentRoute: typeof JuridicoRoute
     }
     '/projetos/$id': {
       id: '/projetos/$id'
@@ -497,12 +476,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjetosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/revisor/projetos/$id': {
-      id: '/revisor/projetos/$id'
-      path: '/projetos/$id'
-      fullPath: '/revisor/projetos/$id'
-      preLoaderRoute: typeof RevisorProjetosIdRouteImport
+    '/projetos/novo': {
+      id: '/projetos/novo'
+      path: '/projetos/novo'
+      fullPath: '/projetos/novo'
+      preLoaderRoute: typeof ProjetosNovoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/revisor/': {
+      id: '/revisor/'
+      path: '/'
+      fullPath: '/revisor/'
+      preLoaderRoute: typeof RevisorIndexRouteImport
       parentRoute: typeof RevisorRoute
+    }
+    '/controladoria/iniciativas/$id': {
+      id: '/controladoria/iniciativas/$id'
+      path: '/$id'
+      fullPath: '/controladoria/iniciativas/$id'
+      preLoaderRoute: typeof ControladoriaIniciativasIdRouteImport
+      parentRoute: typeof ControladoriaIniciativasRoute
     }
     '/financeiro/projetos/$id': {
       id: '/financeiro/projetos/$id'
@@ -511,8 +504,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FinanceiroProjetosIdRouteImport
       parentRoute: typeof FinanceiroRoute
     }
+    '/revisor/projetos/$id': {
+      id: '/revisor/projetos/$id'
+      path: '/projetos/$id'
+      fullPath: '/revisor/projetos/$id'
+      preLoaderRoute: typeof RevisorProjetosIdRouteImport
+      parentRoute: typeof RevisorRoute
+    }
   }
 }
+
+interface ConfiguracaoGeralRouteChildren {
+  ConfiguracaoGeralCargosRoute: typeof ConfiguracaoGeralCargosRoute
+  ConfiguracaoGeralPerguntasRoute: typeof ConfiguracaoGeralPerguntasRoute
+  ConfiguracaoGeralPesquisadoresRoute: typeof ConfiguracaoGeralPesquisadoresRoute
+  ConfiguracaoGeralIndexRoute: typeof ConfiguracaoGeralIndexRoute
+}
+
+const ConfiguracaoGeralRouteChildren: ConfiguracaoGeralRouteChildren = {
+  ConfiguracaoGeralCargosRoute: ConfiguracaoGeralCargosRoute,
+  ConfiguracaoGeralPerguntasRoute: ConfiguracaoGeralPerguntasRoute,
+  ConfiguracaoGeralPesquisadoresRoute: ConfiguracaoGeralPesquisadoresRoute,
+  ConfiguracaoGeralIndexRoute: ConfiguracaoGeralIndexRoute,
+}
+
+const ConfiguracaoGeralRouteWithChildren =
+  ConfiguracaoGeralRoute._addFileChildren(ConfiguracaoGeralRouteChildren)
+
+interface ControladoriaIniciativasRouteChildren {
+  ControladoriaIniciativasIdRoute: typeof ControladoriaIniciativasIdRoute
+}
+
+const ControladoriaIniciativasRouteChildren: ControladoriaIniciativasRouteChildren =
+  {
+    ControladoriaIniciativasIdRoute: ControladoriaIniciativasIdRoute,
+  }
+
+const ControladoriaIniciativasRouteWithChildren =
+  ControladoriaIniciativasRoute._addFileChildren(
+    ControladoriaIniciativasRouteChildren,
+  )
+
+interface ControladoriaRouteChildren {
+  ControladoriaContasContabeisRoute: typeof ControladoriaContasContabeisRoute
+  ControladoriaIniciativasRoute: typeof ControladoriaIniciativasRouteWithChildren
+  ControladoriaIndexRoute: typeof ControladoriaIndexRoute
+}
+
+const ControladoriaRouteChildren: ControladoriaRouteChildren = {
+  ControladoriaContasContabeisRoute: ControladoriaContasContabeisRoute,
+  ControladoriaIniciativasRoute: ControladoriaIniciativasRouteWithChildren,
+  ControladoriaIndexRoute: ControladoriaIndexRoute,
+}
+
+const ControladoriaRouteWithChildren = ControladoriaRoute._addFileChildren(
+  ControladoriaRouteChildren,
+)
 
 interface FinanceiroRouteChildren {
   FinanceiroIndexRoute: typeof FinanceiroIndexRoute
@@ -530,16 +577,16 @@ const FinanceiroRouteWithChildren = FinanceiroRoute._addFileChildren(
 
 interface JuridicoRouteChildren {
   JuridicoAgrupamentosRoute: typeof JuridicoAgrupamentosRoute
-  JuridicoIndexRoute: typeof JuridicoIndexRoute
   JuridicoPreProjetosRoute: typeof JuridicoPreProjetosRoute
   JuridicoProjetosRoute: typeof JuridicoProjetosRoute
+  JuridicoIndexRoute: typeof JuridicoIndexRoute
 }
 
 const JuridicoRouteChildren: JuridicoRouteChildren = {
   JuridicoAgrupamentosRoute: JuridicoAgrupamentosRoute,
-  JuridicoIndexRoute: JuridicoIndexRoute,
   JuridicoPreProjetosRoute: JuridicoPreProjetosRoute,
   JuridicoProjetosRoute: JuridicoProjetosRoute,
+  JuridicoIndexRoute: JuridicoIndexRoute,
 }
 
 const JuridicoRouteWithChildren = JuridicoRoute._addFileChildren(
@@ -559,45 +606,10 @@ const RevisorRouteChildren: RevisorRouteChildren = {
 const RevisorRouteWithChildren =
   RevisorRoute._addFileChildren(RevisorRouteChildren)
 
-interface ControladoriaRouteChildren {
-  ControladoriaIndexRoute: typeof ControladoriaIndexRoute
-  ControladoriaContasContabeisRoute: typeof ControladoriaContasContabeisRoute
-  ControladoriaIniciativasRoute: typeof ControladoriaIniciativasRoute
-  ControladoriaIniciativasIdRoute: typeof ControladoriaIniciativasIdRoute
-}
-
-const ControladoriaRouteChildren: ControladoriaRouteChildren = {
-  ControladoriaIndexRoute: ControladoriaIndexRoute,
-  ControladoriaContasContabeisRoute: ControladoriaContasContabeisRoute,
-  ControladoriaIniciativasRoute: ControladoriaIniciativasRoute,
-  ControladoriaIniciativasIdRoute: ControladoriaIniciativasIdRoute,
-}
-
-const ControladoriaRouteWithChildren = ControladoriaRoute._addFileChildren(
-  ControladoriaRouteChildren,
-)
-
-interface ConfiguracaoGeralRouteChildren {
-  ConfiguracaoGeralCargosRoute: typeof ConfiguracaoGeralCargosRoute
-  ConfiguracaoGeralIndexRoute: typeof ConfiguracaoGeralIndexRoute
-  ConfiguracaoGeralPerguntasRoute: typeof ConfiguracaoGeralPerguntasRoute
-  ConfiguracaoGeralPesquisadoresRoute: typeof ConfiguracaoGeralPesquisadoresRoute
-}
-
-const ConfiguracaoGeralRouteChildren: ConfiguracaoGeralRouteChildren = {
-  ConfiguracaoGeralCargosRoute: ConfiguracaoGeralCargosRoute,
-  ConfiguracaoGeralIndexRoute: ConfiguracaoGeralIndexRoute,
-  ConfiguracaoGeralPerguntasRoute: ConfiguracaoGeralPerguntasRoute,
-  ConfiguracaoGeralPesquisadoresRoute: ConfiguracaoGeralPesquisadoresRoute,
-}
-
-const ConfiguracaoGeralRouteWithChildren =
-  ConfiguracaoGeralRoute._addFileChildren(ConfiguracaoGeralRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ControladoriaRoute: ControladoriaRouteWithChildren,
   ConfiguracaoGeralRoute: ConfiguracaoGeralRouteWithChildren,
+  ControladoriaRoute: ControladoriaRouteWithChildren,
   DashboardRoute: DashboardRoute,
   FinanceiroRoute: FinanceiroRouteWithChildren,
   JuridicoRoute: JuridicoRouteWithChildren,
@@ -608,13 +620,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
