@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 import {
   Select,
@@ -142,7 +140,6 @@ export function ControladoriaIniciativasList() {
                 <TableHead>Responsável</TableHead>
                 <TableHead className="w-[90px]">Ano</TableHead>
                 <TableHead className="text-right">Valor total informado</TableHead>
-                <TableHead>Data de recebimento</TableHead>
                 <TableHead className="w-[170px]">Status</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
@@ -150,7 +147,7 @@ export function ControladoriaIniciativasList() {
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
                     Nenhuma iniciativa encontrada com os filtros atuais.
                   </TableCell>
                 </TableRow>
@@ -173,11 +170,6 @@ export function ControladoriaIniciativasList() {
                   </TableCell>
                   <TableCell className="py-4 text-right text-sm tabular-nums font-medium">
                     {brl(valorTotalInformado(p))}
-                  </TableCell>
-                  <TableCell className="py-4 text-sm text-muted-foreground">
-                    {p.reviewedAt
-                      ? format(new Date(p.reviewedAt), "dd/MM/yyyy", { locale: ptBR })
-                      : "—"}
                   </TableCell>
                   <TableCell className="py-4">
                     <ControladoriaStatusBadge status={p.controladoriaStatus} />
