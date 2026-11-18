@@ -149,7 +149,7 @@ export const INITIAL_PROJECTS: Project[] = [
     endDate: daysFromNow(30),
   }),
   emptyProject({
-    name: "Sistema de Visão Computacional para Qualidade",
+    name: "PUR FILIAL 12",
     filial: RELATOR_FILIAL,
     area: RELATOR_SETOR,
     status: "enviado_controladoria",
@@ -195,7 +195,7 @@ export const INITIAL_PROJECTS: Project[] = [
     const tpId = nextId("tp");
     const matId = nextId("mat");
     return emptyProject({
-      name: "Modelagem Preditiva de Demanda Energética",
+      name: "PUR FILIAL 18",
       filial: RELATOR_FILIAL,
       area: RELATOR_SETOR,
       status: "enviado_controladoria",
@@ -273,7 +273,7 @@ export const INITIAL_PROJECTS: Project[] = [
     const tpId = nextId("tp");
     const matId = nextId("mat");
     return emptyProject({
-      name: "Novo Catalisador para Redução de Emissões",
+      name: "MÁQUINA DE CONTAR PEÇAS",
       filial: RELATOR_FILIAL,
       area: RELATOR_SETOR,
       status: "enviado_controladoria",
@@ -356,7 +356,7 @@ export const INITIAL_PROJECTS: Project[] = [
   (() => {
     const tpId = nextId("tp");
     return emptyProject({
-      name: "Protocolo de Comunicação Industrial Proprietário",
+      name: "WMS CONNECT LOCAL 67 GESTÃO DE AMOSTRAS E EXPORTAÇÃO INTELIGENTE",
       filial: RELATOR_FILIAL,
       area: RELATOR_SETOR,
       status: "enviado_controladoria",
@@ -432,7 +432,7 @@ export const INITIAL_PROJECTS: Project[] = [
   (() => {
     const matId = nextId("mat");
     return emptyProject({
-      name: "Redução de Consumo Hídrico no Processo Têxtil",
+      name: "FASTTAG TRANSFORMANDO O PROCESSO DE ETIQUETAGEM DE NOTAS FISCAIS",
       filial: RELATOR_FILIAL,
       area: RELATOR_SETOR,
       // Devolvida pela Controladoria: volta para a fila do Revisor (mesmo
@@ -780,7 +780,7 @@ const EXTRA_NAMES = [
   "Plataforma de Federação de Dados Clínicos",
   "Motor Elétrico de Fluxo Axial de Alto Torque",
   "Solvente Verde para Extração de Óleos",
-  "Sistema Anti-Colisão para Veículos Pesados",
+  "PROJETO FLUXO INTELIGENTE DE AMOSTRAS",
   "Reator Contínuo de Micro-ondas",
   "Framework de Machine Learning Federado",
   "Adesivo Estrutural Reversível por Calor",
@@ -848,9 +848,7 @@ INITIAL_PROJECTS.forEach((p) => {
 // — serve de "massa de teste" para experimentar validar/sinalizar
 // pendência/excluir e devolver ao Revisor.
 (() => {
-  const target = INITIAL_PROJECTS.find(
-    (p) => p.name === "Sistema Anti-Colisão para Veículos Pesados",
-  );
+  const target = INITIAL_PROJECTS.find((p) => p.name === "PROJETO FLUXO INTELIGENTE DE AMOSTRAS");
   if (!target) return;
   target.employees = [
     {
@@ -1014,7 +1012,7 @@ INITIAL_PROJECTS.push(
   const tpFixedId = nextId("tp");
   INITIAL_PROJECTS.push(
     emptyProject({
-      name: "Linha de Pasteurização Contínua com Controle Adaptativo",
+      name: "OTIMIZAÇÃO WMS COM METODOLOGIA PQR",
       filial: RELATOR_FILIAL,
       area: RELATOR_SETOR,
       responsible: "Beatriz Lima",
@@ -1139,7 +1137,7 @@ interface JuridicoSeedIniciativa {
 const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
   // Cluster A — Automação e Robótica Industrial
   {
-    name: "Célula Robotizada de Solda para Linha de Montagem",
+    name: "INTELLIPROCURE BI NA GESTÃO DE COMPRA INTERNA",
     area: "Automação",
     responsible: "Carlos Silva",
     objetivo:
@@ -1155,7 +1153,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     ano: 2026,
   },
   {
-    name: "Braço Robótico Colaborativo para Picking",
+    name: "EXPORTVISION BI DE INTELIGÊNCIA PARA GESTÃO DE AMOSTRAS",
     area: "Engenharia de Produto",
     responsible: "João Silva",
     objetivo:
@@ -1172,7 +1170,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     ano: 2026,
   },
   {
-    name: "Sistema de Visão para Controle de Automação Industrial",
+    name: "AGILIDADE NA CONFERÊNCIA DE CORRUGADOS",
     area: "Processos Industriais",
     responsible: "Mariana Costa",
     objetivo:
@@ -1188,7 +1186,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
   },
   // Cluster B — Eficiência Energética e Sustentabilidade
   {
-    name: "Sistema de Recuperação de Energia em Compressores",
+    name: "R.O.B.O. CR – Robótica Operacional para Benefícios e Organização no Compra Rápida",
     area: "Processos Industriais",
     responsible: "Beatriz Lima",
     objetivo:
@@ -1205,7 +1203,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     ano: 2026,
   },
   {
-    name: "Painel Solar Modular para Autoconsumo Industrial",
+    name: "PADRONIZAÇÃO E REGISTRO SISTÊMICO DA COMPRA INTERNA – DEVOLUÇÕES DE COLABORADORES",
     area: "Automação",
     responsible: "Ana Souza",
     objetivo:
@@ -1220,7 +1218,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     ano: 2025,
   },
   {
-    name: "Programa de Redução de Emissões na Linha de Pintura",
+    name: "IMPLEMENTAÇÃO DE RFID NO PROCESSO DE RECEBIMENTO DE MERCADORIAS",
     area: "Qualidade e Inovação",
     responsible: "Carlos Silva",
     objetivo:
@@ -1237,7 +1235,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
   },
   // Cluster C — Plataformas de Dados e Inteligência Artificial
   {
-    name: "Plataforma de Inteligência Artificial para Previsão de Demanda",
+    name: "SISTEMA DE CONTROLE DE MANUTENÇÃO PREVENTIVA COM ALERTAS AUTOMATIZADOS",
     area: "Tecnologia da Informação",
     responsible: "Mariana Costa",
     objetivo:
@@ -1252,7 +1250,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     ano: 2026,
   },
   {
-    name: "Modelo de Machine Learning para Detecção de Defeitos",
+    name: "AUTOMATIZAÇÃO DA IMPRESSÃO DE ETIQUETA MERCADORIA COM DEFEITO NA TELA WMS3002",
     area: "Qualidade e Inovação",
     responsible: "João Silva",
     objetivo:
@@ -1267,7 +1265,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     ano: 2025,
   },
   {
-    name: "Motor de Análise Preditiva de Dados de Sensores",
+    name: "OTIMIZAÇÃO DA DISTRIBUIÇÃO DE SEPARAÇÃO NO WMS (ARMAZÉM 100)",
     area: "Pesquisa & Desenvolvimento",
     responsible: "Ana Souza",
     objetivo:
@@ -1285,7 +1283,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
   // Sem tema compartilhado — ficam disponíveis para agrupamento manual ou
   // para os cenários individuais de Pré-projetos/Projetos abaixo.
   {
-    name: "Sistema Modular de Embalagem Retornável",
+    name: "AUTOMAÇÃO DO PROCESSO DE ENVIO DE PALETES PARA FILIAIS",
     area: "Engenharia de Produto",
     responsible: "Beatriz Lima",
     objetivo:
@@ -1300,7 +1298,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     ano: 2025,
   },
   {
-    name: "Sistema de Rastreamento RFID para Expedição",
+    name: "APLICATIVO PARA CONFERÊNCIA NAS EXPEDIÇÕES",
     area: "Processos Industriais",
     responsible: "Carlos Silva",
     objetivo:
@@ -1315,7 +1313,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     ano: 2026,
   },
   {
-    name: "Unidade de Testes Climáticos Acelerados para Componentes",
+    name: "AUTOMAÇÃO NA LIBERAÇÃO DE PEDIDOS PARA FATURAMENTO",
     area: "Qualidade e Inovação",
     responsible: "Mariana Costa",
     objetivo:
@@ -1330,7 +1328,7 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     ano: 2025,
   },
   {
-    name: "Reator Modular de Testes de Corrosão Acelerada",
+    name: "AUTOMATIZAÇÃO DA GERAÇÃO DE RÓTULOS PARA AMOSTRAS DE EXPORTAÇÃO COM INTEGRAÇÃO DE DADOS E VALIDAÇÃO RFID",
     area: "Automação",
     responsible: "João Silva",
     objetivo:
@@ -1447,15 +1445,17 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
   // gerarSugestoesAgrupamento em lib/juridico.ts). Só o cluster C já vem
   // agrupado, para demonstrar as etapas seguintes do fluxo.
   const clusterC = [
-    "Plataforma de Inteligência Artificial para Previsão de Demanda",
-    "Modelo de Machine Learning para Detecção de Defeitos",
-    "Motor de Análise Preditiva de Dados de Sensores",
+    "SISTEMA DE CONTROLE DE MANUTENÇÃO PREVENTIVA COM ALERTAS AUTOMATIZADOS",
+    "AUTOMATIZAÇÃO DA IMPRESSÃO DE ETIQUETA MERCADORIA COM DEFEITO NA TELA WMS3002",
+    "OTIMIZAÇÃO DA DISTRIBUIÇÃO DE SEPARAÇÃO NO WMS (ARMAZÉM 100)",
   ].map((n) => byName(n).id);
 
-  const rfidId = byName("Sistema de Rastreamento RFID para Expedição").id;
-  const climaticosId = byName("Unidade de Testes Climáticos Acelerados para Componentes").id;
-  const reatorId = byName("Reator Modular de Testes de Corrosão Acelerada").id;
-  const protocoloId = byName("Protocolo de Comunicação Industrial Proprietário").id;
+  const rfidId = byName("APLICATIVO PARA CONFERÊNCIA NAS EXPEDIÇÕES").id;
+  const climaticosId = byName("AUTOMAÇÃO NA LIBERAÇÃO DE PEDIDOS PARA FATURAMENTO").id;
+  const reatorId = byName(
+    "AUTOMATIZAÇÃO DA GERAÇÃO DE RÓTULOS PARA AMOSTRAS DE EXPORTAÇÃO COM INTEGRAÇÃO DE DADOS E VALIDAÇÃO RFID",
+  ).id;
+  const protocoloId = byName("WMS CONNECT LOCAL 67 GESTÃO DE AMOSTRAS E EXPORTAÇÃO INTELIGENTE").id;
 
   // Agrupamento — aprovado pelo comitê, já virou Projeto em elaboração.
   const agrupamentoC: Agrupamento = {
@@ -1618,7 +1618,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
   // Projeto X — finalizado, aguardando submissão ao MCTI.
   {
     const { agrupamento, preProjeto } = soloAgrupamentoEPreProjeto(
-      "Protocolo de Comunicação Industrial Proprietário",
+      "WMS CONNECT LOCAL 67 GESTÃO DE AMOSTRAS E EXPORTAÇÃO INTELIGENTE",
       protocoloId,
       2025,
       30,
@@ -1629,7 +1629,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       preProjetoId: preProjeto.id,
       agrupamentoId: agrupamento.id,
       iniciativaIds: [protocoloId],
-      name: "Projeto — Protocolo de Comunicação Industrial Proprietário",
+      name: "Projeto — WMS CONNECT LOCAL 67 GESTÃO DE AMOSTRAS E EXPORTAÇÃO INTELIGENTE",
       identificacao: gerarIdentificacaoProjeto(2025, INITIAL_JURIDICO_PROJETOS),
       ano: 2025,
       objetivos: preProjeto.objetivoPrincipal,
@@ -1671,7 +1671,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
   // Projeto Y — submetido ao MCTI, aguardando devolutiva (sem resultado).
   {
     const { agrupamento, preProjeto } = soloAgrupamentoEPreProjeto(
-      "Reator Modular de Testes de Corrosão Acelerada",
+      "AUTOMATIZAÇÃO DA GERAÇÃO DE RÓTULOS PARA AMOSTRAS DE EXPORTAÇÃO COM INTEGRAÇÃO DE DADOS E VALIDAÇÃO RFID",
       reatorId,
       2026,
       45,
@@ -1683,7 +1683,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       preProjetoId: preProjeto.id,
       agrupamentoId: agrupamento.id,
       iniciativaIds: [reatorId],
-      name: "Projeto — Reator Modular de Testes de Corrosão Acelerada",
+      name: "Projeto — AUTOMATIZAÇÃO DA GERAÇÃO DE RÓTULOS PARA AMOSTRAS DE EXPORTAÇÃO COM INTEGRAÇÃO DE DADOS E VALIDAÇÃO RFID",
       identificacao: gerarIdentificacaoProjeto(2026, INITIAL_JURIDICO_PROJETOS),
       ano: 2026,
       objetivos: preProjeto.objetivoPrincipal,
@@ -1719,7 +1719,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
   // preparar a segunda (e última) submissão.
   {
     const { agrupamento, preProjeto } = soloAgrupamentoEPreProjeto(
-      "Unidade de Testes Climáticos Acelerados para Componentes",
+      "AUTOMAÇÃO NA LIBERAÇÃO DE PEDIDOS PARA FATURAMENTO",
       climaticosId,
       2025,
       70,
@@ -1733,7 +1733,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       preProjetoId: preProjeto.id,
       agrupamentoId: agrupamento.id,
       iniciativaIds: [climaticosId],
-      name: "Projeto — Unidade de Testes Climáticos Acelerados para Componentes",
+      name: "Projeto — AUTOMAÇÃO NA LIBERAÇÃO DE PEDIDOS PARA FATURAMENTO",
       identificacao: gerarIdentificacaoProjeto(2025, INITIAL_JURIDICO_PROJETOS),
       ano: 2025,
       objetivos: preProjeto.objetivoPrincipal,
@@ -1794,7 +1794,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
   {
     const anoAtual = new Date().getFullYear();
     const { agrupamento, preProjeto } = soloAgrupamentoEPreProjeto(
-      "Sistema de Rastreamento RFID para Expedição",
+      "APLICATIVO PARA CONFERÊNCIA NAS EXPEDIÇÕES",
       rfidId,
       anoAtual,
       90,
@@ -1808,7 +1808,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       preProjetoId: preProjeto.id,
       agrupamentoId: agrupamento.id,
       iniciativaIds: [rfidId],
-      name: "Projeto — Sistema de Rastreamento RFID para Expedição",
+      name: "Projeto — APLICATIVO PARA CONFERÊNCIA NAS EXPEDIÇÕES",
       identificacao: gerarIdentificacaoProjeto(anoAtual, INITIAL_JURIDICO_PROJETOS),
       ano: anoAtual,
       objetivos: preProjeto.objetivoPrincipal,
