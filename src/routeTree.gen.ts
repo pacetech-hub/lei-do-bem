@@ -21,8 +21,8 @@ import { Route as ConfiguracaoGeralCargosRouteImport } from './routes/configurac
 import { Route as ConfiguracaoGeralPerguntasRouteImport } from './routes/configuracao-geral.perguntas'
 import { Route as ConfiguracaoGeralPesquisadoresRouteImport } from './routes/configuracao-geral.pesquisadores'
 import { Route as ControladoriaIndexRouteImport } from './routes/controladoria.index'
-import { Route as ControladoriaContasContabeisRouteImport } from './routes/controladoria.contas-contabeis'
 import { Route as ControladoriaIniciativasRouteImport } from './routes/controladoria.iniciativas'
+import { Route as ControladoriaValoresRouteImport } from './routes/controladoria.valores'
 import { Route as FinanceiroIndexRouteImport } from './routes/financeiro.index'
 import { Route as JuridicoIndexRouteImport } from './routes/juridico.index'
 import { Route as JuridicoAgrupamentosRouteImport } from './routes/juridico.agrupamentos'
@@ -45,6 +45,10 @@ import { Route as JuridicoProjetosIndexRouteImport } from './routes/juridico.pro
 import { Route as JuridicoProjetosIdRouteImport } from './routes/juridico.projetos.$id'
 import { Route as JuridicoProjetosDevolutivasRouteImport } from './routes/juridico.projetos.devolutivas'
 import { Route as RevisorProjetosIdRouteImport } from './routes/revisor.projetos.$id'
+import { Route as ControladoriaIniciativasIdIndexRouteImport } from './routes/controladoria.iniciativas.$id.index'
+import { Route as ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteImport } from './routes/controladoria.iniciativas.$id.notas-fiscais.$despesaId'
+import { Route as ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRouteImport } from './routes/controladoria.iniciativas.$id.notas-fiscais.$despesaId.index'
+import { Route as ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRouteImport } from './routes/controladoria.iniciativas.$id.notas-fiscais.$despesaId.transacoes'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -108,18 +112,17 @@ const ControladoriaIndexRoute = ControladoriaIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ControladoriaRoute,
 } as any)
-const ControladoriaContasContabeisRoute =
-  ControladoriaContasContabeisRouteImport.update({
-    id: '/contas-contabeis',
-    path: '/contas-contabeis',
-    getParentRoute: () => ControladoriaRoute,
-  } as any)
 const ControladoriaIniciativasRoute =
   ControladoriaIniciativasRouteImport.update({
     id: '/iniciativas',
     path: '/iniciativas',
     getParentRoute: () => ControladoriaRoute,
   } as any)
+const ControladoriaValoresRoute = ControladoriaValoresRouteImport.update({
+  id: '/valores',
+  path: '/valores',
+  getParentRoute: () => ControladoriaRoute,
+} as any)
 const FinanceiroIndexRoute = FinanceiroIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -236,6 +239,30 @@ const RevisorProjetosIdRoute = RevisorProjetosIdRouteImport.update({
   path: '/projetos/$id',
   getParentRoute: () => RevisorRoute,
 } as any)
+const ControladoriaIniciativasIdIndexRoute =
+  ControladoriaIniciativasIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ControladoriaIniciativasIdRoute,
+  } as any)
+const ControladoriaIniciativasIdNotasFiscaisDespesaIdRoute =
+  ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteImport.update({
+    id: '/notas-fiscais/$despesaId',
+    path: '/notas-fiscais/$despesaId',
+    getParentRoute: () => ControladoriaIniciativasIdRoute,
+  } as any)
+const ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute =
+  ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ControladoriaIniciativasIdNotasFiscaisDespesaIdRoute,
+  } as any)
+const ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute =
+  ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRouteImport.update({
+    id: '/transacoes',
+    path: '/transacoes',
+    getParentRoute: () => ControladoriaIniciativasIdNotasFiscaisDespesaIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -248,8 +275,8 @@ export interface FileRoutesByFullPath {
   '/configuracao-geral/cargos': typeof ConfiguracaoGeralCargosRoute
   '/configuracao-geral/perguntas': typeof ConfiguracaoGeralPerguntasRoute
   '/configuracao-geral/pesquisadores': typeof ConfiguracaoGeralPesquisadoresRoute
-  '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
   '/controladoria/iniciativas': typeof ControladoriaIniciativasRouteWithChildren
+  '/controladoria/valores': typeof ControladoriaValoresRoute
   '/juridico/agrupamentos': typeof JuridicoAgrupamentosRouteWithChildren
   '/juridico/iniciativas': typeof JuridicoIniciativasRouteWithChildren
   '/juridico/pre-projetos': typeof JuridicoPreProjetosRouteWithChildren
@@ -261,7 +288,7 @@ export interface FileRoutesByFullPath {
   '/financeiro/': typeof FinanceiroIndexRoute
   '/juridico/': typeof JuridicoIndexRoute
   '/revisor/': typeof RevisorIndexRoute
-  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
+  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRouteWithChildren
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/juridico/agrupamentos/$id': typeof JuridicoAgrupamentosIdRoute
   '/juridico/agrupamentos/novo': typeof JuridicoAgrupamentosNovoRoute
@@ -274,6 +301,10 @@ export interface FileRoutesByFullPath {
   '/juridico/iniciativas/': typeof JuridicoIniciativasIndexRoute
   '/juridico/pre-projetos/': typeof JuridicoPreProjetosIndexRoute
   '/juridico/projetos/': typeof JuridicoProjetosIndexRoute
+  '/controladoria/iniciativas/$id/': typeof ControladoriaIniciativasIdIndexRoute
+  '/controladoria/iniciativas/$id/notas-fiscais/$despesaId': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteWithChildren
+  '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute
+  '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -281,7 +312,7 @@ export interface FileRoutesByTo {
   '/configuracao-geral/cargos': typeof ConfiguracaoGeralCargosRoute
   '/configuracao-geral/perguntas': typeof ConfiguracaoGeralPerguntasRoute
   '/configuracao-geral/pesquisadores': typeof ConfiguracaoGeralPesquisadoresRoute
-  '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
+  '/controladoria/valores': typeof ControladoriaValoresRoute
   '/juridico/agrupamentos': typeof JuridicoAgrupamentosRouteWithChildren
   '/projetos/$id': typeof ProjetosIdRoute
   '/projetos/novo': typeof ProjetosNovoRoute
@@ -290,7 +321,6 @@ export interface FileRoutesByTo {
   '/financeiro': typeof FinanceiroIndexRoute
   '/juridico': typeof JuridicoIndexRoute
   '/revisor': typeof RevisorIndexRoute
-  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/juridico/agrupamentos/$id': typeof JuridicoAgrupamentosIdRoute
   '/juridico/agrupamentos/novo': typeof JuridicoAgrupamentosNovoRoute
@@ -303,6 +333,9 @@ export interface FileRoutesByTo {
   '/juridico/iniciativas': typeof JuridicoIniciativasIndexRoute
   '/juridico/pre-projetos': typeof JuridicoPreProjetosIndexRoute
   '/juridico/projetos': typeof JuridicoProjetosIndexRoute
+  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdIndexRoute
+  '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute
+  '/controladoria/iniciativas/$id/notas-fiscais/$despesaId': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -316,8 +349,8 @@ export interface FileRoutesById {
   '/configuracao-geral/cargos': typeof ConfiguracaoGeralCargosRoute
   '/configuracao-geral/perguntas': typeof ConfiguracaoGeralPerguntasRoute
   '/configuracao-geral/pesquisadores': typeof ConfiguracaoGeralPesquisadoresRoute
-  '/controladoria/contas-contabeis': typeof ControladoriaContasContabeisRoute
   '/controladoria/iniciativas': typeof ControladoriaIniciativasRouteWithChildren
+  '/controladoria/valores': typeof ControladoriaValoresRoute
   '/juridico/agrupamentos': typeof JuridicoAgrupamentosRouteWithChildren
   '/juridico/iniciativas': typeof JuridicoIniciativasRouteWithChildren
   '/juridico/pre-projetos': typeof JuridicoPreProjetosRouteWithChildren
@@ -329,7 +362,7 @@ export interface FileRoutesById {
   '/financeiro/': typeof FinanceiroIndexRoute
   '/juridico/': typeof JuridicoIndexRoute
   '/revisor/': typeof RevisorIndexRoute
-  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRoute
+  '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdRouteWithChildren
   '/financeiro/projetos/$id': typeof FinanceiroProjetosIdRoute
   '/juridico/agrupamentos/$id': typeof JuridicoAgrupamentosIdRoute
   '/juridico/agrupamentos/novo': typeof JuridicoAgrupamentosNovoRoute
@@ -342,6 +375,10 @@ export interface FileRoutesById {
   '/juridico/iniciativas/': typeof JuridicoIniciativasIndexRoute
   '/juridico/pre-projetos/': typeof JuridicoPreProjetosIndexRoute
   '/juridico/projetos/': typeof JuridicoProjetosIndexRoute
+  '/controladoria/iniciativas/$id/': typeof ControladoriaIniciativasIdIndexRoute
+  '/controladoria/iniciativas/$id/notas-fiscais/$despesaId': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteWithChildren
+  '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute
+  '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -356,8 +393,8 @@ export interface FileRouteTypes {
     | '/configuracao-geral/cargos'
     | '/configuracao-geral/perguntas'
     | '/configuracao-geral/pesquisadores'
-    | '/controladoria/contas-contabeis'
     | '/controladoria/iniciativas'
+    | '/controladoria/valores'
     | '/juridico/agrupamentos'
     | '/juridico/iniciativas'
     | '/juridico/pre-projetos'
@@ -382,6 +419,10 @@ export interface FileRouteTypes {
     | '/juridico/iniciativas/'
     | '/juridico/pre-projetos/'
     | '/juridico/projetos/'
+    | '/controladoria/iniciativas/$id/'
+    | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId'
+    | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes'
+    | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -389,7 +430,7 @@ export interface FileRouteTypes {
     | '/configuracao-geral/cargos'
     | '/configuracao-geral/perguntas'
     | '/configuracao-geral/pesquisadores'
-    | '/controladoria/contas-contabeis'
+    | '/controladoria/valores'
     | '/juridico/agrupamentos'
     | '/projetos/$id'
     | '/projetos/novo'
@@ -398,7 +439,6 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/juridico'
     | '/revisor'
-    | '/controladoria/iniciativas/$id'
     | '/financeiro/projetos/$id'
     | '/juridico/agrupamentos/$id'
     | '/juridico/agrupamentos/novo'
@@ -411,6 +451,9 @@ export interface FileRouteTypes {
     | '/juridico/iniciativas'
     | '/juridico/pre-projetos'
     | '/juridico/projetos'
+    | '/controladoria/iniciativas/$id'
+    | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes'
+    | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId'
   id:
     | '__root__'
     | '/'
@@ -423,8 +466,8 @@ export interface FileRouteTypes {
     | '/configuracao-geral/cargos'
     | '/configuracao-geral/perguntas'
     | '/configuracao-geral/pesquisadores'
-    | '/controladoria/contas-contabeis'
     | '/controladoria/iniciativas'
+    | '/controladoria/valores'
     | '/juridico/agrupamentos'
     | '/juridico/iniciativas'
     | '/juridico/pre-projetos'
@@ -449,6 +492,10 @@ export interface FileRouteTypes {
     | '/juridico/iniciativas/'
     | '/juridico/pre-projetos/'
     | '/juridico/projetos/'
+    | '/controladoria/iniciativas/$id/'
+    | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId'
+    | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes'
+    | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -549,18 +596,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ControladoriaIndexRouteImport
       parentRoute: typeof ControladoriaRoute
     }
-    '/controladoria/contas-contabeis': {
-      id: '/controladoria/contas-contabeis'
-      path: '/contas-contabeis'
-      fullPath: '/controladoria/contas-contabeis'
-      preLoaderRoute: typeof ControladoriaContasContabeisRouteImport
-      parentRoute: typeof ControladoriaRoute
-    }
     '/controladoria/iniciativas': {
       id: '/controladoria/iniciativas'
       path: '/iniciativas'
       fullPath: '/controladoria/iniciativas'
       preLoaderRoute: typeof ControladoriaIniciativasRouteImport
+      parentRoute: typeof ControladoriaRoute
+    }
+    '/controladoria/valores': {
+      id: '/controladoria/valores'
+      path: '/valores'
+      fullPath: '/controladoria/valores'
+      preLoaderRoute: typeof ControladoriaValoresRouteImport
       parentRoute: typeof ControladoriaRoute
     }
     '/financeiro/': {
@@ -717,6 +764,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RevisorProjetosIdRouteImport
       parentRoute: typeof RevisorRoute
     }
+    '/controladoria/iniciativas/$id/': {
+      id: '/controladoria/iniciativas/$id/'
+      path: '/'
+      fullPath: '/controladoria/iniciativas/$id/'
+      preLoaderRoute: typeof ControladoriaIniciativasIdIndexRouteImport
+      parentRoute: typeof ControladoriaIniciativasIdRoute
+    }
+    '/controladoria/iniciativas/$id/notas-fiscais/$despesaId': {
+      id: '/controladoria/iniciativas/$id/notas-fiscais/$despesaId'
+      path: '/notas-fiscais/$despesaId'
+      fullPath: '/controladoria/iniciativas/$id/notas-fiscais/$despesaId'
+      preLoaderRoute: typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteImport
+      parentRoute: typeof ControladoriaIniciativasIdRoute
+    }
+    '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/': {
+      id: '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/'
+      path: '/'
+      fullPath: '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/'
+      preLoaderRoute: typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRouteImport
+      parentRoute: typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdRoute
+    }
+    '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes': {
+      id: '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes'
+      path: '/transacoes'
+      fullPath: '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes'
+      preLoaderRoute: typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRouteImport
+      parentRoute: typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdRoute
+    }
   }
 }
 
@@ -737,14 +812,50 @@ const ConfiguracaoGeralRouteChildren: ConfiguracaoGeralRouteChildren = {
 const ConfiguracaoGeralRouteWithChildren =
   ConfiguracaoGeralRoute._addFileChildren(ConfiguracaoGeralRouteChildren)
 
+interface ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteChildren {
+  ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute: typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute
+  ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute: typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute
+}
+
+const ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteChildren: ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteChildren =
+  {
+    ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute:
+      ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute,
+    ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute:
+      ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute,
+  }
+
+const ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteWithChildren =
+  ControladoriaIniciativasIdNotasFiscaisDespesaIdRoute._addFileChildren(
+    ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteChildren,
+  )
+
+interface ControladoriaIniciativasIdRouteChildren {
+  ControladoriaIniciativasIdIndexRoute: typeof ControladoriaIniciativasIdIndexRoute
+  ControladoriaIniciativasIdNotasFiscaisDespesaIdRoute: typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteWithChildren
+}
+
+const ControladoriaIniciativasIdRouteChildren: ControladoriaIniciativasIdRouteChildren =
+  {
+    ControladoriaIniciativasIdIndexRoute: ControladoriaIniciativasIdIndexRoute,
+    ControladoriaIniciativasIdNotasFiscaisDespesaIdRoute:
+      ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteWithChildren,
+  }
+
+const ControladoriaIniciativasIdRouteWithChildren =
+  ControladoriaIniciativasIdRoute._addFileChildren(
+    ControladoriaIniciativasIdRouteChildren,
+  )
+
 interface ControladoriaIniciativasRouteChildren {
-  ControladoriaIniciativasIdRoute: typeof ControladoriaIniciativasIdRoute
+  ControladoriaIniciativasIdRoute: typeof ControladoriaIniciativasIdRouteWithChildren
   ControladoriaIniciativasIndexRoute: typeof ControladoriaIniciativasIndexRoute
 }
 
 const ControladoriaIniciativasRouteChildren: ControladoriaIniciativasRouteChildren =
   {
-    ControladoriaIniciativasIdRoute: ControladoriaIniciativasIdRoute,
+    ControladoriaIniciativasIdRoute:
+      ControladoriaIniciativasIdRouteWithChildren,
     ControladoriaIniciativasIndexRoute: ControladoriaIniciativasIndexRoute,
   }
 
@@ -754,14 +865,14 @@ const ControladoriaIniciativasRouteWithChildren =
   )
 
 interface ControladoriaRouteChildren {
-  ControladoriaContasContabeisRoute: typeof ControladoriaContasContabeisRoute
   ControladoriaIniciativasRoute: typeof ControladoriaIniciativasRouteWithChildren
+  ControladoriaValoresRoute: typeof ControladoriaValoresRoute
   ControladoriaIndexRoute: typeof ControladoriaIndexRoute
 }
 
 const ControladoriaRouteChildren: ControladoriaRouteChildren = {
-  ControladoriaContasContabeisRoute: ControladoriaContasContabeisRoute,
   ControladoriaIniciativasRoute: ControladoriaIniciativasRouteWithChildren,
+  ControladoriaValoresRoute: ControladoriaValoresRoute,
   ControladoriaIndexRoute: ControladoriaIndexRoute,
 }
 

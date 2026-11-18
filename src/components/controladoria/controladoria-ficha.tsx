@@ -22,9 +22,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useProjectsStore } from "@/lib/store";
 import { getFilial } from "@/components/projects-list";
 import { hasPendenciaAberta, todasDespesasDecididas } from "@/lib/controladoria";
+import { consolidarContasContabeis } from "@/lib/nota-fiscal";
 import { ControladoriaDespesas } from "@/components/controladoria/controladoria-despesas";
 import { ControladoriaStatusBadge } from "@/components/controladoria/controladoria-status-badge";
 import {
@@ -119,6 +128,8 @@ export function ControladoriaFicha({ project }: { project: Project }) {
   const resumo = [project.answers.inov_3, project.answers.inov_9].filter(Boolean).join(" ");
   const ajustesDaRevisao = project.adjustmentItems ?? [];
   const despesaAdjustments = project.despesaAdjustments ?? [];
+  const contasContabeis = consolidarContasContabeis(project);
+  const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
     <div className="pb-32">
@@ -325,7 +336,63 @@ export function ControladoriaFicha({ project }: { project: Project }) {
           </Accordion>
         </section>
 
-        {/* 4. Histórico */}
+        {/* 4. Contas contábeis — consolidação de todas as notas fiscais e
+            transações das despesas desta iniciativa. Diferente da
+            visualização de transações de UMA nota fiscal (ver nota-fiscal.ts):
+            aqui as contas são agregadas entre todas as despesas. */}
+        <section className="mb-8">
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Contas contábeis</h2>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Consolidação das contas contábeis geradas pelas notas fiscais das despesas desta
+            iniciativa. Para ver as transações de uma nota fiscal específica, abra-a a partir da
+            despesa em Despesas acima.
+          </p>
+          {contasContabeis.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-border bg-surface-muted/40 p-6 text-center text-sm text-muted-foreground">
+              Nenhuma despesa com nota fiscal lançada ainda.
+            </p>
+          ) : (
+            <div className="overflow-hidden rounded-lg border border-border bg-surface">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-surface-muted hover:bg-surface-muted">
+                    <TableHead>Conta contábil</TableHead>
+                    <TableHead>Centro(s) de custo</TableHead>
+                    <TableHead>Notas fiscais / despesas de origem</TableHead>
+                    <TableHead className="text-right">Valor vinculado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {contasContabeis.map((c) => (
+                    <TableRow key={c.contaContabil}>
+                      <TableCell className="py-3">
+                        <div className="font-mono text-xs text-muted-foreground">
+                          {c.contaContabil}
+                        </div>
+                        <div className="font-medium text-foreground">{c.descricaoConta}</div>
+                      </TableCell>
+                      <TableCell className="py-3 text-sm text-muted-foreground">
+                        {c.centros.join(", ")}
+                      </TableCell>
+                      <TableCell className="py-3 text-sm text-muted-foreground">
+                        {c.origem.map((o, idx) => (
+                          <div key={`${o.despesaId}-${idx}`}>
+                            NF {o.notaNumero} — {o.despesaTitulo} ({o.dc})
+                          </div>
+                        ))}
+                      </TableCell>
+                      <TableCell className="py-3 text-right tabular-nums font-medium">
+                        {brl(c.valorTotal)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
+
+        {/* 5. Histórico */}
         <section>
           <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
             <History className="size-4 text-muted-foreground" /> Histórico

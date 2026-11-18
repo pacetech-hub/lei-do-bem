@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, MessageSquareWarning, Trash2 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { AlertTriangle, CheckCircle2, FileText, MessageSquareWarning, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -288,6 +289,35 @@ function FuncionariosTable({ project, readOnly }: { project: Project; readOnly?:
   );
 }
 
+// Abre a nota fiscal da despesa (só terceiro/material têm nota fiscal —
+// funcionário é hora/salário, sem documento fiscal associado).
+function AbrirNotaFiscalButton({
+  projectId,
+  despesaId,
+  children,
+}: {
+  projectId: string;
+  despesaId: string;
+  children: React.ReactNode;
+}) {
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      className="inline-flex items-center gap-1.5 text-left font-medium text-foreground underline-offset-2 hover:text-primary hover:underline"
+      onClick={() =>
+        navigate({
+          to: "/controladoria/iniciativas/$id/notas-fiscais/$despesaId",
+          params: { id: projectId, despesaId },
+        })
+      }
+    >
+      <FileText className="size-3.5 shrink-0 text-muted-foreground" />
+      <span className="truncate">{children}</span>
+    </button>
+  );
+}
+
 function TerceirosTable({ project, readOnly }: { project: Project; readOnly?: boolean }) {
   const allProjects = useProjectsStore((s) => s.projects);
 
@@ -320,7 +350,11 @@ function TerceirosTable({ project, readOnly }: { project: Project; readOnly?: bo
           )}
           {project.thirdParties.map((e: ThirdPartyExpense) => (
             <TableRow key={e.id}>
-              <TableCell className="font-medium">{e.company}</TableCell>
+              <TableCell>
+                <AbrirNotaFiscalButton projectId={project.id} despesaId={e.id}>
+                  {e.company}
+                </AbrirNotaFiscalButton>
+              </TableCell>
               <TableCell className="font-mono text-xs">{e.cnpj}</TableCell>
               <TableCell className="text-sm">{e.invoice}</TableCell>
               <TableCell className="text-right tabular-nums">{brl(e.invoiceTotal)}</TableCell>
@@ -383,7 +417,11 @@ function MateriaisTable({ project, readOnly }: { project: Project; readOnly?: bo
           )}
           {project.materials.map((m: MaterialExpense) => (
             <TableRow key={m.id}>
-              <TableCell className="font-medium">{m.supplier}</TableCell>
+              <TableCell>
+                <AbrirNotaFiscalButton projectId={project.id} despesaId={m.id}>
+                  {m.supplier}
+                </AbrirNotaFiscalButton>
+              </TableCell>
               <TableCell className="text-sm">{m.invoice}</TableCell>
               <TableCell className="text-sm">{m.materialDescription}</TableCell>
               <TableCell className="text-right tabular-nums">{brl(m.grossValue)}</TableCell>
@@ -437,6 +475,11 @@ export function ControladoriaDespesas({
           </div>
         </div>
       </div>
+
+      <p className="mb-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <FileText className="size-3.5" /> Clique no fornecedor de uma despesa de terceiro ou
+        material para abrir a nota fiscal correspondente.
+      </p>
 
       <Tabs defaultValue="funcionarios">
         <TabsList className="mb-4">

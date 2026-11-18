@@ -1,28 +1,9 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { ControladoriaFicha } from "@/components/controladoria/controladoria-ficha";
-import { useProjectsStore } from "@/lib/store";
-
+// Layout-only route: /controladoria/iniciativas/$id/ e
+// /controladoria/iniciativas/$id/notas-fiscais/... são registradas como
+// filhas desta rota, então este componente precisa renderizar <Outlet /> para
+// as páginas reais aparecerem (mesmo padrão de financeiro.tsx/revisor.tsx).
 export const Route = createFileRoute("/controladoria/iniciativas/$id")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `Análise — Iniciativa ${params.id.slice(0, 6)} — Lei do Bem` },
-      { name: "description", content: "Análise financeira da Controladoria sobre a iniciativa." },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
-  component: ControladoriaIniciativaPage,
+  component: Outlet,
 });
-
-function ControladoriaIniciativaPage() {
-  const { id } = Route.useParams();
-  const project = useProjectsStore((s) => s.projects.find((p) => p.id === id));
-
-  // Só iniciativas que já chegaram à Controladoria em algum momento têm essa
-  // ficha de análise.
-  if (!project || project.controladoriaStatus === undefined) {
-    throw notFound();
-  }
-
-  return <ControladoriaFicha project={project} />;
-}

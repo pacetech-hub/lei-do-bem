@@ -3,17 +3,17 @@ import { AppHeader } from "@/components/app-header";
 import { cn } from "@/lib/utils";
 
 // Layout da Controladoria: cabeçalho + menu persistente no topo (Iniciativas
-// / Contas contábeis), igual um menu de tela — em vez de uma página de
-// seleção intermediária, entrar em Controladoria já cai direto em
-// Iniciativas (ver controladoria.index.tsx) e o menu permite trocar de tela
-// sem voltar para um hub.
+// / Valores), igual um menu de tela — em vez de uma página de seleção
+// intermediária, entrar em Controladoria já cai direto em Iniciativas (ver
+// controladoria.index.tsx) e o menu permite trocar de tela sem voltar para
+// um hub.
 export const Route = createFileRoute("/controladoria")({
   component: ControladoriaLayout,
 });
 
 const TABS = [
   { to: "/controladoria/iniciativas", label: "Iniciativas" },
-  { to: "/controladoria/contas-contabeis", label: "Contas contábeis" },
+  { to: "/controladoria/valores", label: "Valores" },
 ] as const;
 
 function ControladoriaLayout() {

@@ -355,6 +355,11 @@ export const INITIAL_PROJECTS: Project[] = [
   })(),
   (() => {
     const tpId = nextId("tp");
+    // Despesa de referência: dados batem exatamente com o print da nota
+    // fiscal fornecido como modelo visual (ver lib/nota-fiscal.ts), para que
+    // a primeira nota fiscal aberta no protótipo reproduza fielmente o
+    // exemplo — inclusive as duas transações contábeis de exemplo do pedido.
+    const tpReferenciaId = nextId("tp");
     return emptyProject({
       name: "WMS CONNECT LOCAL 67 GESTÃO DE AMOSTRAS E EXPORTAÇÃO INTELIGENTE",
       filial: RELATOR_FILIAL,
@@ -374,6 +379,14 @@ export const INITIAL_PROJECTS: Project[] = [
           invoiceTotal: 31000,
           usedInProject: 31000,
         },
+        {
+          id: tpReferenciaId,
+          company: "Felipe Rane M Feliciano Personal",
+          cnpj: "22.824.765/0001-89",
+          invoice: "1",
+          invoiceTotal: 4000,
+          usedInProject: 4000,
+        },
       ],
       despesaDecisions: {
         [tpId]: {
@@ -381,6 +394,12 @@ export const INITIAL_PROJECTS: Project[] = [
           decidedAt: daysAgo(70),
           decidedBy: ROLE_USERS.controladoria.name,
           snapshotValue: 31000,
+        },
+        [tpReferenciaId]: {
+          status: "validada",
+          decidedAt: daysAgo(70),
+          decidedBy: ROLE_USERS.controladoria.name,
+          snapshotValue: 4000,
         },
       },
       controladoriaHistory: [
@@ -1789,8 +1808,8 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
   }
 
   // Projeto Z — aprovado pelo MCTI no exercício atual, disponibilizando
-  // automaticamente os dados financeiros para a Controladoria (ver
-  // controladoria-contas-contabeis.tsx).
+  // automaticamente os dados financeiros para a Controladoria (ver aba
+  // "Consolidação por projeto" em controladoria-valores.tsx).
   {
     const anoAtual = new Date().getFullYear();
     const { agrupamento, preProjeto } = soloAgrupamentoEPreProjeto(
