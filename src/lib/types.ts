@@ -492,6 +492,12 @@ export interface PreProjeto {
   oportunidade: string;
   objetivoPrincipal: string;
   propostaInovacao: string;
+  // Consolidação, para o pré-projeto como um todo, das mesmas categorias
+  // preenchidas por iniciativa (ver QUESTIONS_INOVADOR/QUESTIONS_BARREIRAS em
+  // lib/types.ts) — elemento tecnologicamente inovador e barreiras/desafios
+  // tecnológicos enfrentados pelo conjunto de iniciativas.
+  elementoInovador: string;
+  barreiras: string;
   atividadesInovacao: string;
   resultadosEsperados: string;
   status: PreProjetoStatus;

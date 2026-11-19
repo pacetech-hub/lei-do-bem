@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, FileStack, History, Presentation, Save, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, FileStack, Presentation, Save, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,30 +25,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useProjectsStore } from "@/lib/store";
 import {
   diretoriasDoAgrupamento,
-  gerarPreProjetoConteudo,
+  resumoFinanceiroTrimestral,
   valorTotalIniciativas,
 } from "@/lib/juridico";
 import { PreProjetoStatusBadge } from "@/components/juridico/juridico-status-badge";
-import { IniciativaResumoCard } from "@/components/juridico/iniciativa-resumo-card";
-import { getFilial } from "@/components/projects-list";
+import { JuridicoHistoryDrawer } from "@/components/juridico/juridico-history-drawer";
 import {
   COMITE_DECISAO_LABEL,
   ROLE_USERS,
@@ -67,6 +58,8 @@ interface ConteudoFields {
   oportunidade: string;
   objetivoPrincipal: string;
   propostaInovacao: string;
+  elementoInovador: string;
+  barreiras: string;
   atividadesInovacao: string;
   resultadosEsperados: string;
 }
@@ -78,6 +71,8 @@ function fieldsOf(pp: PreProjeto): ConteudoFields {
     oportunidade: pp.oportunidade,
     objetivoPrincipal: pp.objetivoPrincipal,
     propostaInovacao: pp.propostaInovacao,
+    elementoInovador: pp.elementoInovador,
+    barreiras: pp.barreiras,
     atividadesInovacao: pp.atividadesInovacao,
     resultadosEsperados: pp.resultadosEsperados,
   };
@@ -100,12 +95,22 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
   );
   const diretorias = diretoriasDoAgrupamento(iniciativaIds, projects);
   const valorTotal = valorTotalIniciativas(iniciativaIds, projects);
+  const financeiro = useMemo(
+    () => resumoFinanceiroTrimestral(iniciativaIds, projects),
+    [iniciativaIds, projects],
+  );
+  const evidencias = useMemo(
+    () =>
+      membros.flatMap((p) =>
+        (p.attachments._evidencias ?? []).map((a) => ({ ...a, iniciativaNome: p.name })),
+      ),
+    [membros],
+  );
   const projetoVinculado = preProjeto.projetoId
     ? juridicoProjetos.find((p) => p.id === preProjeto.projetoId)
     : undefined;
 
   const [fields, setFields] = useState<ConteudoFields>(fieldsOf(preProjeto));
-  const [confirmRegenOpen, setConfirmRegenOpen] = useState(false);
   const [decisaoOpen, setDecisaoOpen] = useState(false);
   const [decisao, setDecisao] = useState<ComiteDecisao>("aprovar");
   const [dataDecisao, setDataDecisao] = useState(todayInputValue());
@@ -119,20 +124,11 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
     setDecisaoOpen(true);
   };
 
-  const history = [...preProjeto.history].sort((a, b) => +new Date(b.date) - +new Date(a.date));
   const decisoes = [...preProjeto.decisoes].sort((a, b) => +new Date(b.data) - +new Date(a.data));
 
   const handleSalvarConteudo = () => {
     updatePreProjeto(preProjeto.id, fields, "atualizou os conteúdos do pré-projeto");
     toast.success("Alterações salvas.");
-  };
-
-  const handleRegenerar = () => {
-    if (!agrupamento) return;
-    const novo = gerarPreProjetoConteudo(agrupamento, iniciativaIds, projects);
-    setFields(novo);
-    setConfirmRegenOpen(false);
-    toast.success("Conteúdo atualizado a partir do agrupamento. Revise e salve as alterações.");
   };
 
   const precisaJustificativa = decisao === "recusar" || decisao === "revisar_agrupamento";
@@ -225,141 +221,207 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
           )}
         </div>
 
-        {/* Informações financeiras — seção própria, não mais um dashboard no topo */}
+        {/* Resumo executivo — 1/3 informações básicas, 2/3 detalhamento, nos
+            mesmos moldes da ficha da Controladoria (ver controladoria-ficha.tsx) */}
+        <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-10">
+          <section className="rounded-lg border border-border bg-surface p-5 lg:col-span-3">
+            <h2 className="mb-4 text-sm font-semibold text-foreground">
+              Informações básicas do pré-projeto
+            </h2>
+            <dl className="grid gap-4">
+              <div>
+                <dt className="text-xs text-muted-foreground">Ano de referência</dt>
+                <dd className="text-sm font-medium text-foreground">{preProjeto.ano}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Diretorias envolvidas</dt>
+                <dd className="text-sm font-medium text-foreground">
+                  {diretorias.join(", ") || "—"}
+                </dd>
+              </div>
+              {agrupamento && (
+                <div>
+                  <dt className="text-xs text-muted-foreground">Agrupamento de origem</dt>
+                  <dd className="text-sm font-medium text-foreground">
+                    <Link
+                      to="/juridico/agrupamentos/$id"
+                      params={{ id: agrupamento.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {agrupamento.name}
+                    </Link>
+                  </dd>
+                </div>
+              )}
+            </dl>
+
+            <div className="mt-5 space-y-2 border-t border-border pt-5">
+              <Label>Resumo do projeto</Label>
+              <Textarea
+                value={fields.resumoExecutivo}
+                onChange={(e) => setFields((f) => ({ ...f, resumoExecutivo: e.target.value }))}
+                rows={14}
+                className="resize-y"
+              />
+            </div>
+          </section>
+
+          <section className="rounded-lg border-2 border-primary/20 bg-surface p-5 lg:col-span-7">
+            <h2 className="mb-4 text-base font-semibold text-foreground">Detalhamento</h2>
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <Label>Problema identificado</Label>
+                <Textarea
+                  value={fields.problema}
+                  onChange={(e) => setFields((f) => ({ ...f, problema: e.target.value }))}
+                  rows={4}
+                  className="resize-y"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Oportunidade identificada</Label>
+                <Textarea
+                  value={fields.oportunidade}
+                  onChange={(e) => setFields((f) => ({ ...f, oportunidade: e.target.value }))}
+                  rows={4}
+                  className="resize-y"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Objetivo principal</Label>
+                <Textarea
+                  value={fields.objetivoPrincipal}
+                  onChange={(e) => setFields((f) => ({ ...f, objetivoPrincipal: e.target.value }))}
+                  rows={3}
+                  className="resize-y"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Proposta de inovação</Label>
+                <Textarea
+                  value={fields.propostaInovacao}
+                  onChange={(e) => setFields((f) => ({ ...f, propostaInovacao: e.target.value }))}
+                  rows={4}
+                  className="resize-y"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Elemento tecnologicamente inovador</Label>
+                <Textarea
+                  value={fields.elementoInovador}
+                  onChange={(e) => setFields((f) => ({ ...f, elementoInovador: e.target.value }))}
+                  rows={4}
+                  className="resize-y"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Barreiras e desafios tecnológicos</Label>
+                <Textarea
+                  value={fields.barreiras}
+                  onChange={(e) => setFields((f) => ({ ...f, barreiras: e.target.value }))}
+                  rows={4}
+                  className="resize-y"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Metodologia e métodos utilizados</Label>
+                <Textarea
+                  value={fields.atividadesInovacao}
+                  onChange={(e) => setFields((f) => ({ ...f, atividadesInovacao: e.target.value }))}
+                  rows={4}
+                  className="resize-y"
+                />
+              </div>
+
+              <div>
+                <Label>Evidências</Label>
+                {evidencias.length === 0 ? (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Nenhum documento anexado nas iniciativas de origem.
+                  </p>
+                ) : (
+                  <ul className="mt-2 space-y-2">
+                    {evidencias.map((a) => (
+                      <li key={a.id} className="flex items-center justify-between text-sm">
+                        <span className="text-foreground">{a.name}</span>
+                        <span className="text-xs text-muted-foreground">{a.iniciativaNome}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Resultados esperados</Label>
+                <Textarea
+                  value={fields.resultadosEsperados}
+                  onChange={(e) =>
+                    setFields((f) => ({ ...f, resultadosEsperados: e.target.value }))
+                  }
+                  rows={4}
+                  className="resize-y"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end border-t border-border pt-5">
+              <Button className="gap-2" onClick={handleSalvarConteudo}>
+                <Save className="size-4" /> Salvar alterações
+              </Button>
+            </div>
+          </section>
+        </div>
+
+        {/* Resumo financeiro — valor total e distribuição por trimestre das
+            iniciativas que compõem o pré-projeto */}
         <section className="mb-6 rounded-lg border border-border bg-surface p-5">
-          <h2 className="mb-2 text-sm font-semibold text-foreground">Informações financeiras</h2>
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h2 className="mb-2 text-sm font-semibold text-foreground">Resumo financeiro</h2>
+          <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="text-3xl font-semibold tabular-nums text-foreground">
               {brl(valorTotal)}
             </span>
             <span className="text-sm text-muted-foreground">
-              valor financeiro consolidado de {iniciativaIds.length}{" "}
+              valor financeiro total consolidado de {iniciativaIds.length}{" "}
               {iniciativaIds.length === 1 ? "iniciativa" : "iniciativas"}
             </span>
           </div>
-        </section>
 
-        {/* Resumo executivo — narrativa conectada: problema > oportunidade > objetivo > proposta */}
-        <section className="mb-6 rounded-lg border border-border bg-surface p-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-foreground">Resumo executivo</h2>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => setConfirmRegenOpen(true)}
-            >
-              <Sparkles className="size-3.5" /> Atualizar com base no agrupamento
-            </Button>
-          </div>
-          <Textarea
-            value={fields.resumoExecutivo}
-            onChange={(e) => setFields((f) => ({ ...f, resumoExecutivo: e.target.value }))}
-            rows={3}
-          />
-
-          <div className="mt-5 space-y-4 border-t border-border pt-5">
-            <div className="space-y-2">
-              <Label>Problema identificado</Label>
-              <Textarea
-                value={fields.problema}
-                onChange={(e) => setFields((f) => ({ ...f, problema: e.target.value }))}
-                rows={4}
-                className="resize-y"
-              />
+          {financeiro.porTrimestre.length > 0 && (
+            <div className="mb-4 grid gap-2 sm:grid-cols-4">
+              {financeiro.porTrimestre.map((t) => (
+                <div key={t.trimestre} className="rounded-md border border-border p-3 text-center">
+                  <div className="text-xs text-muted-foreground">{t.trimestre}</div>
+                  <div className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+                    {brl(t.valor)}
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="space-y-2">
-              <Label>Oportunidade identificada</Label>
-              <Textarea
-                value={fields.oportunidade}
-                onChange={(e) => setFields((f) => ({ ...f, oportunidade: e.target.value }))}
-                rows={4}
-                className="resize-y"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Objetivo principal</Label>
-              <Textarea
-                value={fields.objetivoPrincipal}
-                onChange={(e) => setFields((f) => ({ ...f, objetivoPrincipal: e.target.value }))}
-                rows={3}
-                className="resize-y"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Proposta de inovação</Label>
-              <Textarea
-                value={fields.propostaInovacao}
-                onChange={(e) => setFields((f) => ({ ...f, propostaInovacao: e.target.value }))}
-                rows={4}
-                className="resize-y"
-              />
-            </div>
-          </div>
-        </section>
+          )}
 
-        {/* Elemento tecnológico e resultados esperados */}
-        <section className="mb-6 grid gap-4 lg:grid-cols-2">
-          <div className="space-y-2 rounded-lg border border-border bg-surface p-5">
-            <Label>Atividades de inovação envolvidas</Label>
-            <Textarea
-              value={fields.atividadesInovacao}
-              onChange={(e) => setFields((f) => ({ ...f, atividadesInovacao: e.target.value }))}
-              rows={4}
-              className="resize-y"
-            />
-          </div>
-          <div className="space-y-2 rounded-lg border border-border bg-surface p-5">
-            <Label>Resultados esperados</Label>
-            <Textarea
-              value={fields.resultadosEsperados}
-              onChange={(e) => setFields((f) => ({ ...f, resultadosEsperados: e.target.value }))}
-              rows={4}
-              className="resize-y"
-            />
-          </div>
-        </section>
-
-        <div className="mb-6 flex justify-end">
-          <Button className="gap-2" onClick={handleSalvarConteudo}>
-            <Save className="size-4" /> Salvar alterações
-          </Button>
-        </div>
-
-        {/* Iniciativas que compõem o pré-projeto — resumo completo, mesma estrutura usada nos agrupamentos */}
-        <section className="mb-6 rounded-lg border border-border bg-surface p-5">
-          <h2 className="mb-3 text-sm font-semibold text-foreground">
-            Iniciativas que compõem o pré-projeto
-          </h2>
-          {membros.length === 0 ? (
+          {financeiro.porIniciativa.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma iniciativa vinculada.</p>
           ) : (
-            <Accordion type="multiple">
-              {membros.map((p) => (
-                <AccordionItem key={p.id} value={p.id}>
-                  <AccordionTrigger>
-                    <div className="flex flex-col items-start text-left">
-                      <span className="font-medium text-foreground">{p.name}</span>
-                      <span className="text-xs font-normal text-muted-foreground">
-                        {p.area} · {getFilial(p)}
-                      </span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="mb-3 flex justify-end">
-                      <Link
-                        to="/juridico/iniciativas/$id"
-                        params={{ id: p.id }}
-                        className="text-xs font-medium text-primary hover:underline"
-                      >
-                        Ver ficha completa da iniciativa
-                      </Link>
-                    </div>
-                    <IniciativaResumoCard project={p} />
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+            <div className="overflow-hidden rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Iniciativa</TableHead>
+                    <TableHead>Trimestre</TableHead>
+                    <TableHead className="text-right">Valor financeiro</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {financeiro.porIniciativa.map((r) => (
+                    <TableRow key={r.iniciativa.id}>
+                      <TableCell className="font-medium">{r.iniciativa.name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{r.trimestre}</TableCell>
+                      <TableCell className="text-right tabular-nums">{brl(r.valor)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </section>
 
@@ -428,41 +490,15 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
 
         {/* Histórico */}
         <section>
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <History className="size-4 text-muted-foreground" /> Histórico
-          </h2>
-          {history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum evento registrado ainda.</p>
-          ) : (
-            <div className="space-y-2">
-              {history.map((ev) => (
-                <div key={ev.id} className="rounded-lg border border-border bg-surface p-3 text-sm">
-                  <span className="font-medium text-foreground">{ev.actor}</span>{" "}
-                  <span className="text-foreground">{ev.description}</span>{" "}
-                  <span className="text-muted-foreground">em {fmtDate(ev.date)}.</span>
-                </div>
-              ))}
-            </div>
-          )}
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Histórico</h2>
+          <JuridicoHistoryDrawer
+            events={preProjeto.history}
+            title="Histórico do pré-projeto"
+            description="Trilha de auditoria simples: quem realizou ações no pré-projeto e quando."
+            triggerLabel="Ver histórico do pré-projeto"
+          />
         </section>
       </main>
-
-      <AlertDialog open={confirmRegenOpen} onOpenChange={setConfirmRegenOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Atualizar conteúdo com base no agrupamento?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Os blocos de conteúdo (problema, objetivo, proposta, atividades e resultados) serão
-              substituídos por uma nova consolidação a partir da composição atual do agrupamento.
-              Revise e salve as alterações antes de sair da página.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRegenerar}>Atualizar conteúdo</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Dialog open={decisaoOpen} onOpenChange={setDecisaoOpen}>
         <DialogContent>

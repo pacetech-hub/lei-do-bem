@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { JuridicoAgrupamentoForm } from "@/components/juridico/juridico-agrupamento-form";
+import { JuridicoNovoAgrupamento } from "@/components/juridico/juridico-novo-agrupamento";
 
 interface NovoAgrupamentoSearch {
   suggestion?: string;
@@ -17,5 +17,5 @@ export const Route = createFileRoute("/juridico/agrupamentos/novo")({
 
 function NovoAgrupamentoPage() {
   const { suggestion } = Route.useSearch();
-  return <JuridicoAgrupamentoForm suggestionId={suggestion} />;
+  return <JuridicoNovoAgrupamento suggestionId={suggestion} />;
 }

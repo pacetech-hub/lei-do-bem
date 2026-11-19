@@ -61,6 +61,49 @@ export function valorTotalIniciativas(iniciativaIds: string[], projects: Project
   }, 0);
 }
 
+function quarterKey(date: Date): { year: number; quarter: number; label: string } {
+  const quarter = Math.floor(date.getMonth() / 3) + 1;
+  const year = date.getFullYear();
+  return { year, quarter, label: `${quarter}º Tri/${year}` };
+}
+
+// Resumo financeiro do pré-projeto por trimestre — cada iniciativa contribui
+// com seu valor financeiro integral no trimestre em que foi avaliada pela
+// Controladoria (reviewedAt), nos mesmos moldes da organização trimestral
+// usada em Controladoria > Valores (ver controladoria-valores.tsx).
+export function resumoFinanceiroTrimestral(
+  iniciativaIds: string[],
+  projects: Project[],
+): {
+  porIniciativa: { iniciativa: Project; trimestre: string; valor: number }[];
+  porTrimestre: { trimestre: string; valor: number }[];
+  total: number;
+} {
+  const membros = iniciativaIds
+    .map((id) => projects.find((p) => p.id === id))
+    .filter((p): p is Project => !!p);
+
+  const porIniciativa = membros.map((p) => ({
+    iniciativa: p,
+    trimestre: quarterKey(new Date(p.reviewedAt ?? p.updatedAt)).label,
+    valor: iniciativaValor(p),
+  }));
+
+  const agregados = new Map<string, { year: number; quarter: number; valor: number }>();
+  membros.forEach((p) => {
+    const { year, quarter, label } = quarterKey(new Date(p.reviewedAt ?? p.updatedAt));
+    const atual = agregados.get(label) ?? { year, quarter, valor: 0 };
+    atual.valor += iniciativaValor(p);
+    agregados.set(label, atual);
+  });
+
+  const porTrimestre = Array.from(agregados.entries())
+    .sort((a, b) => a[1].year - b[1].year || a[1].quarter - b[1].quarter)
+    .map(([trimestre, { valor }]) => ({ trimestre, valor }));
+
+  return { porIniciativa, porTrimestre, total: porIniciativa.reduce((s, r) => s + r.valor, 0) };
+}
+
 // --- Sugestões de agrupamento pela IA --------------------------------------
 // Heurística determinística (não há modelo de IA real neste protótipo): cada
 // tema tem um pequeno vocabulário de palavras-chave, buscado no nome e nas
@@ -201,6 +244,8 @@ export function gerarPreProjetoConteudo(
   oportunidade: string;
   objetivoPrincipal: string;
   propostaInovacao: string;
+  elementoInovador: string;
+  barreiras: string;
   atividadesInovacao: string;
   resultadosEsperados: string;
 } {
@@ -210,6 +255,9 @@ export function gerarPreProjetoConteudo(
   const problemas = membros.map((p) => p.answers.inov_8).filter(Boolean);
   const descricoes = membros.map((p) => p.answers.inov_9).filter(Boolean);
   const resultados = membros.map((p) => p.answers.inov_6 || p.answers.inov_10).filter(Boolean);
+  const comparativos = membros.map((p) => p.answers.inov_4).filter(Boolean);
+  const dificuldades = membros.map((p) => p.answers.barr_1).filter(Boolean);
+  const restricoes = membros.map((p) => p.answers.barr_5).filter(Boolean);
 
   const problema =
     problemas.length > 0
@@ -221,12 +269,24 @@ export function gerarPreProjetoConteudo(
       ? `A partir desse cenário, identificou-se a oportunidade de avançar tecnologicamente nesta frente: ${resultados[0].toLowerCase()} Essa oportunidade está alinhada às atividades de inovação já em curso nas iniciativas que compõem este agrupamento.`
       : "Oportunidade a ser detalhada pelo Jurídico a partir das iniciativas de origem.";
 
+  const elementoInovador =
+    comparativos.length > 0
+      ? comparativos.join(" ")
+      : "Elemento tecnologicamente inovador a ser detalhado pelo Jurídico.";
+
+  const barreiras =
+    dificuldades.length > 0 || restricoes.length > 0
+      ? [dificuldades[0], restricoes[0]].filter(Boolean).join(" ")
+      : "Barreiras e desafios tecnológicos a serem detalhados pelo Jurídico.";
+
   return {
     resumoExecutivo: agrupamento.resumo,
     problema,
     oportunidade,
     objetivoPrincipal: agrupamento.objetivoComum,
     propostaInovacao: agrupamento.justificativa,
+    elementoInovador,
+    barreiras,
     atividadesInovacao: agrupamento.relacaoAtividades,
     resultadosEsperados: resultados[0] ?? "Resultados esperados a serem detalhados pelo Jurídico.",
   };

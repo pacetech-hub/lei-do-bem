@@ -229,10 +229,10 @@ export function JuridicoAgrupamentoForm({
     <>
       <main className="mx-auto max-w-[1440px] px-6 py-8">
         <Link
-          to="/juridico/iniciativas"
+          to="/juridico/agrupamentos"
           className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="size-3.5" /> Iniciativas
+          <ArrowLeft className="size-3.5" /> Agrupamentos
         </Link>
 
         <div className="mb-6">
@@ -364,7 +364,7 @@ export function JuridicoAgrupamentoForm({
 
         {/* Ações do agrupamento */}
         <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-          <Button variant="ghost" onClick={() => navigate({ to: "/juridico/iniciativas" })}>
+          <Button variant="ghost" onClick={() => navigate({ to: "/juridico/agrupamentos" })}>
             Cancelar alterações
           </Button>
           <Button variant="outline" onClick={handleSalvar}>

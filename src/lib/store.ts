@@ -139,6 +139,8 @@ interface ProjectsState {
       oportunidade: string;
       objetivoPrincipal: string;
       propostaInovacao: string;
+      elementoInovador: string;
+      barreiras: string;
       atividadesInovacao: string;
       resultadosEsperados: string;
     },
@@ -154,6 +156,8 @@ interface ProjectsState {
         | "oportunidade"
         | "objetivoPrincipal"
         | "propostaInovacao"
+        | "elementoInovador"
+        | "barreiras"
         | "atividadesInovacao"
         | "resultadosEsperados"
       >
@@ -529,6 +533,8 @@ export const useProjectsStore = create<ProjectsState>()(
             oportunidade: content.oportunidade,
             objetivoPrincipal: content.objetivoPrincipal,
             propostaInovacao: content.propostaInovacao,
+            elementoInovador: content.elementoInovador,
+            barreiras: content.barreiras,
             atividadesInovacao: content.atividadesInovacao,
             resultadosEsperados: content.resultadosEsperados,
             status: "aguardando_comite",

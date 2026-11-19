@@ -3,15 +3,16 @@ import { AppHeader } from "@/components/app-header";
 import { cn } from "@/lib/utils";
 
 // Layout do Jurídico: cabeçalho + menu persistente no topo (Iniciativas /
-// Pré-projetos / Projetos), no mesmo padrão do menu da Controladoria (ver
-// controladoria.tsx) — entrar em Jurídico (por qualquer caminho) cai direto
-// em Iniciativas (ver juridico.index.tsx).
+// Agrupamentos / Pré-projetos / Projetos), no mesmo padrão do menu da
+// Controladoria (ver controladoria.tsx) — entrar em Jurídico (por qualquer
+// caminho) cai direto em Iniciativas (ver juridico.index.tsx).
 export const Route = createFileRoute("/juridico")({
   component: JuridicoLayout,
 });
 
 const TABS = [
   { to: "/juridico/iniciativas", label: "Iniciativas" },
+  { to: "/juridico/agrupamentos", label: "Agrupamentos" },
   { to: "/juridico/pre-projetos", label: "Pré-projetos" },
   { to: "/juridico/projetos", label: "Projetos" },
 ] as const;

@@ -1688,6 +1688,10 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       "A oportunidade identificada é consolidar, num único avanço tecnológico, três aplicações de inteligência artificial que hoje seriam desenvolvidas isoladamente: previsão de demanda, detecção automática de defeitos e manutenção preditiva. O avanço pretendido em relação ao estado da técnica atual da empresa é sair de processos reativos e baseados em inspeção manual para uma camada de decisão apoiada por modelos preditivos, reduzindo a incerteza tecnológica de cada aplicação ao compartilhar infraestrutura de dados e aprendizado entre elas.",
     objetivoPrincipal: agrupamentoC.objetivoComum,
     propostaInovacao: agrupamentoC.justificativa,
+    elementoInovador:
+      "O elemento tecnologicamente inovador é a camada de decisão preditiva compartilhada entre as três aplicações — modelos de machine learning treinados sobre bases heterogêneas (histórico de vendas, imagens de inspeção e leituras de sensores), substituindo três soluções isoladas por uma única infraestrutura de aprendizado reaproveitável.",
+    barreiras:
+      "A principal barreira tecnológica é garantir confiabilidade suficiente dos modelos preditivos para apoiar decisões operacionais críticas, considerando a heterogeneidade das bases de dados e a necessidade de validação estatística rigorosa antes da adoção em produção.",
     atividadesInovacao: agrupamentoC.relacaoAtividades,
     resultadosEsperados:
       "Maior acurácia preditiva na previsão de demanda, redução de defeitos não detectados na inspeção de qualidade e aumento da disponibilidade dos equipamentos por manutenção preditiva — resultados que, em conjunto, demonstram o avanço tecnológico obtido com a aplicação integrada de inteligência artificial às três frentes.",
@@ -1781,6 +1785,8 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       oportunidade: "Detalhada a partir da ficha original encaminhada pela Controladoria.",
       objetivoPrincipal: agrupamento.objetivoComum,
       propostaInovacao: agrupamento.justificativa,
+      elementoInovador: "Detalhado a partir da ficha original encaminhada pela Controladoria.",
+      barreiras: "Detalhadas a partir da ficha original encaminhada pela Controladoria.",
       atividadesInovacao: agrupamento.relacaoAtividades,
       resultadosEsperados: "Detalhados a partir da ficha original encaminhada pela Controladoria.",
       status: "aprovado",
@@ -2095,7 +2101,8 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       agrupamentoId: agrupamentoLogistica.id,
       name: "Pré-projeto — Logística de Paletes entre Filiais",
       ano: new Date().getFullYear(),
-      resumoExecutivo: agrupamentoLogistica.resumo,
+      resumoExecutivo:
+        "Este pré-projeto consolida 3 iniciativas das Diretorias Engenharia de Produto, Automação e Processos Industriais, nascidas de forma independente mas relacionadas por um mesmo problema de fundo: o alto custo e a baixa rastreabilidade do ciclo logístico de paletes entre as filiais da empresa. A primeira iniciativa desenvolve uma embalagem retornável modular para reduzir o descarte de paletes descartáveis; a segunda instrumenta esses paletes com rastreamento RFID, dando visibilidade em tempo real da sua localização durante o transporte; e a terceira aplica algoritmos de roteirização para otimizar as rotas entre filiais, hoje definidas manualmente. Tratadas em conjunto, as três iniciativas deixam de ser melhorias pontuais e passam a compor um único avanço tecnológico: um ciclo logístico instrumentado, rastreável e otimizado algoritmicamente, o que justifica sua avaliação consolidada pelo comitê em vez do tratamento isolado de cada uma.",
       problema:
         "O transporte de paletes entre filiais hoje depende de embalagens descartáveis, rotas definidas manualmente e nenhum rastreamento da localização das unidades retornáveis em trânsito — não há, atualmente, um elemento tecnologicamente inovador que integre esses três aspectos do ciclo logístico. O desafio tecnológico está em conciliar, numa única solução, a durabilidade física da embalagem, a leitura confiável de RFID em condições de empilhamento variável e a geração automática de rotas eficientes.",
       oportunidade:
@@ -2103,6 +2110,10 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       objetivoPrincipal: agrupamentoLogistica.objetivoComum,
       propostaInovacao:
         "A proposta de desenvolvimento consolida as três frentes tecnológicas — prototipagem de embalagem modular, instrumentação por RFID e algoritmos de roteirização — como etapas de um mesmo avanço tecnológico aplicado à logística entre filiais, compartilhando aprendizados e infraestrutura entre si.",
+      elementoInovador:
+        "O elemento tecnologicamente inovador é o próprio palete instrumentado: uma unidade física modular e retornável, equipada com identificação RFID e cujo deslocamento alimenta, em tempo real, um algoritmo de roteirização — substituindo três soluções pontuais (embalagem, rastreamento e rotas) por um único ativo logístico inteligente.",
+      barreiras:
+        "As principais barreiras tecnológicas são garantir a leitura confiável das tags RFID sob diferentes condições de empilhamento e manuseio, e validar se as rotas geradas algoritmicamente se sustentam frente a variações reais de demanda entre as filiais — exigindo testes de campo antes da adoção em escala.",
       atividadesInovacao: agrupamentoLogistica.relacaoAtividades,
       resultadosEsperados:
         "Redução do descarte de embalagens, maior rastreabilidade dos paletes em trânsito e diminuição de deslocamentos redundantes — resultados que, em conjunto, demonstram o avanço tecnológico obtido com a integração das três iniciativas.",
@@ -2161,6 +2172,8 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       oportunidade: "Detalhada a partir da ficha original encaminhada pela Controladoria.",
       objetivoPrincipal: agrupamentoAr.objetivoComum,
       propostaInovacao: agrupamentoAr.justificativa,
+      elementoInovador: "Detalhado a partir da ficha original encaminhada pela Controladoria.",
+      barreiras: "Detalhadas a partir da ficha original encaminhada pela Controladoria.",
       atividadesInovacao: agrupamentoAr.relacaoAtividades,
       resultadosEsperados: "Detalhados a partir da ficha original encaminhada pela Controladoria.",
       status: "recusado",
