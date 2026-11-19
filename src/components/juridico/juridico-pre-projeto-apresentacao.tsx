@@ -53,7 +53,6 @@ const fmtDate = (iso: string) => format(new Date(iso), "dd/MM/yyyy", { locale: p
 const todayInputValue = () => new Date().toISOString().slice(0, 10);
 
 interface ConteudoFields {
-  resumoExecutivo: string;
   problema: string;
   oportunidade: string;
   objetivoPrincipal: string;
@@ -66,7 +65,6 @@ interface ConteudoFields {
 
 function fieldsOf(pp: PreProjeto): ConteudoFields {
   return {
-    resumoExecutivo: pp.resumoExecutivo,
     problema: pp.problema,
     oportunidade: pp.oportunidade,
     objetivoPrincipal: pp.objetivoPrincipal,
@@ -257,12 +255,9 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
 
             <div className="mt-5 space-y-2 border-t border-border pt-5">
               <Label>Resumo do projeto</Label>
-              <Textarea
-                value={fields.resumoExecutivo}
-                onChange={(e) => setFields((f) => ({ ...f, resumoExecutivo: e.target.value }))}
-                rows={14}
-                className="resize-y"
-              />
+              <p className="text-sm leading-relaxed text-foreground">
+                {preProjeto.resumoExecutivo}
+              </p>
             </div>
           </section>
 
