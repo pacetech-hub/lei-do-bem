@@ -46,6 +46,8 @@ import { Route as JuridicoProjetosIdRouteImport } from './routes/juridico.projet
 import { Route as JuridicoProjetosDevolutivasRouteImport } from './routes/juridico.projetos.devolutivas'
 import { Route as RevisorProjetosIdRouteImport } from './routes/revisor.projetos.$id'
 import { Route as ControladoriaIniciativasIdIndexRouteImport } from './routes/controladoria.iniciativas.$id.index'
+import { Route as JuridicoPreProjetosIdIndexRouteImport } from './routes/juridico.pre-projetos.$id.index'
+import { Route as JuridicoPreProjetosIdGerarApresentacaoRouteImport } from './routes/juridico.pre-projetos.$id.gerar-apresentacao'
 import { Route as ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteImport } from './routes/controladoria.iniciativas.$id.notas-fiscais.$despesaId'
 import { Route as ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRouteImport } from './routes/controladoria.iniciativas.$id.notas-fiscais.$despesaId.index'
 import { Route as ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRouteImport } from './routes/controladoria.iniciativas.$id.notas-fiscais.$despesaId.transacoes'
@@ -245,6 +247,18 @@ const ControladoriaIniciativasIdIndexRoute =
     path: '/',
     getParentRoute: () => ControladoriaIniciativasIdRoute,
   } as any)
+const JuridicoPreProjetosIdIndexRoute =
+  JuridicoPreProjetosIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => JuridicoPreProjetosIdRoute,
+  } as any)
+const JuridicoPreProjetosIdGerarApresentacaoRoute =
+  JuridicoPreProjetosIdGerarApresentacaoRouteImport.update({
+    id: '/gerar-apresentacao',
+    path: '/gerar-apresentacao',
+    getParentRoute: () => JuridicoPreProjetosIdRoute,
+  } as any)
 const ControladoriaIniciativasIdNotasFiscaisDespesaIdRoute =
   ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteImport.update({
     id: '/notas-fiscais/$despesaId',
@@ -293,7 +307,7 @@ export interface FileRoutesByFullPath {
   '/juridico/agrupamentos/$id': typeof JuridicoAgrupamentosIdRoute
   '/juridico/agrupamentos/novo': typeof JuridicoAgrupamentosNovoRoute
   '/juridico/iniciativas/$id': typeof JuridicoIniciativasIdRoute
-  '/juridico/pre-projetos/$id': typeof JuridicoPreProjetosIdRoute
+  '/juridico/pre-projetos/$id': typeof JuridicoPreProjetosIdRouteWithChildren
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
   '/juridico/projetos/devolutivas': typeof JuridicoProjetosDevolutivasRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
@@ -301,7 +315,9 @@ export interface FileRoutesByFullPath {
   '/juridico/iniciativas/': typeof JuridicoIniciativasIndexRoute
   '/juridico/pre-projetos/': typeof JuridicoPreProjetosIndexRoute
   '/juridico/projetos/': typeof JuridicoProjetosIndexRoute
+  '/juridico/pre-projetos/$id/gerar-apresentacao': typeof JuridicoPreProjetosIdGerarApresentacaoRoute
   '/controladoria/iniciativas/$id/': typeof ControladoriaIniciativasIdIndexRoute
+  '/juridico/pre-projetos/$id/': typeof JuridicoPreProjetosIdIndexRoute
   '/controladoria/iniciativas/$id/notas-fiscais/$despesaId': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteWithChildren
   '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute
   '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute
@@ -325,7 +341,6 @@ export interface FileRoutesByTo {
   '/juridico/agrupamentos/$id': typeof JuridicoAgrupamentosIdRoute
   '/juridico/agrupamentos/novo': typeof JuridicoAgrupamentosNovoRoute
   '/juridico/iniciativas/$id': typeof JuridicoIniciativasIdRoute
-  '/juridico/pre-projetos/$id': typeof JuridicoPreProjetosIdRoute
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
   '/juridico/projetos/devolutivas': typeof JuridicoProjetosDevolutivasRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
@@ -333,7 +348,9 @@ export interface FileRoutesByTo {
   '/juridico/iniciativas': typeof JuridicoIniciativasIndexRoute
   '/juridico/pre-projetos': typeof JuridicoPreProjetosIndexRoute
   '/juridico/projetos': typeof JuridicoProjetosIndexRoute
+  '/juridico/pre-projetos/$id/gerar-apresentacao': typeof JuridicoPreProjetosIdGerarApresentacaoRoute
   '/controladoria/iniciativas/$id': typeof ControladoriaIniciativasIdIndexRoute
+  '/juridico/pre-projetos/$id': typeof JuridicoPreProjetosIdIndexRoute
   '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute
   '/controladoria/iniciativas/$id/notas-fiscais/$despesaId': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute
 }
@@ -367,7 +384,7 @@ export interface FileRoutesById {
   '/juridico/agrupamentos/$id': typeof JuridicoAgrupamentosIdRoute
   '/juridico/agrupamentos/novo': typeof JuridicoAgrupamentosNovoRoute
   '/juridico/iniciativas/$id': typeof JuridicoIniciativasIdRoute
-  '/juridico/pre-projetos/$id': typeof JuridicoPreProjetosIdRoute
+  '/juridico/pre-projetos/$id': typeof JuridicoPreProjetosIdRouteWithChildren
   '/juridico/projetos/$id': typeof JuridicoProjetosIdRoute
   '/juridico/projetos/devolutivas': typeof JuridicoProjetosDevolutivasRoute
   '/revisor/projetos/$id': typeof RevisorProjetosIdRoute
@@ -375,7 +392,9 @@ export interface FileRoutesById {
   '/juridico/iniciativas/': typeof JuridicoIniciativasIndexRoute
   '/juridico/pre-projetos/': typeof JuridicoPreProjetosIndexRoute
   '/juridico/projetos/': typeof JuridicoProjetosIndexRoute
+  '/juridico/pre-projetos/$id/gerar-apresentacao': typeof JuridicoPreProjetosIdGerarApresentacaoRoute
   '/controladoria/iniciativas/$id/': typeof ControladoriaIniciativasIdIndexRoute
+  '/juridico/pre-projetos/$id/': typeof JuridicoPreProjetosIdIndexRoute
   '/controladoria/iniciativas/$id/notas-fiscais/$despesaId': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdRouteWithChildren
   '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdTransacoesRoute
   '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/': typeof ControladoriaIniciativasIdNotasFiscaisDespesaIdIndexRoute
@@ -419,7 +438,9 @@ export interface FileRouteTypes {
     | '/juridico/iniciativas/'
     | '/juridico/pre-projetos/'
     | '/juridico/projetos/'
+    | '/juridico/pre-projetos/$id/gerar-apresentacao'
     | '/controladoria/iniciativas/$id/'
+    | '/juridico/pre-projetos/$id/'
     | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId'
     | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes'
     | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/'
@@ -443,7 +464,6 @@ export interface FileRouteTypes {
     | '/juridico/agrupamentos/$id'
     | '/juridico/agrupamentos/novo'
     | '/juridico/iniciativas/$id'
-    | '/juridico/pre-projetos/$id'
     | '/juridico/projetos/$id'
     | '/juridico/projetos/devolutivas'
     | '/revisor/projetos/$id'
@@ -451,7 +471,9 @@ export interface FileRouteTypes {
     | '/juridico/iniciativas'
     | '/juridico/pre-projetos'
     | '/juridico/projetos'
+    | '/juridico/pre-projetos/$id/gerar-apresentacao'
     | '/controladoria/iniciativas/$id'
+    | '/juridico/pre-projetos/$id'
     | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes'
     | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId'
   id:
@@ -492,7 +514,9 @@ export interface FileRouteTypes {
     | '/juridico/iniciativas/'
     | '/juridico/pre-projetos/'
     | '/juridico/projetos/'
+    | '/juridico/pre-projetos/$id/gerar-apresentacao'
     | '/controladoria/iniciativas/$id/'
+    | '/juridico/pre-projetos/$id/'
     | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId'
     | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/transacoes'
     | '/controladoria/iniciativas/$id/notas-fiscais/$despesaId/'
@@ -771,6 +795,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ControladoriaIniciativasIdIndexRouteImport
       parentRoute: typeof ControladoriaIniciativasIdRoute
     }
+    '/juridico/pre-projetos/$id/': {
+      id: '/juridico/pre-projetos/$id/'
+      path: '/'
+      fullPath: '/juridico/pre-projetos/$id/'
+      preLoaderRoute: typeof JuridicoPreProjetosIdIndexRouteImport
+      parentRoute: typeof JuridicoPreProjetosIdRoute
+    }
+    '/juridico/pre-projetos/$id/gerar-apresentacao': {
+      id: '/juridico/pre-projetos/$id/gerar-apresentacao'
+      path: '/gerar-apresentacao'
+      fullPath: '/juridico/pre-projetos/$id/gerar-apresentacao'
+      preLoaderRoute: typeof JuridicoPreProjetosIdGerarApresentacaoRouteImport
+      parentRoute: typeof JuridicoPreProjetosIdRoute
+    }
     '/controladoria/iniciativas/$id/notas-fiscais/$despesaId': {
       id: '/controladoria/iniciativas/$id/notas-fiscais/$despesaId'
       path: '/notas-fiscais/$despesaId'
@@ -920,13 +958,29 @@ const JuridicoIniciativasRouteChildren: JuridicoIniciativasRouteChildren = {
 const JuridicoIniciativasRouteWithChildren =
   JuridicoIniciativasRoute._addFileChildren(JuridicoIniciativasRouteChildren)
 
+interface JuridicoPreProjetosIdRouteChildren {
+  JuridicoPreProjetosIdGerarApresentacaoRoute: typeof JuridicoPreProjetosIdGerarApresentacaoRoute
+  JuridicoPreProjetosIdIndexRoute: typeof JuridicoPreProjetosIdIndexRoute
+}
+
+const JuridicoPreProjetosIdRouteChildren: JuridicoPreProjetosIdRouteChildren = {
+  JuridicoPreProjetosIdGerarApresentacaoRoute:
+    JuridicoPreProjetosIdGerarApresentacaoRoute,
+  JuridicoPreProjetosIdIndexRoute: JuridicoPreProjetosIdIndexRoute,
+}
+
+const JuridicoPreProjetosIdRouteWithChildren =
+  JuridicoPreProjetosIdRoute._addFileChildren(
+    JuridicoPreProjetosIdRouteChildren,
+  )
+
 interface JuridicoPreProjetosRouteChildren {
-  JuridicoPreProjetosIdRoute: typeof JuridicoPreProjetosIdRoute
+  JuridicoPreProjetosIdRoute: typeof JuridicoPreProjetosIdRouteWithChildren
   JuridicoPreProjetosIndexRoute: typeof JuridicoPreProjetosIndexRoute
 }
 
 const JuridicoPreProjetosRouteChildren: JuridicoPreProjetosRouteChildren = {
-  JuridicoPreProjetosIdRoute: JuridicoPreProjetosIdRoute,
+  JuridicoPreProjetosIdRoute: JuridicoPreProjetosIdRouteWithChildren,
   JuridicoPreProjetosIndexRoute: JuridicoPreProjetosIndexRoute,
 }
 

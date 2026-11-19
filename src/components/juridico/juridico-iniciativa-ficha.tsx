@@ -3,7 +3,12 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FileStack, History } from "lucide-react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   Table,
   TableBody,
@@ -165,96 +170,107 @@ export function JuridicoIniciativaFicha({ project }: { project: Project }) {
           </section>
 
           <section className="rounded-lg border-2 border-primary/20 bg-surface p-5 lg:col-span-7">
-            <h2 className="mb-4 text-base font-semibold text-foreground">Detalhes das etapas</h2>
-            <Tabs defaultValue="inovador">
-              <TabsList className="mb-4 flex-wrap">
-                <TabsTrigger value="inovador">Elemento Inovador</TabsTrigger>
-                <TabsTrigger value="barreiras">Barreiras</TabsTrigger>
-                <TabsTrigger value="metodologia">Metodologia</TabsTrigger>
-                <TabsTrigger value="evidencias">Evidências</TabsTrigger>
-                <TabsTrigger value="despesas">Despesas</TabsTrigger>
-                <TabsTrigger value="recursos">Recursos</TabsTrigger>
-              </TabsList>
+            <h2 className="mb-4 text-base font-semibold text-foreground">
+              Demais informações do preenchimento
+            </h2>
+            <Accordion type="multiple" defaultValue={["inovador"]}>
+              <AccordionItem value="inovador">
+                <AccordionTrigger>Elemento Inovador</AccordionTrigger>
+                <AccordionContent>
+                  <QAList questions={QUESTIONS_INOVADOR} project={project} />
+                </AccordionContent>
+              </AccordionItem>
 
-              <TabsContent value="inovador">
-                <QAList questions={QUESTIONS_INOVADOR} project={project} />
-              </TabsContent>
+              <AccordionItem value="barreiras">
+                <AccordionTrigger>Barreiras</AccordionTrigger>
+                <AccordionContent>
+                  <QAList questions={QUESTIONS_BARREIRAS} project={project} />
+                </AccordionContent>
+              </AccordionItem>
 
-              <TabsContent value="barreiras">
-                <QAList questions={QUESTIONS_BARREIRAS} project={project} />
-              </TabsContent>
+              <AccordionItem value="metodologia">
+                <AccordionTrigger>Metodologia</AccordionTrigger>
+                <AccordionContent>
+                  <QAList questions={QUESTIONS_METODOLOGIA} project={project} />
+                </AccordionContent>
+              </AccordionItem>
 
-              <TabsContent value="metodologia">
-                <QAList questions={QUESTIONS_METODOLOGIA} project={project} />
-              </TabsContent>
+              <AccordionItem value="evidencias">
+                <AccordionTrigger>Documentos anexados</AccordionTrigger>
+                <AccordionContent>
+                  {evidencias.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhum documento anexado.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {evidencias.map((a) => (
+                        <li key={a.id} className="flex items-center justify-between text-sm">
+                          <span className="text-foreground">{a.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            enviado por {a.uploadedBy} em {fmtDate(a.uploadedAt)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
 
-              <TabsContent value="evidencias">
-                {evidencias.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nenhum documento anexado.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {evidencias.map((a) => (
-                      <li key={a.id} className="flex items-center justify-between text-sm">
-                        <span className="text-foreground">{a.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          enviado por {a.uploadedBy} em {fmtDate(a.uploadedAt)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </TabsContent>
-
-              <TabsContent value="despesas">
-                {despesas.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nenhuma despesa lançada.</p>
-                ) : (
-                  <div className="overflow-hidden rounded-lg border border-border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Despesa</TableHead>
-                          <TableHead>Detalhe</TableHead>
-                          <TableHead className="text-right">Valor</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {despesas.map((d) => (
-                          <TableRow key={d.id}>
-                            <TableCell className="font-medium">{d.title}</TableCell>
-                            <TableCell className="text-sm text-muted-foreground">
-                              {d.detail}
-                            </TableCell>
-                            <TableCell className="text-right tabular-nums">
-                              {d.type === "funcionario" ? `${d.value}h` : brl(d.value)}
-                            </TableCell>
+              <AccordionItem value="despesas">
+                <AccordionTrigger>Despesas</AccordionTrigger>
+                <AccordionContent>
+                  {despesas.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhuma despesa lançada.</p>
+                  ) : (
+                    <div className="overflow-hidden rounded-lg border border-border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Despesa</TableHead>
+                            <TableHead>Detalhe</TableHead>
+                            <TableHead className="text-right">Valor</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-                <p className="mt-3 text-sm font-medium text-foreground">
-                  Total considerado: {brl(valorConsiderado(project))}
-                </p>
-              </TabsContent>
+                        </TableHeader>
+                        <TableBody>
+                          {despesas.map((d) => (
+                            <TableRow key={d.id}>
+                              <TableCell className="font-medium">{d.title}</TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {d.detail}
+                              </TableCell>
+                              <TableCell className="text-right tabular-nums">
+                                {d.type === "funcionario" ? `${d.value}h` : brl(d.value)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                  <p className="mt-3 text-sm font-medium text-foreground">
+                    Total considerado: {brl(valorConsiderado(project))}
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
 
-              <TabsContent value="recursos">
-                {project.resources.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nenhum recurso cadastrado.</p>
-                ) : (
-                  <ul className="space-y-1 text-sm text-foreground">
-                    {project.resources.map((r) => (
-                      <li key={r.id}>
-                        {r.name}
-                        {r.role ? ` — ${r.role}` : ""} · {r.area}
-                        {!r.active && " (inativo)"}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </TabsContent>
-            </Tabs>
+              <AccordionItem value="recursos">
+                <AccordionTrigger>Recursos</AccordionTrigger>
+                <AccordionContent>
+                  {project.resources.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhum recurso cadastrado.</p>
+                  ) : (
+                    <ul className="space-y-1 text-sm text-foreground">
+                      {project.resources.map((r) => (
+                        <li key={r.id}>
+                          {r.name}
+                          {r.role ? ` — ${r.role}` : ""} · {r.area}
+                          {!r.active && " (inativo)"}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </section>
         </div>
 
@@ -269,9 +285,27 @@ export function JuridicoIniciativaFicha({ project }: { project: Project }) {
             <div className="space-y-2">
               {history.map((ev) => (
                 <div key={ev.id} className="rounded-lg border border-border bg-surface p-3 text-sm">
-                  <span className="font-medium text-foreground">{ev.actor}</span>{" "}
-                  <span className="text-foreground">{ev.description}</span>{" "}
-                  <span className="text-muted-foreground">em {fmtDate(ev.date)}.</span>
+                  <div>
+                    <span className="font-medium text-foreground">{ev.actor}</span>{" "}
+                    <span className="text-foreground">{ev.description}</span>{" "}
+                    <span className="text-muted-foreground">em {fmtDate(ev.date)}.</span>
+                  </div>
+                  {ev.alteracoes && ev.alteracoes.length > 0 && (
+                    <dl className="mt-2 space-y-2 border-t border-border pt-2">
+                      {ev.alteracoes.map((alt, i) => (
+                        <div key={i}>
+                          <dt className="text-xs font-medium text-foreground">{alt.campo}</dt>
+                          <dd className="mt-0.5 text-xs text-muted-foreground">
+                            Valor anterior:{" "}
+                            <span className="text-foreground">{alt.valorAnterior}</span>
+                          </dd>
+                          <dd className="text-xs text-muted-foreground">
+                            Novo valor: <span className="text-foreground">{alt.novoValor}</span>
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
                 </div>
               ))}
             </div>

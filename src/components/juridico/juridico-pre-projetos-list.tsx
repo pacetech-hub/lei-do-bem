@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 import { Input } from "@/components/ui/input";
 import {
@@ -23,10 +21,10 @@ import {
 import { useProjectsStore } from "@/lib/store";
 import { diretoriasDoAgrupamento, valorTotalIniciativas } from "@/lib/juridico";
 import { PreProjetoStatusBadge } from "@/components/juridico/juridico-status-badge";
+import { quarterLabel } from "@/components/projects-list";
 import { AREAS } from "@/lib/types";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const fmtDate = (iso: string) => format(new Date(iso), "dd/MM/yyyy", { locale: ptBR });
 
 export function JuridicoPreProjetosList() {
   const preProjetos = useProjectsStore((s) => s.preProjetos);
@@ -46,7 +44,6 @@ export function JuridicoPreProjetosList() {
         return {
           preProjeto: pp,
           diretorias: diretoriasDoAgrupamento(iniciativaIds, projects),
-          quantidade: iniciativaIds.length,
           valorTotal: valorTotalIniciativas(iniciativaIds, projects),
         };
       }),
@@ -118,12 +115,10 @@ export function JuridicoPreProjetosList() {
         <Table>
           <TableHeader>
             <TableRow className="bg-surface-muted hover:bg-surface-muted">
-              <TableHead className="w-[24%]">Pré-projeto</TableHead>
-              <TableHead className="w-[26%]">Resumo</TableHead>
+              <TableHead className="w-[32%]">Pré-projeto</TableHead>
               <TableHead>Diretorias envolvidas</TableHead>
-              <TableHead className="text-right">Iniciativas</TableHead>
+              <TableHead className="w-[120px]">Trimestre</TableHead>
               <TableHead className="text-right">Valor financeiro total</TableHead>
-              <TableHead>Data de criação</TableHead>
               <TableHead className="w-[180px]">Situação</TableHead>
               <TableHead className="w-10" />
             </TableRow>
@@ -131,7 +126,7 @@ export function JuridicoPreProjetosList() {
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={6} className="h-24 text-center text-sm text-muted-foreground">
                   Nenhum pré-projeto encontrado com os filtros atuais.
                 </TableCell>
               </TableRow>
@@ -148,19 +143,13 @@ export function JuridicoPreProjetosList() {
                   {r.preProjeto.name}
                 </TableCell>
                 <TableCell className="py-4 text-sm text-muted-foreground">
-                  <span className="line-clamp-2">{r.preProjeto.resumoExecutivo}</span>
-                </TableCell>
-                <TableCell className="py-4 text-sm text-muted-foreground">
                   {r.diretorias.join(", ") || "—"}
                 </TableCell>
-                <TableCell className="py-4 text-right text-sm tabular-nums">
-                  {r.quantidade}
+                <TableCell className="py-4 text-sm text-muted-foreground">
+                  {quarterLabel(r.preProjeto.createdAt)}
                 </TableCell>
                 <TableCell className="py-4 text-right text-sm tabular-nums font-medium">
                   {brl(r.valorTotal)}
-                </TableCell>
-                <TableCell className="py-4 text-sm text-muted-foreground">
-                  {fmtDate(r.preProjeto.createdAt)}
                 </TableCell>
                 <TableCell className="py-4">
                   <PreProjetoStatusBadge status={r.preProjeto.status} />

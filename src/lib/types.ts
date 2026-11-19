@@ -122,6 +122,10 @@ export interface ControladoriaHistoryEvent {
   date: string;
   actor: string;
   description: string;
+  // Quando o evento envolve mudança de dados específicos da iniciativa (não
+  // só mudança de status/etapa), lista o que mudou campo a campo — ver
+  // CampoAlterado mais abaixo.
+  alteracoes?: CampoAlterado[];
 }
 
 // Recurso (profissional ou terceiro) cadastrado pelo Relator na iniciativa,
@@ -393,11 +397,23 @@ export interface JobRole {
 // Agrupamento → Pré-projeto → Projeto (submetido ao MCTI). Ver lib/juridico.ts
 // para as regras derivadas e geração de sugestões/conteúdo pela IA.
 
+// Alteração específica de um campo, registrada junto a um evento de
+// histórico — permite mostrar exatamente o que mudou (valor anterior →
+// novo valor), em vez de só uma mensagem genérica.
+export interface CampoAlterado {
+  campo: string;
+  valorAnterior: string;
+  novoValor: string;
+}
+
 export interface JuridicoHistoryEvent {
   id: string;
   date: string;
   actor: string;
   description: string;
+  // Quando o evento envolve mudança de dados específicos (não só mudança de
+  // status/etapa), lista o que mudou campo a campo.
+  alteracoes?: CampoAlterado[];
 }
 
 // Conjunto de iniciativas relacionadas, organizado pelo Jurídico
@@ -429,21 +445,24 @@ export type PreProjetoStatus =
   | "aguardando_comite"
   | "ajustes_solicitados"
   | "revisao_agrupamento"
-  | "aprovado";
+  | "aprovado"
+  | "recusado";
 
 export const PRE_PROJETO_STATUS_LABEL: Record<PreProjetoStatus, string> = {
   aguardando_comite: "Aguardando comitê",
   ajustes_solicitados: "Ajustes solicitados",
   revisao_agrupamento: "Em revisão de agrupamento",
   aprovado: "Aprovado",
+  recusado: "Recusado",
 };
 
-export type ComiteDecisao = "aprovar" | "ajustes" | "revisar_agrupamento";
+export type ComiteDecisao = "aprovar" | "ajustes" | "revisar_agrupamento" | "recusar";
 
 export const COMITE_DECISAO_LABEL: Record<ComiteDecisao, string> = {
   aprovar: "Aprovar pré-projeto",
   ajustes: "Solicitar ajustes",
   revisar_agrupamento: "Revisar agrupamento",
+  recusar: "Recusar pré-projeto",
 };
 
 export interface ComiteDecisionRecord {
@@ -452,6 +471,10 @@ export interface ComiteDecisionRecord {
   data: string;
   responsavel: string;
   observacoes?: string;
+  // Identificação da reunião do comitê em que a decisão foi tomada, quando
+  // aplicável (o comitê pode decidir fora da plataforma — ver escopo do
+  // Jurídico).
+  comite?: string;
 }
 
 // Consolidação de um agrupamento, apresentada ao comitê. Os textos podem ser
@@ -464,6 +487,9 @@ export interface PreProjeto {
   ano: number;
   resumoExecutivo: string;
   problema: string;
+  // Oportunidade identificada a partir do problema — complementa o resumo
+  // executivo (ver escopo do Jurídico, item "Resumo executivo").
+  oportunidade: string;
   objetivoPrincipal: string;
   propostaInovacao: string;
   atividadesInovacao: string;

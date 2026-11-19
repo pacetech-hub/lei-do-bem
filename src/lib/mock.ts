@@ -1362,6 +1362,58 @@ const JURIDICO_SEED_INICIATIVAS: JuridicoSeedIniciativa[] = [
     valorMaterial: 10000,
     ano: 2026,
   },
+  // Iniciativas adicionais — compõem o agrupamento manual multi-iniciativa
+  // "aguardando_comite" e o cenário de pré-projeto "recusado" (ver escopo do
+  // Jurídico, Parte B).
+  {
+    name: "SISTEMA DE RASTREAMENTO RFID PARA CONTROLE DE PALETES EM TRÂNSITO ENTRE FILIAIS",
+    area: "Automação",
+    responsible: "Carlos Silva",
+    objetivo:
+      "Desenvolver um sistema de rastreamento por RFID para controle de paletes em trânsito entre as filiais da empresa.",
+    problema:
+      "Falta de visibilidade em tempo real da localização dos paletes retornáveis durante o transporte entre filiais, gerando perdas e atrasos na reutilização.",
+    atividades:
+      "Integração de leitores RFID aos pontos de expedição e recebimento, testes de leitura em diferentes condições de empilhamento e validação da acurácia de rastreamento.",
+    resultados:
+      "Maior controle sobre o ciclo de reutilização dos paletes e redução de perdas por extravio.",
+    descricao: "Sistema de rastreamento RFID integrado ao fluxo logístico entre filiais.",
+    valorTerceiro: 31000,
+    valorMaterial: 14000,
+    ano: 2026,
+  },
+  {
+    name: "OTIMIZAÇÃO DE ROTAS DE TRANSPORTE ENTRE FILIAIS COM ALGORITMOS DE ROTEIRIZAÇÃO",
+    area: "Processos Industriais",
+    responsible: "Ana Souza",
+    objetivo:
+      "Desenvolver um algoritmo de roteirização para otimizar as rotas de transporte de paletes e mercadorias entre filiais.",
+    problema:
+      "Definição manual de rotas de transporte entre filiais, resultando em deslocamentos redundantes e maior custo logístico.",
+    atividades:
+      "Modelagem do problema de roteirização, testes de algoritmos de otimização combinatória e validação das rotas geradas frente ao histórico de transporte.",
+    resultados: "Redução de deslocamentos redundantes e do custo logístico entre filiais.",
+    descricao: "Algoritmo de roteirização aplicado à otimização do transporte entre filiais.",
+    valorTerceiro: 36000,
+    valorMaterial: 7000,
+    ano: 2026,
+  },
+  {
+    name: "APLICATIVO DE REALIDADE AUMENTADA PARA TREINAMENTO DE OPERADORES DE MÁQUINAS",
+    area: "Tecnologia da Informação",
+    responsible: "João Silva",
+    objetivo:
+      "Desenvolver um aplicativo de realidade aumentada para treinamento de operadores de máquinas industriais.",
+    problema:
+      "Treinamento de novos operadores depende de acompanhamento presencial prolongado, com baixa padronização entre turmas.",
+    atividades:
+      "Desenvolvimento de módulos de realidade aumentada, testes de usabilidade com operadores e comparação de desempenho entre turmas treinadas com e sem o aplicativo.",
+    resultados: "Redução do tempo de treinamento e maior padronização entre operadores.",
+    descricao: "Aplicativo de realidade aumentada para apoio ao treinamento de operadores.",
+    valorTerceiro: 22000,
+    valorMaterial: 5000,
+    ano: 2026,
+  },
 ];
 
 JURIDICO_SEED_INICIATIVAS.forEach((seed, idx) => {
@@ -1458,6 +1510,125 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
 (() => {
   const byName = (name: string) => INITIAL_PROJECTS.find((p) => p.name === name)!;
 
+  // Histórico demonstrativo mais rico, numa iniciativa do primeiro
+  // agrupamento (cluster C) — mostra o trâmite completo com o Revisor e a
+  // Controladoria antes de chegar ao Jurídico, incluindo as alterações de
+  // campo a campo feitas a cada reenvio (ver CampoAlterado em lib/types.ts).
+  const iniciativaComHistorico = byName(
+    "SISTEMA DE CONTROLE DE MANUTENÇÃO PREVENTIVA COM ALERTAS AUTOMATIZADOS",
+  );
+  iniciativaComHistorico.controladoriaHistory = [
+    {
+      id: nextId("ch"),
+      date: daysAgo(72),
+      actor: "Mariana Costa",
+      description: "criou a iniciativa",
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(71),
+      actor: "Mariana Costa",
+      description: "enviou a iniciativa para análise do Revisor",
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(67),
+      actor: "Ricardo Alves",
+      description:
+        "devolveu a iniciativa para ajustes, apontando que a descrição e os objetivos estavam genéricos demais para caracterizar o elemento tecnologicamente inovador",
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(63),
+      actor: "Mariana Costa",
+      description: "reenviou a iniciativa ao Revisor após os ajustes solicitados",
+      alteracoes: [
+        {
+          campo: "Descrição do projeto",
+          valorAnterior: "Sistema para acompanhar a demanda de produtos.",
+          novoValor: "Plataforma de IA para previsão de demanda com base em dados históricos.",
+        },
+        {
+          campo: "Objetivos",
+          valorAnterior: "Melhorar a previsão de estoque da empresa.",
+          novoValor:
+            "Desenvolver uma plataforma de inteligência artificial para previsão de demanda de produtos acabados.",
+        },
+      ],
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(58),
+      actor: "Ricardo Alves",
+      description:
+        "devolveu novamente a iniciativa, solicitando mais detalhamento das informações técnicas sobre a metodologia aplicada",
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(53),
+      actor: "Mariana Costa",
+      description: "reenviou a iniciativa ao Revisor com as informações técnicas complementares",
+      alteracoes: [
+        {
+          campo: "Informações técnicas sobre a metodologia",
+          valorAnterior: "Uso de inteligência artificial para analisar dados de vendas.",
+          novoValor:
+            "Treinamento de modelos de machine learning, validação estatística e testes de análise preditiva de dados históricos de vendas.",
+        },
+      ],
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(48),
+      actor: "Ricardo Alves",
+      description: "aprovou a iniciativa e encaminhou para a Controladoria",
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(44),
+      actor: ROLE_USERS.controladoria.name,
+      description:
+        "solicitou ajustes na despesa de material antes de concluir a análise, por divergência no valor informado",
+      alteracoes: [
+        {
+          campo: "Valor líquido do material",
+          valorAnterior: "R$ 4.800,00",
+          novoValor: "R$ 6.000,00",
+        },
+      ],
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(42),
+      actor: "Ricardo Alves",
+      description: "retornou ao Revisor para confirmar o ajuste solicitado pela Controladoria",
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(40),
+      actor: "Mariana Costa",
+      description: "confirmou o ajuste e reencaminhou a iniciativa para a Controladoria",
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(38),
+      actor: "Ricardo Alves",
+      description: "encaminhou a iniciativa para a Controladoria",
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(38),
+      actor: ROLE_USERS.controladoria.name,
+      description: "concluiu a análise de todas as despesas",
+    },
+    {
+      id: nextId("ch"),
+      date: daysAgo(38),
+      actor: ROLE_USERS.controladoria.name,
+      description: "encaminhou a iniciativa para o Jurídico",
+    },
+  ];
+
   // Clusters A (Automação e Robótica Industrial) e B (Eficiência Energética e
   // Sustentabilidade) ficam deliberadamente SEM agrupamento — são a massa de
   // teste para as sugestões de agrupamento da IA na tela de Iniciativas (ver
@@ -1512,11 +1683,14 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
     ano: 2025,
     resumoExecutivo: agrupamentoC.resumo,
     problema:
-      "Decisões de previsão, qualidade e manutenção ainda dependem de análise manual de dados.",
+      "As decisões de previsão de demanda, inspeção de qualidade e manutenção de equipamentos ainda dependem fortemente de análise manual de dados históricos e de inspeção visual, o que limita a velocidade de resposta e introduz variabilidade nos resultados. Não há, hoje, um elemento tecnologicamente inovador que integre esses dados em modelos preditivos unificados — o principal desafio tecnológico é desenvolver algoritmos de inteligência artificial capazes de aprender padrões em bases heterogêneas (vendas, imagens de inspeção, leituras de sensores) com confiabilidade suficiente para apoiar decisões operacionais.",
+    oportunidade:
+      "A oportunidade identificada é consolidar, num único avanço tecnológico, três aplicações de inteligência artificial que hoje seriam desenvolvidas isoladamente: previsão de demanda, detecção automática de defeitos e manutenção preditiva. O avanço pretendido em relação ao estado da técnica atual da empresa é sair de processos reativos e baseados em inspeção manual para uma camada de decisão apoiada por modelos preditivos, reduzindo a incerteza tecnológica de cada aplicação ao compartilhar infraestrutura de dados e aprendizado entre elas.",
     objetivoPrincipal: agrupamentoC.objetivoComum,
     propostaInovacao: agrupamentoC.justificativa,
     atividadesInovacao: agrupamentoC.relacaoAtividades,
-    resultadosEsperados: "Maior acurácia preditiva e redução de falhas e rupturas na operação.",
+    resultadosEsperados:
+      "Maior acurácia preditiva na previsão de demanda, redução de defeitos não detectados na inspeção de qualidade e aumento da disponibilidade dos equipamentos por manutenção preditiva — resultados que, em conjunto, demonstram o avanço tecnológico obtido com a aplicação integrada de inteligência artificial às três frentes.",
     status: "aprovado",
     createdAt: daysAgo(55),
     updatedAt: daysAgo(20),
@@ -1604,6 +1778,7 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
       ano,
       resumoExecutivo: agrupamento.resumo,
       problema: "Detalhado a partir da ficha original encaminhada pela Controladoria.",
+      oportunidade: "Detalhada a partir da ficha original encaminhada pela Controladoria.",
       objetivoPrincipal: agrupamento.objetivoComum,
       propostaInovacao: agrupamento.justificativa,
       atividadesInovacao: agrupamento.relacaoAtividades,
@@ -1880,6 +2055,141 @@ export const INITIAL_JURIDICO_PROJETOS: JuridicoProjeto[] = [];
     };
     preProjeto.projetoId = projeto.id;
     INITIAL_JURIDICO_PROJETOS.push(projeto);
+  }
+
+  // Agrupamento manual com várias iniciativas — pré-projeto aguardando a
+  // decisão do comitê (demonstra a situação "Aguardando aprovação" e o fluxo
+  // de aprovar/recusar ao vivo — ver escopo do Jurídico, itens 13/14).
+  {
+    const paletesId = byName("AUTOMAÇÃO DO PROCESSO DE ENVIO DE PALETES PARA FILIAIS").id;
+    const rastreamentoId = byName(
+      "SISTEMA DE RASTREAMENTO RFID PARA CONTROLE DE PALETES EM TRÂNSITO ENTRE FILIAIS",
+    ).id;
+    const roteirizacaoId = byName(
+      "OTIMIZAÇÃO DE ROTAS DE TRANSPORTE ENTRE FILIAIS COM ALGORITMOS DE ROTEIRIZAÇÃO",
+    ).id;
+    const criadoEm = daysAgo(16);
+    const apresentadoEm = daysAgo(5);
+    const agrupamentoLogistica: Agrupamento = {
+      id: nextId("agr"),
+      name: "Logística de Paletes entre Filiais",
+      resumo:
+        "Agrupamento de 3 iniciativas das Diretorias Engenharia de Produto, Automação e Processos Industriais, relacionadas pela modernização do ciclo logístico de paletes entre as filiais da empresa.",
+      objetivoComum:
+        "Consolidar, numa única frente, a redução de descarte, o rastreamento e a otimização de rotas no transporte de paletes entre filiais.",
+      relacaoAtividades:
+        "As iniciativas envolvem prototipagem de embalagem retornável, integração de leitores RFID e modelagem de algoritmos de roteirização — etapas complementares do mesmo ciclo logístico.",
+      justificativa:
+        "Agrupadas por tratarem, em conjunto, do mesmo problema de base: o alto custo e a baixa rastreabilidade do transporte de paletes entre filiais.",
+      iniciativaIds: [paletesId, rastreamentoId, roteirizacaoId],
+      aiSuggested: false,
+      createdAt: criadoEm,
+      updatedAt: apresentadoEm,
+      history: [
+        seedHistory(ROLE_USERS.juridico.name, "criou o agrupamento manualmente", criadoEm),
+        seedHistory(ROLE_USERS.juridico.name, "transformou o agrupamento em pré-projeto", criadoEm),
+      ],
+    };
+    const preProjetoLogistica: PreProjeto = {
+      id: nextId("prep"),
+      agrupamentoId: agrupamentoLogistica.id,
+      name: "Pré-projeto — Logística de Paletes entre Filiais",
+      ano: new Date().getFullYear(),
+      resumoExecutivo: agrupamentoLogistica.resumo,
+      problema:
+        "O transporte de paletes entre filiais hoje depende de embalagens descartáveis, rotas definidas manualmente e nenhum rastreamento da localização das unidades retornáveis em trânsito — não há, atualmente, um elemento tecnologicamente inovador que integre esses três aspectos do ciclo logístico. O desafio tecnológico está em conciliar, numa única solução, a durabilidade física da embalagem, a leitura confiável de RFID em condições de empilhamento variável e a geração automática de rotas eficientes.",
+      oportunidade:
+        "A oportunidade identificada é tratar o transporte de paletes entre filiais como um sistema único — embalagem retornável, rastreamento e roteirização — em vez de três iniciativas isoladas. O avanço pretendido em relação ao processo atual, inteiramente manual, é alcançar um ciclo logístico instrumentado, com paletes rastreáveis e rotas geradas algoritmicamente, reduzindo tanto o descarte quanto o custo de transporte.",
+      objetivoPrincipal: agrupamentoLogistica.objetivoComum,
+      propostaInovacao:
+        "A proposta de desenvolvimento consolida as três frentes tecnológicas — prototipagem de embalagem modular, instrumentação por RFID e algoritmos de roteirização — como etapas de um mesmo avanço tecnológico aplicado à logística entre filiais, compartilhando aprendizados e infraestrutura entre si.",
+      atividadesInovacao: agrupamentoLogistica.relacaoAtividades,
+      resultadosEsperados:
+        "Redução do descarte de embalagens, maior rastreabilidade dos paletes em trânsito e diminuição de deslocamentos redundantes — resultados que, em conjunto, demonstram o avanço tecnológico obtido com a integração das três iniciativas.",
+      status: "aguardando_comite",
+      createdAt: criadoEm,
+      updatedAt: apresentadoEm,
+      decisoes: [],
+      history: [
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "criou o pré-projeto a partir do agrupamento",
+          criadoEm,
+        ),
+        seedHistory(ROLE_USERS.juridico.name, "apresentou o pré-projeto ao comitê", apresentadoEm),
+      ],
+    };
+    agrupamentoLogistica.preProjetoId = preProjetoLogistica.id;
+    INITIAL_AGRUPAMENTOS.push(agrupamentoLogistica);
+    INITIAL_PRE_PROJETOS.push(preProjetoLogistica);
+  }
+
+  // Agrupamento individual recusado pelo comitê — demonstra a situação
+  // "Recusado" com a justificativa registrada (ver escopo do Jurídico, itens
+  // 13/14).
+  {
+    const arId = byName(
+      "APLICATIVO DE REALIDADE AUMENTADA PARA TREINAMENTO DE OPERADORES DE MÁQUINAS",
+    ).id;
+    const criadoEm = daysAgo(40);
+    const recusadoEm = daysAgo(22);
+    const agrupamentoAr: Agrupamento = {
+      id: nextId("agr"),
+      name: "APLICATIVO DE REALIDADE AUMENTADA PARA TREINAMENTO DE OPERADORES DE MÁQUINAS",
+      resumo:
+        'Agrupamento individual criado manualmente a partir da iniciativa "APLICATIVO DE REALIDADE AUMENTADA PARA TREINAMENTO DE OPERADORES DE MÁQUINAS".',
+      objetivoComum: "Objetivo detalhado na ficha da iniciativa de origem.",
+      relacaoAtividades: "Agrupamento de uma única iniciativa, sem relação com outras nesta etapa.",
+      justificativa:
+        "Iniciativa com escopo suficientemente consolidado para avaliação individual pelo comitê.",
+      iniciativaIds: [arId],
+      aiSuggested: false,
+      createdAt: criadoEm,
+      updatedAt: recusadoEm,
+      history: [
+        seedHistory(ROLE_USERS.juridico.name, "criou o agrupamento manualmente", criadoEm),
+        seedHistory(ROLE_USERS.juridico.name, "transformou o agrupamento em pré-projeto", criadoEm),
+      ],
+    };
+    const preProjetoAr: PreProjeto = {
+      id: nextId("prep"),
+      agrupamentoId: agrupamentoAr.id,
+      name: "Pré-projeto — Aplicativo de Realidade Aumentada para Treinamento de Operadores",
+      ano: 2026,
+      resumoExecutivo: agrupamentoAr.resumo,
+      problema: "Detalhado a partir da ficha original encaminhada pela Controladoria.",
+      oportunidade: "Detalhada a partir da ficha original encaminhada pela Controladoria.",
+      objetivoPrincipal: agrupamentoAr.objetivoComum,
+      propostaInovacao: agrupamentoAr.justificativa,
+      atividadesInovacao: agrupamentoAr.relacaoAtividades,
+      resultadosEsperados: "Detalhados a partir da ficha original encaminhada pela Controladoria.",
+      status: "recusado",
+      createdAt: criadoEm,
+      updatedAt: recusadoEm,
+      decisoes: [
+        {
+          id: nextId("dec"),
+          decisao: "recusar",
+          data: recusadoEm,
+          responsavel: ROLE_USERS.juridico.name,
+          observacoes:
+            "O comitê entendeu que a iniciativa, como descrita, não caracteriza um desafio tecnológico ou incerteza tecnológica compatíveis com os critérios da Lei do Bem — trata-se da aplicação de uma tecnologia de prateleira (realidade aumentada) a um processo de treinamento, sem evidências de um elemento tecnologicamente inovador a ser desenvolvido. Recomendou-se reencaminhar a iniciativa ao Jurídico para melhor caracterização antes de uma nova submissão.",
+          comite: "Comitê de Inovação — 2ª sessão de 2026",
+        },
+      ],
+      history: [
+        seedHistory(
+          ROLE_USERS.juridico.name,
+          "criou o pré-projeto a partir do agrupamento",
+          criadoEm,
+        ),
+        seedHistory(ROLE_USERS.juridico.name, "apresentou o pré-projeto ao comitê", daysAgo(25)),
+        seedHistory(ROLE_USERS.juridico.name, "o comitê recusou o pré-projeto", recusadoEm),
+      ],
+    };
+    agrupamentoAr.preProjetoId = preProjetoAr.id;
+    INITIAL_AGRUPAMENTOS.push(agrupamentoAr);
+    INITIAL_PRE_PROJETOS.push(preProjetoAr);
   }
 })();
 

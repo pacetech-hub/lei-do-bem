@@ -13,6 +13,7 @@ export const PRE_PROJETO_STATUS_BADGE_CLASS: Record<PreProjetoStatus, string> = 
   ajustes_solicitados: "bg-status-adjust text-status-adjust-fg",
   revisao_agrupamento: "bg-status-adjust text-status-adjust-fg",
   aprovado: "bg-status-ready text-status-ready-fg",
+  recusado: "bg-destructive/10 text-destructive",
 };
 
 export function PreProjetoStatusBadge({

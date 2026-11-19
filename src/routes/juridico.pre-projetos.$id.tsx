@@ -1,21 +1,9 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
-import { useProjectsStore } from "@/lib/store";
-import { JuridicoPreProjetoApresentacao } from "@/components/juridico/juridico-pre-projeto-apresentacao";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
+// Layout-only route: /juridico/pre-projetos/$id/ e
+// /juridico/pre-projetos/$id/gerar-apresentacao são registradas como filhas
+// desta rota, então este componente precisa renderizar <Outlet /> para as
+// páginas reais aparecerem (mesmo padrão de controladoria.iniciativas.$id.tsx).
 export const Route = createFileRoute("/juridico/pre-projetos/$id")({
-  head: ({ params }) => ({
-    meta: [{ title: `Pré-projeto ${params.id.slice(0, 6)} — Jurídico | Lei do Bem` }],
-  }),
-  component: PreProjetoPage,
+  component: Outlet,
 });
-
-function PreProjetoPage() {
-  const { id } = Route.useParams();
-  const preProjeto = useProjectsStore((s) => s.preProjetos.find((p) => p.id === id));
-
-  if (!preProjeto) {
-    throw notFound();
-  }
-
-  return <JuridicoPreProjetoApresentacao preProjeto={preProjeto} />;
-}

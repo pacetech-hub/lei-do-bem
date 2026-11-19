@@ -23,10 +23,12 @@ import {
 } from "@/components/ui/table";
 import { useProjectsStore } from "@/lib/store";
 import {
+  diretoriasDoAgrupamento,
   gerarSugestoesAgrupamento,
   iniciativaValor,
   iniciativasNaoAgrupadas,
   iniciativasRecebidas,
+  valorTotalIniciativas,
 } from "@/lib/juridico";
 import { AREAS } from "@/lib/types";
 
@@ -56,9 +58,44 @@ export function JuridicoIniciativasList() {
     () => gerarSugestoesAgrupamento(projects, agrupamentos),
     [projects, agrupamentos],
   );
-  const valorTotal = useMemo(
-    () => recebidas.reduce((sum, p) => sum + iniciativaValor(p), 0),
-    [recebidas],
+
+  // Listagem unificada: agrupamentos já existentes (manuais ou criados a
+  // partir de uma sugestão da IA) e sugestões da IA ainda não revisadas —
+  // cada card recebe a tag "Sugestão de IA" quando aplicável, sem que isso
+  // apareça no título da seção (ver escopo do Jurídico, item 1).
+  const agrupamentosExistentes = useMemo(
+    () =>
+      agrupamentos.map((a) => ({
+        key: a.id,
+        kind: "agrupamento" as const,
+        name: a.name,
+        resumo: a.resumo,
+        iniciativaCount: a.iniciativaIds.length,
+        diretorias: diretoriasDoAgrupamento(a.iniciativaIds, projects),
+        valorTotal: valorTotalIniciativas(a.iniciativaIds, projects),
+        aiSuggested: a.aiSuggested,
+        id: a.id,
+      })),
+    [agrupamentos, projects],
+  );
+  const sugestoesCards = useMemo(
+    () =>
+      sugestoes.map((s) => ({
+        key: s.id,
+        kind: "sugestao" as const,
+        name: s.name,
+        resumo: s.resumo,
+        iniciativaCount: s.iniciativaIds.length,
+        diretorias: s.diretorias,
+        valorTotal: s.valorTotal,
+        aiSuggested: true,
+        id: s.id,
+      })),
+    [sugestoes],
+  );
+  const todosOsAgrupamentos = useMemo(
+    () => [...agrupamentosExistentes, ...sugestoesCards],
+    [agrupamentosExistentes, sugestoesCards],
   );
 
   const responsaveis = useMemo(
@@ -103,39 +140,12 @@ export function JuridicoIniciativasList() {
         </p>
       </div>
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <div className="text-xs text-muted-foreground">Total de iniciativas recebidas</div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">
-            {recebidas.length}
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <div className="text-xs text-muted-foreground">Ainda não agrupadas</div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">
-            {naoAgrupadas.length}
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <div className="text-xs text-muted-foreground">Agrupamentos existentes</div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">
-            {agrupamentos.length}
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <div className="text-xs text-muted-foreground">Valor financeiro total</div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">
-            {brl(valorTotal)}
-          </div>
-        </div>
-      </div>
-
-      {/* Sugestões de agrupamento pela IA */}
+      {/* Agrupamentos — tanto os já existentes (manuais ou criados a partir de
+          sugestões da IA) quanto as sugestões ainda não revisadas. A origem
+          aparece como uma etiqueta no próprio card, não no título da seção. */}
       <section className="mb-8">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <Sparkles className="size-4 text-primary" /> Sugestões de agrupamento da IA
-          </h2>
+          <h2 className="text-sm font-semibold text-foreground">Agrupamentos</h2>
           <Button
             variant="outline"
             size="sm"
@@ -145,45 +155,57 @@ export function JuridicoIniciativasList() {
             <Users className="size-4" /> Criar agrupamento manualmente
           </Button>
         </div>
-        {sugestoes.length === 0 ? (
+        {todosOsAgrupamentos.length === 0 ? (
           <p className="rounded-lg border border-dashed border-border bg-surface-muted/40 p-6 text-center text-sm text-muted-foreground">
-            Nenhuma sugestão de agrupamento no momento. As sugestões aparecem quando a IA identifica
-            relações entre iniciativas ainda não agrupadas.
+            Nenhum agrupamento no momento. Sugestões aparecem aqui quando a IA identifica relações
+            entre iniciativas ainda não agrupadas, e você também pode criar um manualmente.
           </p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {sugestoes.map((s) => (
+            {todosOsAgrupamentos.map((item) => (
               <div
-                key={s.id}
+                key={item.key}
                 className="flex flex-col rounded-lg border border-border bg-surface p-5"
               >
-                <div className="mb-1 flex items-center gap-2 text-xs font-medium text-primary">
-                  <Sparkles className="size-3.5" /> Sugestão da IA
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-foreground">{item.name}</h3>
+                  {item.aiSuggested && (
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                      <Sparkles className="size-3" /> Sugestão de IA
+                    </span>
+                  )}
                 </div>
-                <h3 className="text-sm font-semibold text-foreground">{s.name}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{s.resumo}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{item.resumo}</p>
                 <dl className="mt-4 grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <dt className="text-muted-foreground">Iniciativas relacionadas</dt>
-                    <dd className="font-medium text-foreground">{s.iniciativaIds.length}</dd>
+                    <dd className="font-medium text-foreground">{item.iniciativaCount}</dd>
                   </div>
                   <div>
                     <dt className="text-muted-foreground">Valor financeiro total</dt>
-                    <dd className="font-medium text-foreground">{brl(s.valorTotal)}</dd>
+                    <dd className="font-medium text-foreground">{brl(item.valorTotal)}</dd>
                   </div>
                   <div className="col-span-2">
                     <dt className="text-muted-foreground">Diretorias envolvidas</dt>
-                    <dd className="font-medium text-foreground">{s.diretorias.join(", ")}</dd>
+                    <dd className="font-medium text-foreground">
+                      {item.diretorias.join(", ") || "—"}
+                    </dd>
                   </div>
                 </dl>
                 <Button
                   size="sm"
                   className="mt-4 gap-2"
                   onClick={() =>
-                    navigate({ to: "/juridico/agrupamentos/novo", search: { suggestion: s.id } })
+                    item.kind === "agrupamento"
+                      ? navigate({ to: "/juridico/agrupamentos/$id", params: { id: item.id } })
+                      : navigate({
+                          to: "/juridico/agrupamentos/novo",
+                          search: { suggestion: item.id },
+                        })
                   }
                 >
-                  <Eye className="size-4" /> Visualizar e revisar
+                  <Eye className="size-4" />{" "}
+                  {item.kind === "agrupamento" ? "Abrir" : "Visualizar e revisar"}
                 </Button>
               </div>
             ))}

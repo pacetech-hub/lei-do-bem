@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Eye, Plus, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Link } from "@tanstack/react-router";
 import { useProjectsStore } from "@/lib/store";
+import { getFilial } from "@/components/projects-list";
 import {
   diretoriasDoAgrupamento,
   gerarConsolidacaoAgrupamento,
@@ -35,7 +36,7 @@ import {
   iniciativasNaoAgrupadas,
   valorTotalIniciativas,
 } from "@/lib/juridico";
-import { IniciativaDetailSheet } from "@/components/juridico/iniciativa-detail-sheet";
+import { IniciativaCompactCard } from "@/components/juridico/iniciativa-resumo-card";
 import type { Agrupamento, Project } from "@/lib/types";
 
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -128,7 +129,6 @@ export function JuridicoAgrupamentoForm({
   const [addOpen, setAddOpen] = useState(false);
   const [confirmIaOpen, setConfirmIaOpen] = useState(false);
   const [pendingIaFields, setPendingIaFields] = useState<ConsolidacaoFields | null>(null);
-  const [detailProject, setDetailProject] = useState<Project | null>(null);
 
   const isEdicao = !!agrupamentoExistente;
 
@@ -250,9 +250,9 @@ export function JuridicoAgrupamentoForm({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
           {/* Área principal — informações do agrupamento */}
-          <section className="space-y-4 rounded-lg border border-border bg-surface p-5 lg:col-span-2">
+          <section className="space-y-5 rounded-lg border border-border bg-surface p-6 lg:col-span-3">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-semibold text-foreground">Informações do agrupamento</h2>
               <Button variant="outline" size="sm" className="gap-2" onClick={handleGerarIa}>
@@ -277,27 +277,29 @@ export function JuridicoAgrupamentoForm({
                   setResumoEditado(true);
                   setFields((f) => ({ ...f, resumo: e.target.value }));
                 }}
-                rows={3}
+                rows={5}
+                className="resize-y"
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Objetivo comum</Label>
-                <Textarea
-                  value={fields.objetivoComum}
-                  onChange={(e) => setFields((f) => ({ ...f, objetivoComum: e.target.value }))}
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Relação entre as atividades de inovação</Label>
-                <Textarea
-                  value={fields.relacaoAtividades}
-                  onChange={(e) => setFields((f) => ({ ...f, relacaoAtividades: e.target.value }))}
-                  rows={3}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label>Objetivo comum</Label>
+              <Textarea
+                value={fields.objetivoComum}
+                onChange={(e) => setFields((f) => ({ ...f, objetivoComum: e.target.value }))}
+                rows={5}
+                className="resize-y"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Relação entre as atividades de inovação</Label>
+              <Textarea
+                value={fields.relacaoAtividades}
+                onChange={(e) => setFields((f) => ({ ...f, relacaoAtividades: e.target.value }))}
+                rows={5}
+                className="resize-y"
+              />
             </div>
 
             <div className="space-y-2">
@@ -305,7 +307,8 @@ export function JuridicoAgrupamentoForm({
               <Textarea
                 value={fields.justificativa}
                 onChange={(e) => setFields((f) => ({ ...f, justificativa: e.target.value }))}
-                rows={3}
+                rows={5}
+                className="resize-y"
               />
             </div>
 
@@ -328,7 +331,7 @@ export function JuridicoAgrupamentoForm({
           </section>
 
           {/* Painel lateral — iniciativas do agrupamento */}
-          <aside className="space-y-3 rounded-lg border border-border bg-surface p-5">
+          <aside className="space-y-3 rounded-lg border border-border bg-surface p-6 lg:col-span-2">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold text-foreground">Iniciativas do agrupamento</h2>
               <Button
@@ -345,38 +348,13 @@ export function JuridicoAgrupamentoForm({
                 Nenhuma iniciativa incluída ainda.
               </p>
             ) : (
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {membros.map((p) => (
-                  <li key={p.id} className="rounded-md border border-border p-3 text-sm">
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="font-medium text-foreground">{p.name}</span>
-                      <div className="flex shrink-0 gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="size-7"
-                          aria-label="Visualizar detalhes"
-                          onClick={() => setDetailProject(p)}
-                        >
-                          <Eye className="size-3.5" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="size-7 text-muted-foreground hover:text-destructive"
-                          aria-label="Remover"
-                          onClick={() => setIniciativaIds((ids) => ids.filter((x) => x !== p.id))}
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {p.area} · {p.responsible}
-                    </div>
-                    <div className="mt-1 text-xs font-medium text-foreground">
-                      {brl(iniciativaValor(p))}
-                    </div>
+                  <li key={p.id}>
+                    <IniciativaCompactCard
+                      project={p}
+                      onRemove={() => setIniciativaIds((ids) => ids.filter((x) => x !== p.id))}
+                    />
                   </li>
                 ))}
               </ul>
@@ -422,7 +400,7 @@ export function JuridicoAgrupamentoForm({
                   <div>
                     <div className="font-medium text-foreground">{p.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {p.area} · {p.responsible} · {brl(iniciativaValor(p))}
+                      {p.area} · {getFilial(p)} · {brl(iniciativaValor(p))}
                     </div>
                   </div>
                   <Button
@@ -464,12 +442,6 @@ export function JuridicoAgrupamentoForm({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <IniciativaDetailSheet
-        project={detailProject}
-        open={detailProject !== null}
-        onOpenChange={(open) => !open && setDetailProject(null)}
-      />
     </>
   );
 }

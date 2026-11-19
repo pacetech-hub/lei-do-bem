@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Eye, FileStack, History, Save, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, FileStack, History, Presentation, Save, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useProjectsStore } from "@/lib/store";
 import {
   diretoriasDoAgrupamento,
@@ -41,7 +47,8 @@ import {
   valorTotalIniciativas,
 } from "@/lib/juridico";
 import { PreProjetoStatusBadge } from "@/components/juridico/juridico-status-badge";
-import { IniciativaDetailSheet } from "@/components/juridico/iniciativa-detail-sheet";
+import { IniciativaResumoCard } from "@/components/juridico/iniciativa-resumo-card";
+import { getFilial } from "@/components/projects-list";
 import {
   COMITE_DECISAO_LABEL,
   ROLE_USERS,
@@ -57,6 +64,7 @@ const todayInputValue = () => new Date().toISOString().slice(0, 10);
 interface ConteudoFields {
   resumoExecutivo: string;
   problema: string;
+  oportunidade: string;
   objetivoPrincipal: string;
   propostaInovacao: string;
   atividadesInovacao: string;
@@ -67,6 +75,7 @@ function fieldsOf(pp: PreProjeto): ConteudoFields {
   return {
     resumoExecutivo: pp.resumoExecutivo,
     problema: pp.problema,
+    oportunidade: pp.oportunidade,
     objetivoPrincipal: pp.objetivoPrincipal,
     propostaInovacao: pp.propostaInovacao,
     atividadesInovacao: pp.atividadesInovacao,
@@ -102,7 +111,13 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
   const [dataDecisao, setDataDecisao] = useState(todayInputValue());
   const [responsavel, setResponsavel] = useState(ROLE_USERS.juridico.name);
   const [observacoes, setObservacoes] = useState("");
-  const [detailProject, setDetailProject] = useState<Project | null>(null);
+  const [comiteInfo, setComiteInfo] = useState("");
+
+  const abrirDecisao = (d: ComiteDecisao) => {
+    setDecisao(d);
+    setObservacoes("");
+    setDecisaoOpen(true);
+  };
 
   const history = [...preProjeto.history].sort((a, b) => +new Date(b.date) - +new Date(a.date));
   const decisoes = [...preProjeto.decisoes].sort((a, b) => +new Date(b.data) - +new Date(a.data));
@@ -120,8 +135,10 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
     toast.success("Conteúdo atualizado a partir do agrupamento. Revise e salve as alterações.");
   };
 
+  const precisaJustificativa = decisao === "recusar" || decisao === "revisar_agrupamento";
+
   const handleRegistrarDecisao = () => {
-    if (decisao !== "aprovar" && decisao !== "ajustes" && !observacoes.trim()) {
+    if (precisaJustificativa && !observacoes.trim()) {
       toast.error("Descreva uma observação ou justificativa para esta decisão.");
       return;
     }
@@ -131,9 +148,11 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
       responsavel.trim() || ROLE_USERS.juridico.name,
       new Date(dataDecisao).toISOString(),
       observacoes.trim() || undefined,
+      comiteInfo.trim() || undefined,
     );
     setDecisaoOpen(false);
     setObservacoes("");
+    setComiteInfo("");
     if (decisao === "aprovar" && projetoId) {
       toast.success("Pré-projeto aprovado — projeto criado.");
       navigate({ to: "/juridico/projetos/$id", params: { id: projetoId } });
@@ -150,45 +169,50 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
   return (
     <div className="pb-10">
       <main className="mx-auto max-w-[1200px] px-6 py-8">
-        <Link
-          to="/juridico/pre-projetos"
-          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5" /> Pré-projetos
-        </Link>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <Link
+            to="/juridico/pre-projetos"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" /> Pré-projetos
+          </Link>
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link to="/juridico/pre-projetos/$id/gerar-apresentacao" params={{ id: preProjeto.id }}>
+              <Presentation className="size-3.5" /> Gerar apresentação
+            </Link>
+          </Button>
+        </div>
 
-        {/* Cabeçalho */}
+        {/* Cabeçalho — hierarquia clara: identificação > nome > metadados > avisos */}
         <div className="mb-6 rounded-xl border border-border bg-surface p-6">
-          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <PreProjetoStatusBadge status={preProjeto.status} />
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-                {preProjeto.name}
-              </h1>
-            </div>
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+            Pré-projeto
+          </span>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+            {preProjeto.name}
+          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <span>
+              Ano de referência:{" "}
+              <span className="font-medium text-foreground">{preProjeto.ano}</span>
+            </span>
+            <span>
+              Diretorias envolvidas:{" "}
+              <span className="font-medium text-foreground">{diretorias.join(", ") || "—"}</span>
+            </span>
             {agrupamento && (
               <Link
                 to="/juridico/agrupamentos/$id"
                 params={{ id: agrupamento.id }}
-                className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
               >
                 <FileStack className="size-3.5" /> Agrupamento de origem: {agrupamento.name}
               </Link>
             )}
           </div>
-          <div className="flex flex-wrap gap-6 text-sm">
-            <div>
-              <span className="text-muted-foreground">Ano de referência:</span>{" "}
-              <span className="font-medium text-foreground">{preProjeto.ano}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Diretorias envolvidas:</span>{" "}
-              <span className="font-medium text-foreground">{diretorias.join(", ") || "—"}</span>
-            </div>
-          </div>
           {projetoVinculado && (
-            <div className="mt-3 rounded-md bg-primary/5 p-3 text-sm text-primary">
-              Este pré-projeto foi aprovado e já é o projeto{" "}
+            <div className="mt-4 rounded-md bg-primary/5 p-3 text-sm text-primary">
+              Este pré-projeto já foi aprovado pelo comitê e deu origem ao projeto{" "}
               <Link
                 to="/juridico/projetos/$id"
                 params={{ id: projetoVinculado.id }}
@@ -201,25 +225,23 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
           )}
         </div>
 
-        {/* Indicadores principais */}
-        <div className="mb-6 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-lg border border-border bg-surface p-4 text-center">
-            <div className="text-xs text-muted-foreground">Iniciativas</div>
-            <div className="mt-1 text-2xl font-semibold tabular-nums">{iniciativaIds.length}</div>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-4 text-center">
-            <div className="text-xs text-muted-foreground">Diretorias envolvidas</div>
-            <div className="mt-1 text-2xl font-semibold tabular-nums">{diretorias.length}</div>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-4 text-center">
-            <div className="text-xs text-muted-foreground">Valor financeiro total</div>
-            <div className="mt-1 text-2xl font-semibold tabular-nums">{brl(valorTotal)}</div>
-          </div>
-        </div>
-
-        {/* Resumo executivo */}
+        {/* Informações financeiras — seção própria, não mais um dashboard no topo */}
         <section className="mb-6 rounded-lg border border-border bg-surface p-5">
-          <div className="mb-2 flex items-center justify-between gap-3">
+          <h2 className="mb-2 text-sm font-semibold text-foreground">Informações financeiras</h2>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="text-3xl font-semibold tabular-nums text-foreground">
+              {brl(valorTotal)}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              valor financeiro consolidado de {iniciativaIds.length}{" "}
+              {iniciativaIds.length === 1 ? "iniciativa" : "iniciativas"}
+            </span>
+          </div>
+        </section>
+
+        {/* Resumo executivo — narrativa conectada: problema > oportunidade > objetivo > proposta */}
+        <section className="mb-6 rounded-lg border border-border bg-surface p-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-foreground">Resumo executivo</h2>
             <Button
               variant="outline"
@@ -235,48 +257,65 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
             onChange={(e) => setFields((f) => ({ ...f, resumoExecutivo: e.target.value }))}
             rows={3}
           />
+
+          <div className="mt-5 space-y-4 border-t border-border pt-5">
+            <div className="space-y-2">
+              <Label>Problema identificado</Label>
+              <Textarea
+                value={fields.problema}
+                onChange={(e) => setFields((f) => ({ ...f, problema: e.target.value }))}
+                rows={4}
+                className="resize-y"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Oportunidade identificada</Label>
+              <Textarea
+                value={fields.oportunidade}
+                onChange={(e) => setFields((f) => ({ ...f, oportunidade: e.target.value }))}
+                rows={4}
+                className="resize-y"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Objetivo principal</Label>
+              <Textarea
+                value={fields.objetivoPrincipal}
+                onChange={(e) => setFields((f) => ({ ...f, objetivoPrincipal: e.target.value }))}
+                rows={3}
+                className="resize-y"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Proposta de inovação</Label>
+              <Textarea
+                value={fields.propostaInovacao}
+                onChange={(e) => setFields((f) => ({ ...f, propostaInovacao: e.target.value }))}
+                rows={4}
+                className="resize-y"
+              />
+            </div>
+          </div>
         </section>
 
-        {/* Conteúdo do pré-projeto, em blocos */}
+        {/* Elemento tecnológico e resultados esperados */}
         <section className="mb-6 grid gap-4 lg:grid-cols-2">
           <div className="space-y-2 rounded-lg border border-border bg-surface p-5">
-            <Label>1. Problema ou oportunidade identificada</Label>
-            <Textarea
-              value={fields.problema}
-              onChange={(e) => setFields((f) => ({ ...f, problema: e.target.value }))}
-              rows={4}
-            />
-          </div>
-          <div className="space-y-2 rounded-lg border border-border bg-surface p-5">
-            <Label>2. Objetivo principal</Label>
-            <Textarea
-              value={fields.objetivoPrincipal}
-              onChange={(e) => setFields((f) => ({ ...f, objetivoPrincipal: e.target.value }))}
-              rows={4}
-            />
-          </div>
-          <div className="space-y-2 rounded-lg border border-border bg-surface p-5">
-            <Label>3. Proposta de inovação</Label>
-            <Textarea
-              value={fields.propostaInovacao}
-              onChange={(e) => setFields((f) => ({ ...f, propostaInovacao: e.target.value }))}
-              rows={4}
-            />
-          </div>
-          <div className="space-y-2 rounded-lg border border-border bg-surface p-5">
-            <Label>4. Atividades de inovação envolvidas</Label>
+            <Label>Atividades de inovação envolvidas</Label>
             <Textarea
               value={fields.atividadesInovacao}
               onChange={(e) => setFields((f) => ({ ...f, atividadesInovacao: e.target.value }))}
               rows={4}
+              className="resize-y"
             />
           </div>
-          <div className="space-y-2 rounded-lg border border-border bg-surface p-5 lg:col-span-2">
-            <Label>5. Resultados esperados</Label>
+          <div className="space-y-2 rounded-lg border border-border bg-surface p-5">
+            <Label>Resultados esperados</Label>
             <Textarea
               value={fields.resultadosEsperados}
               onChange={(e) => setFields((f) => ({ ...f, resultadosEsperados: e.target.value }))}
-              rows={3}
+              rows={4}
+              className="resize-y"
             />
           </div>
         </section>
@@ -287,60 +326,100 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
           </Button>
         </div>
 
-        {/* 6. Iniciativas que compõem o pré-projeto */}
+        {/* Iniciativas que compõem o pré-projeto — resumo completo, mesma estrutura usada nos agrupamentos */}
         <section className="mb-6 rounded-lg border border-border bg-surface p-5">
           <h2 className="mb-3 text-sm font-semibold text-foreground">
-            6. Iniciativas que compõem o pré-projeto
+            Iniciativas que compõem o pré-projeto
           </h2>
           {membros.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma iniciativa vinculada.</p>
           ) : (
-            <ul className="divide-y divide-border">
+            <Accordion type="multiple">
               {membros.map((p) => (
-                <li key={p.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <div>
-                    <div className="font-medium text-foreground">{p.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {p.area} · {p.responsible}
+                <AccordionItem key={p.id} value={p.id}>
+                  <AccordionTrigger>
+                    <div className="flex flex-col items-start text-left">
+                      <span className="font-medium text-foreground">{p.name}</span>
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {p.area} · {getFilial(p)}
+                      </span>
                     </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="gap-1 text-xs"
-                    onClick={() => setDetailProject(p)}
-                  >
-                    <Eye className="size-3.5" /> Consultar fonte
-                  </Button>
-                </li>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="mb-3 flex justify-end">
+                      <Link
+                        to="/juridico/iniciativas/$id"
+                        params={{ id: p.id }}
+                        className="text-xs font-medium text-primary hover:underline"
+                      >
+                        Ver ficha completa da iniciativa
+                      </Link>
+                    </div>
+                    <IniciativaResumoCard project={p} />
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </ul>
+            </Accordion>
           )}
         </section>
 
-        {/* Decisões do comitê */}
+        {/* Decisão do comitê — situação, data, decisão, justificativa e informações do comitê */}
         <section className="mb-6 rounded-lg border border-border bg-surface p-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-foreground">Decisão do comitê</h2>
-            {preProjeto.status !== "aprovado" && (
-              <Button size="sm" className="gap-2" onClick={() => setDecisaoOpen(true)}>
-                <Send className="size-4" /> Registrar decisão do comitê
-              </Button>
-            )}
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-semibold text-foreground">Decisão do comitê</h2>
+              <PreProjetoStatusBadge status={preProjeto.status} />
+            </div>
           </div>
+
+          {preProjeto.status === "aguardando_comite" && (
+            <div className="mb-4 flex flex-wrap items-center gap-2 rounded-md border border-dashed border-border bg-surface-muted p-3">
+              <p className="mr-auto text-sm text-muted-foreground">
+                Este pré-projeto aguarda a decisão do comitê.
+              </p>
+              <Button size="sm" className="gap-2" onClick={() => abrirDecisao("aprovar")}>
+                <Send className="size-4" /> Aprovar
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
+                onClick={() => abrirDecisao("recusar")}
+              >
+                Recusar
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => abrirDecisao("ajustes")}>
+                Outras decisões…
+              </Button>
+            </div>
+          )}
+
           {decisoes.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma decisão registrada ainda.</p>
           ) : (
             <ul className="space-y-2">
               {decisoes.map((d) => (
                 <li key={d.id} className="rounded-md border border-border p-3 text-sm">
-                  <div className="font-medium text-foreground">
-                    {COMITE_DECISAO_LABEL[d.decisao]}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-medium text-foreground">
+                      {COMITE_DECISAO_LABEL[d.decisao]}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Data da decisão: {fmtDate(d.data)}
+                    </span>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    registrado por {d.responsavel} em {fmtDate(d.data)}
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    Registrado por {d.responsavel}
+                    {d.comite ? ` · Comitê: ${d.comite}` : ""}
                   </div>
-                  {d.observacoes && <p className="mt-1 text-foreground">{d.observacoes}</p>}
+                  {d.observacoes && (
+                    <p className="mt-2 text-foreground">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Justificativa/observação:{" "}
+                      </span>
+                      {d.observacoes}
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>
@@ -425,12 +504,20 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Observações ou justificativa</Label>
+              <Label>Observações ou justificativa{precisaJustificativa && " (obrigatória)"}</Label>
               <Textarea
                 value={observacoes}
                 onChange={(e) => setObservacoes(e.target.value)}
                 rows={3}
-                placeholder="Obrigatório ao solicitar ajustes ou revisão do agrupamento."
+                placeholder="Obrigatório ao recusar ou solicitar revisão do agrupamento."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Informações do comitê (opcional)</Label>
+              <Input
+                value={comiteInfo}
+                onChange={(e) => setComiteInfo(e.target.value)}
+                placeholder="Ex.: Reunião do Comitê de Inovação — 3ª sessão de 2026"
               />
             </div>
           </div>
@@ -438,16 +525,15 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
             <Button variant="ghost" onClick={() => setDecisaoOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleRegistrarDecisao}>Registrar decisão</Button>
+            <Button
+              onClick={handleRegistrarDecisao}
+              disabled={precisaJustificativa && !observacoes.trim()}
+            >
+              Registrar decisão
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <IniciativaDetailSheet
-        project={detailProject}
-        open={detailProject !== null}
-        onOpenChange={(open) => !open && setDetailProject(null)}
-      />
     </div>
   );
 }

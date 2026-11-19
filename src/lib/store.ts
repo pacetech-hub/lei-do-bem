@@ -136,6 +136,7 @@ interface ProjectsState {
       ano: number;
       resumoExecutivo: string;
       problema: string;
+      oportunidade: string;
       objetivoPrincipal: string;
       propostaInovacao: string;
       atividadesInovacao: string;
@@ -150,6 +151,7 @@ interface ProjectsState {
         | "name"
         | "resumoExecutivo"
         | "problema"
+        | "oportunidade"
         | "objetivoPrincipal"
         | "propostaInovacao"
         | "atividadesInovacao"
@@ -166,6 +168,7 @@ interface ProjectsState {
     responsavel: string,
     data: string,
     observacoes?: string,
+    comite?: string,
   ) => string | undefined;
   updateProjetoSection: (projetoId: string, sectionKey: string, content: string) => void;
   addProjetoSection: (projetoId: string, label: string, content?: string) => void;
@@ -523,6 +526,7 @@ export const useProjectsStore = create<ProjectsState>()(
             ano: content.ano,
             resumoExecutivo: content.resumoExecutivo,
             problema: content.problema,
+            oportunidade: content.oportunidade,
             objetivoPrincipal: content.objetivoPrincipal,
             propostaInovacao: content.propostaInovacao,
             atividadesInovacao: content.atividadesInovacao,
@@ -578,7 +582,7 @@ export const useProjectsStore = create<ProjectsState>()(
               : p,
           ),
         })),
-      registrarDecisaoComite: (preProjetoId, decisao, responsavel, data, observacoes) => {
+      registrarDecisaoComite: (preProjetoId, decisao, responsavel, data, observacoes, comite) => {
         let projetoId: string | undefined;
         set((s) => {
           const preProjeto = s.preProjetos.find((p) => p.id === preProjetoId);
@@ -590,19 +594,24 @@ export const useProjectsStore = create<ProjectsState>()(
             data,
             responsavel,
             observacoes,
+            comite,
           };
           const historyText =
             decisao === "aprovar"
               ? "o comitê aprovou o pré-projeto"
               : decisao === "ajustes"
                 ? "o comitê solicitou ajustes no pré-projeto"
-                : "o comitê solicitou revisão do agrupamento de origem";
+                : decisao === "recusar"
+                  ? "o comitê recusou o pré-projeto"
+                  : "o comitê solicitou revisão do agrupamento de origem";
           const newStatus: PreProjetoStatus =
             decisao === "aprovar"
               ? "aprovado"
               : decisao === "ajustes"
                 ? "ajustes_solicitados"
-                : "revisao_agrupamento";
+                : decisao === "recusar"
+                  ? "recusado"
+                  : "revisao_agrupamento";
 
           let juridicoProjetos = s.juridicoProjetos;
           if (decisao === "aprovar") {

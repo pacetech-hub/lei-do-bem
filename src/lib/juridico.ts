@@ -179,13 +179,15 @@ export function gerarConsolidacaoAgrupamento(
         : "Relação entre as atividades de inovação a ser definida pelo Jurídico.",
     justificativa:
       membros.length > 0
-        ? "As iniciativas foram agrupadas por tratarem de objetivos, tecnologias, produtos ou oportunidades convergentes, permitindo uma avaliação consolidada pelo comitê."
+        ? `A proposta de inovação consiste em consolidar, num único desenvolvimento, as tecnologias e atividades de inovação já em curso nestas iniciativas — ${atividades.length > 0 ? atividades[0].toLowerCase() : "avanços técnicos convergentes"} — permitindo uma avaliação conjunta pelo comitê e um desenvolvimento mais eficiente do que o tratamento isolado de cada iniciativa.`
         : "Justificativa a ser definida pelo Jurídico.",
   };
 }
 
 // Conteúdo inicial do pré-projeto, a partir do agrupamento consolidado e das
-// respostas originais das iniciativas de origem (sempre consultáveis).
+// respostas originais das iniciativas de origem (sempre consultáveis). O
+// resumo executivo conecta problema → oportunidade → objetivo → proposta de
+// inovação numa narrativa única, nos moldes do preenchimento do Relator.
 export function gerarPreProjetoConteudo(
   agrupamento: Pick<
     Agrupamento,
@@ -196,6 +198,7 @@ export function gerarPreProjetoConteudo(
 ): {
   resumoExecutivo: string;
   problema: string;
+  oportunidade: string;
   objetivoPrincipal: string;
   propostaInovacao: string;
   atividadesInovacao: string;
@@ -205,11 +208,23 @@ export function gerarPreProjetoConteudo(
     .map((id) => projects.find((p) => p.id === id))
     .filter((p): p is Project => !!p);
   const problemas = membros.map((p) => p.answers.inov_8).filter(Boolean);
+  const descricoes = membros.map((p) => p.answers.inov_9).filter(Boolean);
   const resultados = membros.map((p) => p.answers.inov_6 || p.answers.inov_10).filter(Boolean);
+
+  const problema =
+    problemas.length > 0
+      ? `${problemas[0]}${descricoes[0] ? ` ${descricoes[0]}` : ""}`
+      : "Problema ou oportunidade a ser detalhado pelo Jurídico.";
+
+  const oportunidade =
+    resultados.length > 0
+      ? `A partir desse cenário, identificou-se a oportunidade de avançar tecnologicamente nesta frente: ${resultados[0].toLowerCase()} Essa oportunidade está alinhada às atividades de inovação já em curso nas iniciativas que compõem este agrupamento.`
+      : "Oportunidade a ser detalhada pelo Jurídico a partir das iniciativas de origem.";
 
   return {
     resumoExecutivo: agrupamento.resumo,
-    problema: problemas[0] ?? "Problema ou oportunidade a ser detalhado pelo Jurídico.",
+    problema,
+    oportunidade,
     objetivoPrincipal: agrupamento.objetivoComum,
     propostaInovacao: agrupamento.justificativa,
     atividadesInovacao: agrupamento.relacaoAtividades,
