@@ -97,6 +97,15 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
     () => resumoFinanceiroTrimestral(iniciativaIds, projects),
     [iniciativaIds, projects],
   );
+  // Os quadros do topo mostram só 1º e 2º trimestre — 3º e 4º ficam de fora
+  // do resumo financeiro do pré-projeto.
+  const trimestresPrincipais = useMemo(
+    () =>
+      financeiro.porTrimestre.filter(
+        (t) => !t.trimestre.startsWith("3º") && !t.trimestre.startsWith("4º"),
+      ),
+    [financeiro],
+  );
   const evidencias = useMemo(
     () =>
       membros.flatMap((p) =>
@@ -381,9 +390,9 @@ export function JuridicoPreProjetoApresentacao({ preProjeto }: { preProjeto: Pre
             </span>
           </div>
 
-          {financeiro.porTrimestre.length > 0 && (
+          {trimestresPrincipais.length > 0 && (
             <div className="mb-4 grid gap-2 sm:grid-cols-4">
-              {financeiro.porTrimestre.map((t) => (
+              {trimestresPrincipais.map((t) => (
                 <div key={t.trimestre} className="rounded-md border border-border p-3 text-center">
                   <div className="text-xs text-muted-foreground">{t.trimestre}</div>
                   <div className="mt-1 text-sm font-semibold tabular-nums text-foreground">
